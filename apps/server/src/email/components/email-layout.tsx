@@ -21,7 +21,7 @@ interface EmailLayoutProps {
 
 export function EmailLayout({
 	children,
-	footerText = "This email was sent from Project Genesis. If you didn't expect this email, you can safely ignore it.",
+	footerText = "This email was sent from Tailor Weddings. If you didn't expect this email, you can safely ignore it.",
 }: EmailLayoutProps) {
 	return (
 		<Html>

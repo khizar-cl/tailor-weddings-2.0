@@ -17,7 +17,7 @@ This document covers how to set up the staging (QA/testing) environment from scr
 
 ## Step 1 — Render
 
-Before you start: if you forked Genesis for a new product, you should already have run `pnpm rename <your-project-name>` during local setup (see "Rename the project" in [`LOCAL_ENV.md`](../LOCAL_ENV.md)). That rewrites `render.yaml` and the other config files. If you skipped it, run it now and commit + push to `develop` before proceeding — otherwise your Render services will be named `genesis-*`.
+Before you start: if you forked Genesis for a new product, you should already have run `pnpm rename <your-project-name>` during local setup (see "Rename the project" in [`LOCAL_ENV.md`](../LOCAL_ENV.md)). That rewrites `render.yaml` and the other config files. If you skipped it, run it now and commit + push to `develop` before proceeding — otherwise your Render services will be named `tailorweddings2-*`.
 
 
 1. Go to [render.com](https://render.com) and sign up with the **client's email** (not GitHub). Using the client's email ensures they own the account from day one — simplifies handoff later.
@@ -32,12 +32,12 @@ Before you start: if you forked Genesis for a new product, you should already ha
 
 This creates:
 - `staging-secrets` - Environment variable group
-- `genesis-api-staging` — Express API (Docker)
-- `genesis-worker-staging` — BullMQ worker (if enabled)
-- `genesis-postgres-staging` — PostgreSQL database
-- `genesis-redis-staging` — Redis cache
+- `tailorweddings2-api-staging` — Express API (Docker)
+- `tailorweddings2-worker-staging` — BullMQ worker (if enabled)
+- `tailorweddings2-postgres-staging` — PostgreSQL database
+- `tailorweddings2-redis-staging` — Redis cache
 
-`genesis-api-staging`'s initial deploy will fail because secrets aren't set yet — this is expected. Don't wait for it (takes ~5 min); proceed to set secrets below.
+`tailorweddings2-api-staging`'s initial deploy will fail because secrets aren't set yet — this is expected. Don't wait for it (takes ~5 min); proceed to set secrets below.
 
 ### Set secrets
 
@@ -49,7 +49,7 @@ After setting the secrets, trigger a **manual redeploy** on the API (and on the 
 
 Migrations do **not** run during the Render deploy — they run via GitHub Actions on merges to `develop`. Since this is a fresh setup with no schema yet, run them manually once:
 
-Get the **External Database URL** from Render → `genesis-postgres-staging` → **Connections** → **External Database URL**. Always append `?sslmode=require`.
+Get the **External Database URL** from Render → `tailorweddings2-postgres-staging` → **Connections** → **External Database URL**. Always append `?sslmode=require`.
 
 ```bash
 cd apps/server && DATABASE_URL="<render-external-db-url>?sslmode=require" pnpm db:migrate
@@ -67,10 +67,10 @@ After this initial run, subsequent deploys via PR merges will run migrations aut
 
 Wait until all Render services (API, worker, Postgres, Redis) show **Live** in the dashboard — first deploys can take 5–10 minutes. Then hit the health endpoint.
 
-Get your API URL from Render → `genesis-api-staging` (or whatever you renamed it to) → it's displayed at the top of the service page, right under the service name. Append `/health` to that URL and use it in place of the example below if yours differs.
+Get your API URL from Render → `tailorweddings2-api-staging` (or whatever you renamed it to) → it's displayed at the top of the service page, right under the service name. Append `/health` to that URL and use it in place of the example below if yours differs.
 
 ```bash
-curl https://genesis-api-staging.onrender.com/health
+curl https://tailorweddings2-api-staging.onrender.com/health
 ```
 
 It should return a health check response. Free-tier cold starts may take ~30 seconds.
@@ -136,7 +136,7 @@ Open the Vercel staging URL in a browser — you should see the landing page or 
 Once the Vercel domain is assigned, update `CORS_ORIGIN` on the Render env var group:
 - Render Dashboard → **Environment Groups** → `staging-secrets` → set `CORS_ORIGIN` to the Vercel staging domain (must include `https://` and no trailing slash)
 
-Then trigger a **manual redeploy** on the Render API so it picks up the new value: Render → `genesis-api-staging` → **Manual Deploy** → **Deploy latest commit**.
+Then trigger a **manual redeploy** on the Render API so it picks up the new value: Render → `tailorweddings2-api-staging` → **Manual Deploy** → **Deploy latest commit**.
 
 ### Verify end-to-end
 
@@ -146,7 +146,7 @@ Once the redeploy shows **Live**, sign in on the Vercel staging URL via Clerk an
 
 ## Step 4 — GitHub Environment
 
-Go to GitHub repo → **Settings → Environments → New environment** → name it `staging`. Add the secrets listed in [`ENV_VARS.md`](ENV_VARS.md) under **GitHub — Environment Secrets**, using the `genesis-*-staging` Render services and the Vercel staging deploy hook created in Step 2.
+Go to GitHub repo → **Settings → Environments → New environment** → name it `staging`. Add the secrets listed in [`ENV_VARS.md`](ENV_VARS.md) under **GitHub — Environment Secrets**, using the `tailorweddings2-*-staging` Render services and the Vercel staging deploy hook created in Step 2.
 
 ---
 

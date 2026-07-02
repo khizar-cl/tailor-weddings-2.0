@@ -118,7 +118,7 @@ export const AppSidebar: FC<AppSidebarProps> = ({
 						showFull ? "text-lg" : "text-lg",
 					)}
 				>
-					{showFull ? "Genesis" : "G"}
+					{showFull ? "Tailor Weddings" : "TW"}
 				</span>
 			</div>
 

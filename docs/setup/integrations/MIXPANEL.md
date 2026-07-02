@@ -15,8 +15,8 @@ Mixpanel's hierarchy is **Organization → Projects**. The Org is the top-level 
 
 | Mixpanel Project | Purpose |
 |---|---|
-| `genesis-web-staging` | Frontend events from the staging deploy |
-| `genesis-web-prod` | Frontend events from production |
+| `tailorweddings2-web-staging` | Frontend events from the staging deploy |
+| `tailorweddings2-web-prod` | Frontend events from production |
 
 You can also reuse a single project across environments and filter by the `environment` super property attached to every event — but separate projects are cleaner for retention and access control.
 

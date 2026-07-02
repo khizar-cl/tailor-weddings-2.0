@@ -7,9 +7,9 @@ data "terraform_remote_state" "shared" {
   backend = "remote"
 
   config = {
-    organization = "project-genesis"
+    organization = "tailorweddings2"
     workspaces = {
-      name = "genesis-shared"
+      name = "tailorweddings2-shared"
     }
   }
 }

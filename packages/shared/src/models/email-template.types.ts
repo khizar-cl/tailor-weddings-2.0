@@ -11,7 +11,7 @@ export const EmailTemplates = {
 	invite: {
 		schema: inviteSchema,
 		subject: (data: z.infer<typeof inviteSchema>) =>
-			`${data.inviterName} invited you to Project Genesis`,
+			`${data.inviterName} invited you to Tailor Weddings`,
 	},
 };
 

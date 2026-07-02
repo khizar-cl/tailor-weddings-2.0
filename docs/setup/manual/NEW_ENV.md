@@ -43,7 +43,7 @@ jobs:
 In `render.yaml`, duplicate an existing environment block (e.g. `staging`) and update it for the new environment:
 
 1. Change the environment `name` (e.g. `preview`)
-2. Rename services, databases, and Redis with the new suffix (e.g. `genesis-api-preview`, `genesis-worker-preview`)
+2. Rename services, databases, and Redis with the new suffix (e.g. `tailorweddings2-api-preview`, `tailorweddings2-worker-preview`)
 3. If you need background/scheduled jobs, include the worker block and rename it too
 4. Update the `branch` to match your environment branch
 5. Update `envVarGroups` name (e.g. `preview-secrets`)
@@ -51,7 +51,7 @@ In `render.yaml`, duplicate an existing environment block (e.g. `staging`) and u
 
 ### Set secrets
 
-`genesis-api-preview`'s initial deploy will fail because secrets aren't set yet — this is expected. Don't wait for it (takes ~5 min); proceed to set secrets below. The worker might fail too if it's using env vars.
+`tailorweddings2-api-preview`'s initial deploy will fail because secrets aren't set yet — this is expected. Don't wait for it (takes ~5 min); proceed to set secrets below. The worker might fail too if it's using env vars.
 
 Go to Render Dashboard → **Environment Groups** → `preview-secrets` (shared by the API and worker) and fill in the variables listed in [`ENV_VARS.md`](ENV_VARS.md) under **Render — Server Environment Group**. Use Clerk keys appropriate for this environment (typically test keys for non-production).
 
@@ -61,7 +61,7 @@ After setting the secrets, trigger a **manual redeploy** on the API (and on the 
 
 Migrations do **not** run during the Render deploy — they run via GitHub Actions on merges to the environment branch. Since this is a fresh setup with no schema yet, run them manually once:
 
-Get the **External Database URL** from Render → `genesis-postgres-<env>` → **Connections** → **External Database URL**. Always append `?sslmode=require`.
+Get the **External Database URL** from Render → `tailorweddings2-postgres-<env>` → **Connections** → **External Database URL**. Always append `?sslmode=require`.
 
 ```bash
 cd apps/server && DATABASE_URL="<render-external-db-url>?sslmode=require" pnpm db:migrate

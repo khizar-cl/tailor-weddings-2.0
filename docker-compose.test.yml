@@ -1,12 +1,12 @@
 services:
   test-db:
-    container_name: genesis-test-db
+    container_name: tailorweddings2-test-db
     image: postgres:16-alpine
     ports:
       # 5434 to avoid collision with the dev DB on 5433 (docker-compose.yml).
       - "5434:5432"
     environment:
-      POSTGRES_DB: genesis_test
+      POSTGRES_DB: tailorweddings2_test
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     healthcheck:
@@ -19,7 +19,7 @@ services:
 
   # Future: uncomment for storage integration tests
   # minio:
-  #   container_name: genesis-test-minio
+  #   container_name: tailorweddings2-test-minio
   #   image: minio/minio
   #   ports:
   #     - "9000:9000"

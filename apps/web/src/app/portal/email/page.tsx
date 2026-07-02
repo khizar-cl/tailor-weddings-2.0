@@ -55,7 +55,7 @@ export default function EmailPage() {
 							Send Invite
 						</CardTitle>
 						<CardDescription>
-							Invite someone to join Project Genesis. The email is rendered
+							Invite someone to join Tailor Weddings. The email is rendered
 							server-side using React Email and delivered via Resend.
 						</CardDescription>
 					</CardHeader>
@@ -105,7 +105,7 @@ export default function EmailPage() {
 										</Label>
 										<Textarea
 											id="message"
-											placeholder="Hey, check out Project Genesis!"
+											placeholder="Hey, check out Tailor Weddings!"
 											value={field.state.value ?? ""}
 											onChange={(e) => field.handleChange(e.target.value)}
 											onBlur={field.handleBlur}

@@ -4,7 +4,7 @@ test.describe("Sign-in page", () => {
 	test("renders sign-in form", async ({ page }) => {
 		await page.goto("/sign-in");
 		await expect(
-			page.getByRole("heading", { name: "Sign in to Genesis" }),
+			page.getByRole("heading", { name: "Sign in to Tailor Weddings" }),
 		).toBeVisible();
 		await expect(page.getByLabel("Email address")).toBeVisible();
 		await expect(page.getByRole("textbox", { name: "Password" })).toBeVisible();

@@ -12,7 +12,7 @@ Terraform creates the R2 bucket automatically and injects `S3_ENDPOINT`, `S3_REG
 
 1. In the [Cloudflare Dashboard](https://dash.cloudflare.com), use the **search bar** and search for **API Tokens** → open the result → **Create Token**
 2. Scroll past templates → **Create Custom Token** → fill in:
-   - **Token name**: e.g. `genesis-terraform`
+   - **Token name**: e.g. `tailorweddings2-terraform`
    - **Permissions**: Account → **Workers R2 Storage** → **Edit**
    - **Account Resources**: Include → All Accounts
 3. **Continue to summary → Create Token** — copy the value; shown only once.

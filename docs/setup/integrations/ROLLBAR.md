@@ -23,8 +23,8 @@ Create separate projects for the server and client to keep their error streams i
 
 | Rollbar Project | Purpose |
 |---|---|
-| `genesis-server-<env>` | Backend (Express) errors |
-| `genesis-client-<env>` | Frontend (Next.js) errors |
+| `tailorweddings2-server-<env>` | Backend (Express) errors |
+| `tailorweddings2-client-<env>` | Frontend (Next.js) errors |
 
 Replace `<env>` with the environment (e.g. `prod`, `staging`).
 
@@ -39,9 +39,9 @@ Create the following tokens (the client project needs two — one for the fronte
 
 | Rollbar Project | Token scope | Use as | Where |
 |---|---|---|---|
-| `genesis-server-<env>` | `post_server_item` | `ROLLBAR_SERVER_TOKEN` | Render env secrets for that environment |
-| `genesis-client-<env>` | `post_client_item` | `NEXT_PUBLIC_ROLLBAR_CLIENT_TOKEN` | Vercel env vars for that environment |
-| `genesis-client-<env>` | `post_server_item` | `ROLLBAR_CLIENT_SOURCEMAP_TOKEN` | Vercel env vars (source maps are uploaded during Vercel's build) |
+| `tailorweddings2-server-<env>` | `post_server_item` | `ROLLBAR_SERVER_TOKEN` | Render env secrets for that environment |
+| `tailorweddings2-client-<env>` | `post_client_item` | `NEXT_PUBLIC_ROLLBAR_CLIENT_TOKEN` | Vercel env vars for that environment |
+| `tailorweddings2-client-<env>` | `post_server_item` | `ROLLBAR_CLIENT_SOURCEMAP_TOKEN` | Vercel env vars (source maps are uploaded during Vercel's build) |
 
 > **Important:** The access token is **only shown once** when created. Copy and save it immediately — after that, only the Public ID is visible (which is NOT the access token).
 
@@ -55,7 +55,7 @@ Rollbar marks a project as **"Setup incomplete"** in its dashboard until it rece
 
 > Do this **once per project** (server and client are separate). Remove the tokens from your local `.env` afterward so dev errors don't pollute the production Rollbar stream.
 
-### Test the server project (`genesis-server-<env>`)
+### Test the server project (`tailorweddings2-server-<env>`)
 
 1. In `apps/server/.env`, set:
    ```
@@ -70,10 +70,10 @@ Rollbar marks a project as **"Setup incomplete"** in its dashboard until it rece
    ```
 3. Start (or restart) the app: `pnpm dev`
 4. Hit the endpoint: `curl http://localhost:3000/health` (or open it in your browser).
-5. Open Rollbar → `genesis-server-<env>` project → **Items**. The error should appear within ~10 seconds, and the "Setup incomplete" banner clears.
+5. Open Rollbar → `tailorweddings2-server-<env>` project → **Items**. The error should appear within ~10 seconds, and the "Setup incomplete" banner clears.
 6. Revert the added line in `src/index.ts` and remove `ROLLBAR_SERVER_TOKEN` from `apps/server/.env`.
 
-### Test the client project (`genesis-client-<env>`)
+### Test the client project (`tailorweddings2-client-<env>`)
 
 1. In `apps/web/.env`, set:
    ```
@@ -87,7 +87,7 @@ Rollbar marks a project as **"Setup incomplete"** in its dashboard until it rece
    ```
 3. Start (or restart) the app: `pnpm dev` (`NEXT_PUBLIC_*` vars are baked in at build time, so a restart is required).
 4. Load the page in your browser and click the button.
-5. Open Rollbar → `genesis-client-<env>` project → **Items**. The error should appear within ~10 seconds.
+5. Open Rollbar → `tailorweddings2-client-<env>` project → **Items**. The error should appear within ~10 seconds.
 6. Revert the button change and remove `NEXT_PUBLIC_ROLLBAR_CLIENT_TOKEN` from `apps/web/.env`.
 6. Revert the button change and remove `NEXT_PUBLIC_ROLLBAR_CLIENT_TOKEN` from `apps/web/.env`.
 

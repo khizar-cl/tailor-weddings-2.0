@@ -21,7 +21,7 @@ export function InviteEmailTemplate({
 			<Text style={styles.text}>
 				<strong>{inviterName}</strong>
 				{inviterEmail ? ` (${inviterEmail})` : ""} has invited you to join
-				Project Genesis.
+				Tailor Weddings.
 			</Text>
 
 			{message && (

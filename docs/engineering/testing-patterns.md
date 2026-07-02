@@ -67,15 +67,15 @@ Integration tests run against a real PostgreSQL database. The test command auto-
 pnpm infra:test:up
 ```
 
-This starts a PostgreSQL instance on port **5434** (separate from the dev DB on 5433) with database `genesis_test`. Set the corresponding env var:
+This starts a PostgreSQL instance on port **5434** (separate from the dev DB on 5433) with database `tailorweddings2_test`. Set the corresponding env var:
 
 ```
-TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5434/genesis_test
+TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5434/tailorweddings2_test
 ```
 
 The setup is:
 
-1. **Global setup** (`apps/server/vitest.global-setup.ts`) validates that `TEST_DATABASE_URL` contains `"test"` (safety check), then syncs the schema with `drizzle-kit push --force`. This substring check is intentionally simple — CI always uses `genesis_test` as the database name. For extra safety in local development, use a database name like `genesis_test` that makes the intent obvious.
+1. **Global setup** (`apps/server/vitest.global-setup.ts`) validates that `TEST_DATABASE_URL` contains `"test"` (safety check), then syncs the schema with `drizzle-kit push --force`. This substring check is intentionally simple — CI always uses `tailorweddings2_test` as the database name. For extra safety in local development, use a database name like `tailorweddings2_test` that makes the intent obvious.
 2. **Per-file setup** (`apps/server/tests/helpers/setup.test-helper.ts`) re-validates the URL and registers `afterAll` to close the DB connection.
 
 ```ts
@@ -98,7 +98,7 @@ export default function globalSetup() {
 }
 ```
 
-CI configures a PostgreSQL 17 service and sets `TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/genesis_test`.
+CI configures a PostgreSQL 17 service and sets `TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/tailorweddings2_test`.
 
 ### Database Isolation Strategy
 

@@ -10,7 +10,7 @@ export RENDER_OWNER_ID="tea-..."       # curl -s -H "Authorization: Bearer $REND
 export VERCEL_API_TOKEN="..."          # Vercel Dashboard → search "Tokens" (Full Account scope)
 export TF_VAR_vercel_team_id=""        # team_... from Vercel Dashboard → team Settings → General. Empty for personal.
 export GITHUB_TOKEN="ghp_..."          # github.com/settings/tokens → classic PAT, `repo` scope
-export GITHUB_OWNER="Conrad-Labs"      # repo owner (must match repo_url in terraform.tfvars)
+export GITHUB_OWNER="khizar-cl"      # repo owner (must match repo_url in terraform.tfvars)
 
 # Mirror of RENDER_API_KEY for the per-env github module. Read by env-roots'
 # var.render_api_key; ignored by this shared workspace.
