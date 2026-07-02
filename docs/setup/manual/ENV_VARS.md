@@ -71,7 +71,7 @@ Set these on each Vercel environment (Production, staging, etc.). Scope each var
 
 | Variable | Required | How to get it |
 |---|---|---|
-| `NEXT_PUBLIC_SERVER_URL` | Yes | The Render API service URL for this env (e.g. `https://genesis-api-staging.onrender.com`). Get it from Render → open the API service (`genesis-api-staging` / `genesis-api-prod` or whatever you renamed it to) → the URL is displayed at the top of the service page, right under the service name. |
+| `NEXT_PUBLIC_SERVER_URL` | Yes | The Render API service URL for this env (e.g. `https://tailorweddings2-api-staging.onrender.com`). Get it from Render → open the API service (`tailorweddings2-api-staging` / `tailorweddings2-api-prod` or whatever you renamed it to) → the URL is displayed at the top of the service page, right under the service name. |
 | `NEXT_PUBLIC_NODE_ENV` | Yes | `staging`, or `production` — matches the environment name. |
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Yes | Same Clerk publishable key as the server (`pk_test_...` or `pk_live_...`). |
 | `CLERK_SECRET_KEY` | Yes | Same Clerk secret key as the server (`sk_test_...` or `sk_live_...`). |

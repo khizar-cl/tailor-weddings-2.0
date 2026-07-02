@@ -96,7 +96,7 @@ function Header() {
 	return (
 		<header className="flex h-16 items-center border-border border-b bg-card/60 px-6 backdrop-blur-md">
 			<span className="font-semibold text-foreground text-sm tracking-tight">
-				Genesis
+				Tailor Weddings
 			</span>
 		</header>
 	);
@@ -108,7 +108,7 @@ function Footer() {
 		<footer className="mt-auto border-border border-t px-4 pt-8 pb-10 text-muted-foreground">
 			<div className="page-wrap flex flex-col items-center justify-between gap-3 text-center sm:flex-row sm:text-left">
 				<p className="m-0 text-sm">
-					&copy; {year} Genesis. All rights reserved.
+					&copy; {year} Tailor Weddings. All rights reserved.
 				</p>
 				<p className="section-label m-0">Open · Fast · Yours</p>
 			</div>

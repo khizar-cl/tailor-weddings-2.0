@@ -18,7 +18,7 @@ Pick one of the two structures below. The rest of this doc assumes the shared op
 | Option | Apps to create | Trade-off |
 |---|---|---|
 | **Shared (recommended)** | One Clerk app total | Dev instance keys cover local + staging; production instance keys cover prod. Non-prod envs share users and config. |
-| **Per environment** | One Clerk app per deployed env (e.g. `genesis-staging`, `genesis-prod`) | Full isolation between envs. More to manage — only worth it once QA traffic grows. |
+| **Per environment** | One Clerk app per deployed env (e.g. `tailorweddings2-staging`, `tailorweddings2-prod`) | Full isolation between envs. More to manage — only worth it once QA traffic grows. |
 
 ---
 

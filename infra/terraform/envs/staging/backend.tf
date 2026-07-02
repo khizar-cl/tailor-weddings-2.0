@@ -1,9 +1,9 @@
 terraform {
   cloud {
-    organization = "project-genesis"
+    organization = "tailorweddings2"
 
     workspaces {
-      name = "genesis-staging"
+      name = "tailorweddings2-staging"
     }
   }
 }

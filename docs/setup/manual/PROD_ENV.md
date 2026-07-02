@@ -57,14 +57,14 @@ In GitHub → **Settings → Branches**, confirm branch protection is configured
 
 The production block is already defined in `render.yaml` but commented out. Uncomment the `production` environment section — this includes:
 - `production-secrets` - Environment variable group
-- `genesis-api-prod` — Express API (Docker)
-- `genesis-worker-prod` — BullMQ worker (uncomment only if you need scheduled and background tasks)
-- `genesis-redis-prod` — Redis cache
-- `genesis-postgres-prod` — PostgreSQL database
+- `tailorweddings2-api-prod` — Express API (Docker)
+- `tailorweddings2-worker-prod` — BullMQ worker (uncomment only if you need scheduled and background tasks)
+- `tailorweddings2-redis-prod` — Redis cache
+- `tailorweddings2-postgres-prod` — PostgreSQL database
 
 After uncommenting, commit and push to `develop`, then go to Render dashboard → **Blueprints** → your Blueprint → **Sync**.
 
-`genesis-api-prod`'s initial deploy will fail because secrets aren't set yet — this is expected. Don't wait for it (takes ~5 min); proceed to set secrets below. The worker might fail too if it's using env vars.
+`tailorweddings2-api-prod`'s initial deploy will fail because secrets aren't set yet — this is expected. Don't wait for it (takes ~5 min); proceed to set secrets below. The worker might fail too if it's using env vars.
 
 ### Set secrets
 
@@ -76,7 +76,7 @@ After setting the secrets, trigger a **manual redeploy** on the API (and on the 
 
 Migrations do **not** run during the Render deploy — they run via GitHub Actions on merges to `main`. Since this is a fresh production database with no schema yet, run them manually once:
 
-Get the **External Database URL** from Render → `genesis-postgres-prod` → **Connections** → **External Database URL**. Always append `?sslmode=require`.
+Get the **External Database URL** from Render → `tailorweddings2-postgres-prod` → **Connections** → **External Database URL**. Always append `?sslmode=require`.
 
 ```bash
 cd apps/server && DATABASE_URL="<render-external-db-url>?sslmode=require" pnpm db:migrate
@@ -94,10 +94,10 @@ After this initial run, subsequent deploys via PR merges will run migrations aut
 
 Wait until all Render services (API, worker, Postgres, Redis) show **Live** in the dashboard — first deploys can take 5–10 minutes. Then hit the health endpoint.
 
-Get your API URL from Render → `genesis-api-prod` (or whatever you renamed it to) → it's displayed at the top of the service page, right under the service name. Append `/health` to that URL and use it in place of the example below if yours differs.
+Get your API URL from Render → `tailorweddings2-api-prod` (or whatever you renamed it to) → it's displayed at the top of the service page, right under the service name. Append `/health` to that URL and use it in place of the example below if yours differs.
 
 ```bash
-curl https://genesis-api-prod.onrender.com/health
+curl https://tailorweddings2-api-prod.onrender.com/health
 ```
 
 It should return a health check response.
@@ -122,7 +122,7 @@ Production might be associated with existing env variables. If that's the case, 
 
 For production:
 
-- `NEXT_PUBLIC_SERVER_URL` = `https://genesis-api-prod.onrender.com` (get your actual URL from Render → `genesis-api-prod` → displayed at the top of the service page, right under the service name)
+- `NEXT_PUBLIC_SERVER_URL` = `https://tailorweddings2-api-prod.onrender.com` (get your actual URL from Render → `tailorweddings2-api-prod` → displayed at the top of the service page, right under the service name)
 - `NEXT_PUBLIC_NODE_ENV` = `production`
 - `DEPLOY_URL` can be added after Step 4 (domain assignment).
 
@@ -146,7 +146,7 @@ The Production environment already has a domain assigned automatically (e.g. `yo
 Once the Vercel domain is confirmed, update `CORS_ORIGIN` on the Render env var group:
 - Render Dashboard → **Environment Groups** → `production-secrets` → set `CORS_ORIGIN` to the Vercel production domain (must include `https://` and no trailing slash)
 
-Then trigger a **manual redeploy** on the Render API so it picks up the new value: Render → `genesis-api-prod` → **Manual Deploy** → **Deploy latest commit**.
+Then trigger a **manual redeploy** on the Render API so it picks up the new value: Render → `tailorweddings2-api-prod` → **Manual Deploy** → **Deploy latest commit**.
 
 ### Verify end-to-end
 
@@ -156,7 +156,7 @@ Once the redeploy shows **Live**, sign in on the Vercel production URL via Clerk
 
 ## Step 4 — GitHub Environment
 
-Go to GitHub repo → **Settings → Environments → New environment** → name it `production`. Add the secrets listed in [`ENV_VARS.md`](ENV_VARS.md) under **GitHub — Environment Secrets**, using the `genesis-*-prod` Render services and the Vercel production deploy hook created in Step 2.
+Go to GitHub repo → **Settings → Environments → New environment** → name it `production`. Add the secrets listed in [`ENV_VARS.md`](ENV_VARS.md) under **GitHub — Environment Secrets**, using the `tailorweddings2-*-prod` Render services and the Vercel production deploy hook created in Step 2.
 
 The `deploy.yml` workflow already handles `main` — no changes needed.
 

@@ -43,7 +43,7 @@ pnpm infra:test:down    # Stop test database
 ```
 
 This starts a PostgreSQL instance on **port 5434** (separate from the dev DB on 5433) with:
-- **Database:** `genesis_test`
+- **Database:** `tailorweddings2_test`
 - **User:** `postgres`
 - **Password:** `postgres`
 
@@ -60,7 +60,7 @@ docker compose -f docker-compose.test.yml ps
 Your `apps/server/.env` needs `TEST_DATABASE_URL` pointing to the test database. If you copied from `.env.example`, it should already be there:
 
 ```
-TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5434/genesis_test
+TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5434/tailorweddings2_test
 ```
 
 ---

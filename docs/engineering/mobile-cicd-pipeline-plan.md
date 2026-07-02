@@ -103,7 +103,7 @@ Expected: PASS (exits 0) — confirms the script name is correct and mobile type
 
 ```bash
 git add .github/workflows/mobile-tests.yml
-git commit -m "ci(genesis-171): add mobile-tests workflow for PR checks"
+git commit -m "ci(tailorweddings2-171): add mobile-tests workflow for PR checks"
 ```
 
 ---
@@ -160,7 +160,7 @@ Expected: prints `mobile included: false`.
 
 ```bash
 git add .github/workflows/lint.yml .github/workflows/build.yml
-git commit -m "ci(genesis-171): scope mobile out of repo-wide lint and build"
+git commit -m "ci(tailorweddings2-171): scope mobile out of repo-wide lint and build"
 ```
 
 ---
@@ -211,7 +211,7 @@ Expected: exits 0; file is tab-indented.
 
 ```bash
 git add apps/mobile/eas.json
-git commit -m "build(genesis-171): add eas e2e build profile (ios sim + android apk)"
+git commit -m "build(tailorweddings2-171): add eas e2e build profile (ios sim + android apk)"
 ```
 
 ---
@@ -264,7 +264,7 @@ Expected: prints a line count (file readable).
 
 ```bash
 git add docs/engineering/mobile-cicd-pipeline-options.md
-git commit -m "docs(genesis-171): document EAS bootstrap prerequisites"
+git commit -m "docs(tailorweddings2-171): document EAS bootstrap prerequisites"
 ```
 
 ---
@@ -365,7 +365,7 @@ Expected: the path prints (flows dir is real, so `flow_path` resolves).
 
 ```bash
 git add apps/mobile/.eas/workflows/e2e.yml
-git commit -m "ci(genesis-171): add eas e2e workflow with fingerprint reuse + maestro"
+git commit -m "ci(tailorweddings2-171): add eas e2e workflow with fingerprint reuse + maestro"
 ```
 
 ---
@@ -445,7 +445,7 @@ Expected: exits 0 (no syntax error).
 
 ```bash
 git add .github/workflows/mobile-e2e.yml
-git commit -m "ci(genesis-171): add per-PR mobile e2e trigger (non-blocking)"
+git commit -m "ci(tailorweddings2-171): add per-PR mobile e2e trigger (non-blocking)"
 ```
 
 ---
@@ -496,7 +496,7 @@ Expected: prints a line count.
 
 ```bash
 git add docs/setup/integrations/RUNNING_TESTS.md
-git commit -m "docs(genesis-171): document mobile e2e in CI"
+git commit -m "docs(tailorweddings2-171): document mobile e2e in CI"
 ```
 
 ---
@@ -527,7 +527,7 @@ Expected: prints a count greater than before (rows added).
 
 ```bash
 git add CLAUDE.md
-git commit -m "docs(genesis-171): list mobile workflows in CI requirements table"
+git commit -m "docs(tailorweddings2-171): list mobile workflows in CI requirements table"
 ```
 
 ---

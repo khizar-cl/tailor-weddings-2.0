@@ -21,7 +21,7 @@ test.describe("Portal (unauthenticated)", () => {
 	test("redirects to sign-in when not authenticated", async ({ page }) => {
 		await page.goto("/portal");
 		await expect(
-			page.getByRole("heading", { name: "Sign in to Genesis" }),
+			page.getByRole("heading", { name: "Sign in to Tailor Weddings" }),
 		).toBeVisible();
 	});
 
@@ -35,7 +35,7 @@ test.describe("Portal (unauthenticated)", () => {
 		for (const route of protectedRoutes) {
 			await page.goto(route);
 			await expect(
-				page.getByRole("heading", { name: "Sign in to Genesis" }),
+				page.getByRole("heading", { name: "Sign in to Tailor Weddings" }),
 			).toBeVisible();
 		}
 	});

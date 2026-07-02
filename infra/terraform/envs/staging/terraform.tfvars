@@ -1,4 +1,4 @@
-project_name     = "genesis"
+project_name     = "tailorweddings2"
 environment      = "staging"
 region           = "oregon"
 postgres_plan    = "free"
