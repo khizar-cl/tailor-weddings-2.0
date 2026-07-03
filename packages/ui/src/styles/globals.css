@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -11,53 +11,57 @@
 
 :root {
 	/* Core */
-	--background: #f9f8fc;
-	--foreground: #302d50;
+	--background: #f8f1ec;
+	--foreground: #2a1a1e;
 
 	/* Surfaces */
-	--card: #fcfcfd;
+	--card: #fffaf6;
 	--card-foreground: var(--foreground);
 	--popover: var(--card);
 	--popover-foreground: var(--foreground);
 
 	/* Brand */
-	--primary: #2c429d;
-	--primary-foreground: #ffffff;
-	--secondary: #e6e3f0;
+	--primary: #7a2437;
+	--primary-foreground: #fbf1ee;
+	--secondary: #f0e2e0;
 	--secondary-foreground: var(--foreground);
-	--muted: #f0f0f2;
-	--muted-foreground: #4a4968;
-	--accent: #eeedf4;
+	--muted: #efe7df;
+	--muted-foreground: #6f5a56;
+	--accent: #f3e7e4;
 	--accent-foreground: var(--foreground);
 
+	/* Gold accent (sharp brand highlight) */
+	--gold: #b8893f;
+	--gold-foreground: #2a1a1e;
+
 	/* Borders & rings */
-	--border: rgba(26, 26, 46, 0.14);
+	--border: rgba(42, 26, 30, 0.14);
 	--input: var(--border);
-	--ring: #8996c5;
+	--ring: #a85266;
 	--radius: 0.625rem;
 
 	/* Overlay (modal/drawer backdrops) */
-	--overlay: rgba(0, 0, 0, 0.4);
+	--overlay: rgba(30, 18, 20, 0.45);
 
 	/* State */
-	--destructive: #f9ebec;
-	--destructive-foreground: #b34457;
-	--success: #ebf6ed;
-	--success-foreground: #42774f;
-	--warning: #fef6eb;
-	--warning-foreground: #c98e3a;
-	--info: #ebf2fa;
+	--destructive: #fce9e6;
+	--destructive-foreground: #c8371f;
+	--success: #e9f3ea;
+	--success-foreground: #3a7a52;
+	--warning: #fbf0e0;
+	--warning-foreground: #b3762a;
+	--info: #eaf0f6;
 	--info-foreground: #3f6ca3;
 
 	/* Chart */
-	--chart-1: #d65a6f;
-	--chart-2: #5da86e;
-	--chart-3: #4a85c2;
-	--chart-4: #e6a825;
-	--chart-5: #2c429d;
+	--chart-1: #7a2437;
+	--chart-2: #b8893f;
+	--chart-3: #c17a8a;
+	--chart-4: #5e8a72;
+	--chart-5: #6a8caf;
 
 	/* Sidebar */
-	--sidebar: #f9f8fc;
+	--sidebar: #f2e9e0;
 	--sidebar-foreground: var(--foreground);
 	--sidebar-primary: var(--primary);
 	--sidebar-primary-foreground: var(--primary-foreground);
@@ -69,27 +73,31 @@
 
 .dark {
 	/* Core */
-	--background: #15141e;
-	--foreground: #e8e6ef;
+	--background: #1a1113;
+	--foreground: #f0e6e2;
 
 	/* Surfaces */
-	--card: #1c1b23;
+	--card: #221619;
 	--card-foreground: var(--foreground);
 	--popover: var(--card);
 	--popover-foreground: var(--foreground);
 
 	/* Brand */
-	--primary: #cbb8ff;
+	--primary: #e698a6;
 	--primary-foreground: var(--background);
-	--secondary: #27262d;
+	--secondary: #2c1f22;
 	--secondary-foreground: var(--foreground);
-	--muted: #202022;
-	--muted-foreground: #a8a8a8;
-	--accent: #26252d;
+	--muted: #261a1d;
+	--muted-foreground: #b3a09c;
+	--accent: #2c1f22;
 	--accent-foreground: var(--foreground);
 
+	/* Gold accent (sharp brand highlight) */
+	--gold: #d8ad5f;
+	--gold-foreground: var(--background);
+
 	/* Borders & rings */
-	--border: rgba(180, 180, 200, 0.16);
+	--border: rgba(210, 180, 180, 0.16);
 	--input: var(--border);
 	--ring: var(--primary);
 
@@ -97,24 +105,24 @@
 	--overlay: rgba(0, 0, 0, 0.6);
 
 	/* State */
-	--destructive: #2e1525;
-	--destructive-foreground: #d65a6f;
-	--success: #1a2e20;
+	--destructive: #2f1614;
+	--destructive-foreground: #ec7a63;
+	--success: #16271c;
 	--success-foreground: #5da86e;
-	--warning: #2e2515;
-	--warning-foreground: #e6b25c;
-	--info: #1a2035;
-	--info-foreground: #4a85c2;
+	--warning: #2c2113;
+	--warning-foreground: #e0a94e;
+	--info: #161f2e;
+	--info-foreground: #6a9bd0;
 
 	/* Chart */
-	--chart-1: #7b8de0;
-	--chart-2: #5da86e;
-	--chart-3: #d65a6f;
-	--chart-4: #e6b25c;
-	--chart-5: #5a92c4;
+	--chart-1: #e0899a;
+	--chart-2: #d8ad5f;
+	--chart-3: #cf8fa0;
+	--chart-4: #79b394;
+	--chart-5: #8bacce;
 
 	/* Sidebar */
-	--sidebar: #131219;
+	--sidebar: #160e10;
 	--sidebar-foreground: var(--foreground);
 	--sidebar-primary: var(--primary);
 	--sidebar-primary-foreground: var(--background);
@@ -126,7 +134,8 @@
 
 @theme inline {
 	/* Font */
-	--font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+	--font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+	--font-serif: "Fraunces", Georgia, serif;
 
 	/* Core */
 	--color-background: var(--background);
@@ -147,6 +156,10 @@
 	--color-muted-foreground: var(--muted-foreground);
 	--color-accent: var(--accent);
 	--color-accent-foreground: var(--accent-foreground);
+
+	/* Gold accent */
+	--color-gold: var(--gold);
+	--color-gold-foreground: var(--gold-foreground);
 
 	/* Borders & rings */
 	--color-border: var(--border);
@@ -227,10 +240,6 @@ a {
 		transform 180ms ease;
 }
 
-.rise-in {
-	animation: rise-in 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
 @keyframes rise-in {
 	from {
 		opacity: 0;
@@ -240,6 +249,30 @@ a {
 		opacity: 1;
 		transform: translateY(0);
 	}
+}
+
+/* Layered brand atmosphere for hero/section backdrops (opt-in) */
+.brand-backdrop {
+	background-color: var(--background);
+	background-image:
+		radial-gradient(
+			60% 55% at 12% 0%,
+			color-mix(in oklab, var(--primary) 12%, transparent),
+			transparent 70%
+		),
+		radial-gradient(
+			52% 48% at 100% 8%,
+			color-mix(in oklab, var(--gold) 14%, transparent),
+			transparent 65%
+		);
+}
+
+/* Champagne-gold hairline divider */
+.gold-rule {
+	height: 1px;
+	border: 0;
+	background: linear-gradient(90deg, transparent, var(--gold), transparent);
+	opacity: 0.65;
 }
 
 @layer components {
@@ -262,5 +295,34 @@ a {
 	[type="submit"],
 	[type="reset"] {
 		cursor: pointer;
+	}
+}
+
+/* Motion is opt-in: only animate when the user hasn't asked to reduce motion.
+   Kept after @layer base so the `.stagger > *` selector doesn't descend in
+   specificity from the base-layer universal rule. */
+@media (prefers-reduced-motion: no-preference) {
+	.rise-in {
+		animation: rise-in 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
+	}
+
+	/* Orchestrated page-load reveal: wrap a group, children rise in sequence */
+	.stagger > * {
+		animation: rise-in 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
+	}
+	.stagger > *:nth-child(2) {
+		animation-delay: 80ms;
+	}
+	.stagger > *:nth-child(3) {
+		animation-delay: 160ms;
+	}
+	.stagger > *:nth-child(4) {
+		animation-delay: 240ms;
+	}
+	.stagger > *:nth-child(5) {
+		animation-delay: 320ms;
+	}
+	.stagger > *:nth-child(6) {
+		animation-delay: 400ms;
 	}
 }
