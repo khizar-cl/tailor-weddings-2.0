@@ -64,6 +64,13 @@
 			"when": 1778585128181,
 			"tag": "0008_fk_to_user_id",
 			"breakpoints": true
+		},
+		{
+			"idx": 9,
+			"version": "7",
+			"when": 1783062131649,
+			"tag": "0009_add_tailor_weddings_schema",
+			"breakpoints": true
 		}
 	]
 }
