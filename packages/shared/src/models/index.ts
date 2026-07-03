@@ -4,5 +4,8 @@ export * from "./email.types";
 export * from "./email-template.types";
 export * from "./health.types";
 export * from "./password";
+export * from "./review.types";
 export * from "./storage.types";
 export * from "./user.types";
+export * from "./vendor.types";
+export * from "./wedding.types";
