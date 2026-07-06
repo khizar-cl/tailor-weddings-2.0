@@ -1,16 +1,42 @@
-import type { UserRole } from "@repo/shared";
+import type { ActiveMode, Capabilities, UserRole } from "@repo/shared";
+import { Roles } from "@repo/shared";
 
 export interface RouteAccessConfig {
 	/** Roles allowed on this route. Absent => any authenticated user. */
 	allowedRoles?: UserRole[];
+	/** Capability required to enter this route (admins bypass). */
+	requiredCapability?: ActiveMode;
+}
+
+export interface RouteAccessContext {
+	role: UserRole | null | undefined;
+	capabilities: Capabilities;
 }
 
 /**
  * Routes inside /portal/* default to "any authenticated user". List a route
- * here only when it should be restricted to specific roles. Dynamic segments
- * use `:paramName` syntax (e.g. /portal/users/:id).
+ * here only to restrict it. Dynamic segments use `:paramName` syntax.
+ *
+ * `requiredCapability` also marks which side of the app a route belongs to —
+ * the onboarding guard reads it to decide which onboarding flow to enforce.
  */
-export const routeAccessConfig: Record<string, RouteAccessConfig> = {};
+export const routeAccessConfig: Record<string, RouteAccessConfig> = {
+	// Couple area.
+	"/portal": { requiredCapability: "couple" },
+	"/portal/onboarding": { requiredCapability: "couple" },
+	// Vendor area (prefix-matches its sub-routes, e.g. /portal/vendor/onboarding).
+	"/portal/vendor": { requiredCapability: "vendor" },
+	// Shared account surfaces — reachable in either mode.
+	"/portal/profile": {},
+	"/portal/about": {},
+	// Platform/admin demo surfaces — hidden from couples and vendors.
+	"/portal/users": { allowedRoles: [Roles.ADMIN] },
+	"/portal/email": { allowedRoles: [Roles.ADMIN] },
+	"/portal/storage": { allowedRoles: [Roles.ADMIN] },
+	"/portal/colors": { allowedRoles: [Roles.ADMIN] },
+	"/portal/typography": { allowedRoles: [Roles.ADMIN] },
+	"/portal/components": { allowedRoles: [Roles.ADMIN] },
+};
 
 function stripQueryAndHash(pathname: string): string {
 	return pathname.split(/[?#]/)[0] ?? pathname;
@@ -30,7 +56,7 @@ function stripTrailingSlash(pathname: string): string {
  * - Prefix match: a pattern with N segments matches a longer path of N+ segments
  *   when each pattern segment matches the corresponding leading path segment.
  *
- * Prefix matching means `/portal/admin` matches `/portal/admin/users/42`,
+ * Prefix matching means `/portal/vendor` matches `/portal/vendor/onboarding`,
  * which closes the silent-fail-open hole where forgetting to enumerate every
  * sub-path would default-allow children of a configured-restricted parent.
  */
@@ -70,24 +96,40 @@ export function findMatchingRoute(pathname: string): string | undefined {
 	return undefined;
 }
 
+/** The capability a route belongs to (couple/vendor), or undefined if shared. */
+export function routeCapability(pathname: string): ActiveMode | undefined {
+	const matched = findMatchingRoute(pathname);
+	return matched ? routeAccessConfig[matched]?.requiredCapability : undefined;
+}
+
 /**
- * Returns true when:
- *   - the route isn't in the config (default-allow), OR
- *   - the route is in the config but `allowedRoles` is absent (default-allow), OR
- *   - the user's role is in the route's `allowedRoles` list.
- *
- * Returns false when the route is configured with allowedRoles and the user's
- * role isn't in it (or the user has no role).
+ * Returns false when the route is restricted and the user lacks the required
+ * role or capability; true otherwise. Admins bypass capability gates (but must
+ * still satisfy an explicit `allowedRoles` list).
  */
 export function isUserAuthorizedForRoute(
 	pathname: string,
-	userRole: UserRole | null | undefined,
+	ctx: RouteAccessContext,
 ): boolean {
 	const matched = findMatchingRoute(pathname);
 	if (!matched) return true;
-	const allowed = routeAccessConfig[matched]?.allowedRoles;
-	if (!allowed) return true;
-	return (
-		userRole !== null && userRole !== undefined && allowed.includes(userRole)
-	);
+	const config = routeAccessConfig[matched];
+	if (!config) return true;
+
+	const { role, capabilities } = ctx;
+
+	if (config.allowedRoles) {
+		if (role == null || !config.allowedRoles.includes(role)) return false;
+	}
+
+	if (config.requiredCapability && role !== Roles.ADMIN) {
+		if (config.requiredCapability === "vendor" && !capabilities.isVendor) {
+			return false;
+		}
+		if (config.requiredCapability === "couple" && !capabilities.isCouple) {
+			return false;
+		}
+	}
+
+	return true;
 }

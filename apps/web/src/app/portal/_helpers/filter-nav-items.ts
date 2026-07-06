@@ -1,5 +1,7 @@
-import type { UserRole } from "@repo/shared";
-import { isUserAuthorizedForRoute } from "../../../config/route-access";
+import {
+	isUserAuthorizedForRoute,
+	type RouteAccessContext,
+} from "../../../config/route-access";
 
 interface NavItemLike {
 	url: string;
@@ -8,19 +10,19 @@ interface NavItemLike {
 
 /**
  * Returns a filtered copy of `items` where every entry (and recursively each
- * nested entry's `items[]`) passes `isUserAuthorizedForRoute(item.url, role)`.
+ * nested entry's `items[]`) passes `isUserAuthorizedForRoute(item.url, ctx)`.
  *
  * Group headers (URL `"#"`) are kept only if at least one descendant is
  * visible after recursion — otherwise they're dropped to avoid empty groups.
  */
 export function filterNavItemsByRole<T extends NavItemLike>(
 	items: T[],
-	role: UserRole | null | undefined,
+	ctx: RouteAccessContext,
 ): T[] {
 	const result: T[] = [];
 	for (const item of items) {
 		const filteredChildren = item.items
-			? filterNavItemsByRole(item.items, role)
+			? filterNavItemsByRole(item.items, ctx)
 			: undefined;
 
 		const isGroupHeader = item.url === "#";
@@ -32,7 +34,7 @@ export function filterNavItemsByRole<T extends NavItemLike>(
 			continue;
 		}
 
-		if (!isUserAuthorizedForRoute(item.url, role)) continue;
+		if (!isUserAuthorizedForRoute(item.url, ctx)) continue;
 		result.push({
 			...item,
 			...(filteredChildren ? { items: filteredChildren } : {}),
