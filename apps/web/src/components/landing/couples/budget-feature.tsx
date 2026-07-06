@@ -1,4 +1,5 @@
 import { ClipboardListIcon, UsersRoundIcon, WalletIcon } from "lucide-react";
+import budgetPlanner from "../../../assets/images/landing/budget-planner.jpg";
 import { Container, LinkCta, Media } from "../primitives";
 import { Reveal } from "../reveal";
 
@@ -44,12 +45,9 @@ export function BudgetFeature() {
 				</Reveal>
 				<Reveal delay={120}>
 					<Media
-						keywords="wedding,planner"
-						lock={81}
+						src={budgetPlanner}
 						alt="A wedding planning notebook with a checklist and budget"
 						ratioClassName="aspect-[5/4]"
-						width={1100}
-						height={880}
 						zoom
 					/>
 				</Reveal>

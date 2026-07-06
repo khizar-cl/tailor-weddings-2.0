@@ -1,36 +1,36 @@
+import teamCatering from "../../../assets/images/landing/team-catering.jpg";
+import teamFlorals from "../../../assets/images/landing/team-florals.jpg";
+import teamMusic from "../../../assets/images/landing/team-music.jpg";
+import teamPhotographer from "../../../assets/images/landing/team-photographer.jpg";
+import teamVenue from "../../../assets/images/landing/team-venue.jpg";
 import { Container, Eyebrow, Media } from "../primitives";
 import { Reveal } from "../reveal";
 
 const team = [
 	{
 		label: "Photography",
-		keywords: "wedding,photographer",
-		lock: 31,
+		src: teamPhotographer,
 		alt: "A photographer capturing a couple during their wedding",
 		big: true,
 	},
 	{
 		label: "Florals",
-		keywords: "wedding,bouquet,flowers",
-		lock: 21,
+		src: teamCatering,
 		alt: "A wedding bouquet of fresh flowers",
 	},
 	{
 		label: "Catering",
-		keywords: "catering,food",
-		lock: 33,
+		src: teamFlorals,
 		alt: "Plated food prepared for a wedding reception",
 	},
 	{
 		label: "Venues",
-		keywords: "wedding,venue",
-		lock: 24,
+		src: teamVenue,
 		alt: "A decorated wedding venue set for a celebration",
 	},
 	{
 		label: "Music",
-		keywords: "wedding,dancing",
-		lock: 34,
+		src: teamMusic,
 		alt: "Guests dancing at a wedding reception",
 	},
 ];
@@ -54,13 +54,7 @@ export function TeamBento() {
 									: "flex flex-col gap-2"
 							}
 						>
-							<Media
-								keywords={tile.keywords}
-								lock={tile.lock}
-								alt={tile.alt}
-								className="flex-1"
-								zoom
-							/>
+							<Media src={tile.src} alt={tile.alt} className="flex-1" zoom />
 							<p className="font-semibold text-sm">{tile.label}</p>
 						</Reveal>
 					))}

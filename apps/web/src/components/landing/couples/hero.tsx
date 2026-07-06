@@ -1,3 +1,4 @@
+import heroCouple from "../../../assets/images/landing/hero-couple.jpg";
 import { Container, Eyebrow, LandingButton, Media } from "../primitives";
 
 const signUp = { pathname: "/sign-up/" as const, query: { intent: "couple" } };
@@ -27,12 +28,9 @@ export function Hero() {
 				</div>
 				<div className="md:col-span-5">
 					<Media
-						keywords="wedding,couple"
-						lock={11}
+						src={heroCouple}
 						alt="A couple embracing on their wedding day"
 						ratioClassName="aspect-[4/5]"
-						width={900}
-						height={1125}
 						priority
 						zoom
 					/>

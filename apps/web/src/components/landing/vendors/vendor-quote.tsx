@@ -1,4 +1,5 @@
 import { QuoteIcon } from "lucide-react";
+import vendorQuote from "../../../assets/images/landing/vendor-quote.jpg";
 import { Container, Media } from "../primitives";
 import { Reveal } from "../reveal";
 
@@ -23,12 +24,9 @@ export function VendorQuote() {
 				</Reveal>
 				<Reveal delay={120} className="md:col-span-4">
 					<Media
-						keywords="wedding,photographer"
-						lock={161}
+						src={vendorQuote}
 						alt="A wedding photographer photographing a couple"
 						ratioClassName="aspect-[4/5]"
-						width={800}
-						height={1000}
 					/>
 				</Reveal>
 			</Container>

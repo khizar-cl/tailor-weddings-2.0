@@ -1,4 +1,5 @@
 import { ImageIcon, StarIcon, TagIcon } from "lucide-react";
+import peerReviewVenue from "../../../assets/images/landing/peer-review-venue.jpg";
 import { Container, LinkCta, Media } from "../primitives";
 import { Reveal } from "../reveal";
 
@@ -41,12 +42,9 @@ export function PeerReviewFeature() {
 				</Reveal>
 				<Reveal delay={120}>
 					<Media
-						keywords="wedding,venue"
-						lock={124}
+						src={peerReviewVenue}
 						alt="A wedding venue set up by a team of vendors"
 						ratioClassName="aspect-[5/4]"
-						width={1100}
-						height={880}
 						zoom
 					/>
 				</Reveal>

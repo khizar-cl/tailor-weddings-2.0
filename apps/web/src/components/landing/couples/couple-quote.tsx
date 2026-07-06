@@ -1,4 +1,5 @@
 import { CalendarHeartIcon } from "lucide-react";
+import coupleQuote from "../../../assets/images/landing/couple-quote.jpg";
 import { Container, Media } from "../primitives";
 import { Reveal } from "../reveal";
 
@@ -23,12 +24,9 @@ export function CoupleQuote() {
 				</Reveal>
 				<Reveal delay={120} className="md:col-span-4">
 					<Media
-						keywords="wedding,portrait"
-						lock={71}
+						src={coupleQuote}
 						alt="A married couple portrait taken by their photographer"
 						ratioClassName="aspect-[4/5]"
-						width={800}
-						height={1000}
 					/>
 				</Reveal>
 			</Container>
