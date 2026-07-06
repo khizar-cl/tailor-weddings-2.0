@@ -1,8 +1,8 @@
 import { implement } from "@orpc/server";
 import { appContract } from "@repo/orpc-contracts";
-import type { UserPreferences, UserSchema } from "@repo/shared";
+import type { MeSchema, UserPreferences } from "@repo/shared";
 
-export const TEST_USER: UserSchema = {
+export const TEST_USER: MeSchema = {
 	uuid: "550e8400-e29b-41d4-a716-446655440000",
 	email: "test@example.com",
 	name: "Test User",
@@ -13,6 +13,9 @@ export const TEST_USER: UserSchema = {
 	createdAt: new Date("2025-01-01T00:00:00.000Z"),
 	updatedBy: null,
 	updatedAt: new Date("2025-01-01T00:00:00.000Z"),
+	capabilities: { isCouple: true, isVendor: false },
+	activeMode: "couple",
+	onboarding: { couple: true, vendor: false },
 };
 
 let userPreferences: UserPreferences = { ...TEST_USER.preferences };

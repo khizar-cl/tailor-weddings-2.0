@@ -24,6 +24,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 					email: query.data.email,
 					role: query.data.role,
 					imageUrl: query.data.imageUrl,
+					capabilities: query.data.capabilities,
+					activeMode: query.data.activeMode,
+					onboarding: query.data.onboarding,
 				}
 			: null;
 
