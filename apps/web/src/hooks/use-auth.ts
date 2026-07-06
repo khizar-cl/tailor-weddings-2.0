@@ -1,6 +1,6 @@
 "use client";
 
-import type { UserRole } from "@repo/shared";
+import type { ActiveMode, Capabilities, UserRole } from "@repo/shared";
 import { createContext, useContext } from "react";
 
 export interface AuthContextValue {
@@ -18,6 +18,9 @@ export interface AuthUser {
 	email: string;
 	role: UserRole;
 	imageUrl: string | null;
+	capabilities: Capabilities;
+	activeMode: ActiveMode;
+	onboarding: { couple: boolean; vendor: boolean };
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null);

@@ -1,15 +1,24 @@
+import { Roles } from "@repo/shared";
+import { requireRole } from "../../orpc/middleware";
 import { protectedProcedure } from "../../orpc/procedures";
 import {
-	getUserById,
+	getMe,
 	getUserPreferences,
 	listUsers,
+	setActiveMode,
 	updateUserPreferences,
 } from "./user.service";
 
 export const userController = {
 	me: protectedProcedure.user.me.handler(async ({ context }) => {
-		return getUserById(context.dbUser.id);
+		return getMe(context.dbUser.id);
 	}),
+
+	setActiveMode: protectedProcedure.user.setActiveMode.handler(
+		async ({ context, input }) => {
+			return setActiveMode(context.dbUser.id, input.mode);
+		},
+	),
 
 	getPreferences: protectedProcedure.user.getPreferences.handler(
 		async ({ context }) => {
@@ -23,7 +32,9 @@ export const userController = {
 		},
 	),
 
-	list: protectedProcedure.user.list.handler(async () => {
-		return listUsers();
-	}),
+	list: protectedProcedure.user.list
+		.use(requireRole(Roles.ADMIN))
+		.handler(async () => {
+			return listUsers();
+		}),
 };
