@@ -127,4 +127,29 @@ describe("onboarding.submitVendor", () => {
 		});
 		expect(res.status).toBe(404);
 	});
+
+	it("updates the existing draft on re-run instead of creating a duplicate", async () => {
+		const categoryUuid = await seedCategory();
+
+		await rpc("/rpc/onboarding/submitVendor", {
+			businessName: "Vance Studio",
+			categoryUuid,
+			region: "Texas",
+		}).expect(200);
+
+		await rpc("/rpc/onboarding/submitVendor", {
+			businessName: "Vance Photography",
+			categoryUuid,
+			region: "California",
+			city: "Los Angeles",
+			tagline: "Timeless wedding photography",
+		}).expect(200);
+
+		const profiles = await db.query.vendorProfiles.findMany();
+		expect(profiles).toHaveLength(1);
+		expect(profiles[0]?.businessName).toBe("Vance Photography");
+		expect(profiles[0]?.region).toBe("California");
+		expect(profiles[0]?.city).toBe("Los Angeles");
+		expect(profiles[0]?.tagline).toBe("Timeless wedding photography");
+	});
 });
