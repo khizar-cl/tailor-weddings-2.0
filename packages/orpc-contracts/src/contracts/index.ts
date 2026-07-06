@@ -1,10 +1,12 @@
 import { authContract } from "./auth.contract";
+import { categoryContract } from "./category.contract";
 import { emailContract } from "./email.contract";
 import { storageContract } from "./storage.contract";
 import { userContract } from "./user.contract";
 
 export const appContract = {
 	auth: authContract,
+	category: categoryContract,
 	email: emailContract,
 	storage: storageContract,
 	user: userContract,

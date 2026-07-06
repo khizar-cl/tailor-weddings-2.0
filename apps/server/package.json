@@ -9,6 +9,7 @@
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
 		"db:push": "drizzle-kit push",
+		"db:seed": "tsx src/db/seed/run.ts",
 		"db:studio": "drizzle-kit studio",
 		"test": "vitest run --config vitest.unit.config.ts && vitest run --config vitest.integration.config.ts",
 		"test:unit": "vitest run --config vitest.unit.config.ts",
