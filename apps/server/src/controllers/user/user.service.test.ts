@@ -437,6 +437,24 @@ describe("resolveActiveMode", () => {
 		);
 	});
 
+	it("honors a stored couple mode when the capability exists", () => {
+		expect(
+			resolveActiveMode(
+				{ activeMode: "couple" },
+				{ isCouple: true, isVendor: true },
+			),
+		).toBe("couple");
+	});
+
+	it("keeps the stored mode when the user owns neither capability yet", () => {
+		expect(
+			resolveActiveMode(
+				{ activeMode: "vendor" },
+				{ isCouple: false, isVendor: false },
+			),
+		).toBe("vendor");
+	});
+
 	it("defaults to couple when there is no capability yet", () => {
 		expect(resolveActiveMode({}, { isCouple: false, isVendor: false })).toBe(
 			"couple",
