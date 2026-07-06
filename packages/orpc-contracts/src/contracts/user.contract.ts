@@ -1,8 +1,14 @@
 import { oc } from "@orpc/contract";
-import { UserList, UserPreferences, UserSchema } from "@repo/shared";
+import {
+	MeSchema,
+	SetActiveModeInput,
+	UserList,
+	UserPreferences,
+} from "@repo/shared";
 
 export const userContract = {
-	me: oc.output(UserSchema),
+	me: oc.output(MeSchema),
+	setActiveMode: oc.input(SetActiveModeInput).output(MeSchema),
 	getPreferences: oc.output(UserPreferences),
 	setPreferences: oc.input(UserPreferences).output(UserPreferences),
 	list: oc.output(UserList),
