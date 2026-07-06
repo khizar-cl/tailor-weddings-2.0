@@ -4,6 +4,7 @@ export * from "./category.types";
 export * from "./email.types";
 export * from "./email-template.types";
 export * from "./health.types";
+export * from "./onboarding.types";
 export * from "./password";
 export * from "./review.types";
 export * from "./storage.types";
