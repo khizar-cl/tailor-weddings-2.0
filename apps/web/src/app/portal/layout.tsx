@@ -3,13 +3,18 @@
 import { useClerk, useAuth as useClerkAuth } from "@clerk/nextjs";
 import { Spinner } from "@repo/ui/components/spinner";
 import { useIsMobile } from "@repo/ui/hooks/use-mobile";
+import type { Route } from "next";
 import { redirect, usePathname } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { AppHeader } from "../../components/app-header";
 import { AppSidebar } from "../../components/app-sidebar";
-import { navigationItems } from "../../config/navigation-items";
-import { isUserAuthorizedForRoute } from "../../config/route-access";
-import { useAuth } from "../../hooks/use-auth";
+import { getNavigationItems } from "../../config/navigation-items";
+import {
+	isUserAuthorizedForRoute,
+	type RouteAccessContext,
+	routeCapability,
+} from "../../config/route-access";
+import { type AuthUser, useAuth } from "../../hooks/use-auth";
 import { AuthProvider } from "../../providers/auth-provider";
 import { BreadcrumbProvider } from "../../providers/breadcrumb-provider";
 import {
@@ -19,10 +24,27 @@ import {
 import { AnalyticsEvent, analytics } from "../../utils/analytics";
 import { filterNavItemsByRole } from "./_helpers/filter-nav-items";
 
-function PortalContent({ children }: { children: React.ReactNode }) {
+const ONBOARDING_ROUTES = ["/portal/onboarding", "/portal/vendor/onboarding"];
+
+/** Where a user belongs when their current route isn't reachable. */
+function homeForUser(user: AuthUser): Route {
+	if (user.activeMode === "vendor" && user.capabilities.isVendor) {
+		return "/portal/vendor";
+	}
+	if (user.capabilities.isCouple) return "/portal";
+	if (user.capabilities.isVendor) return "/portal/vendor";
+	return "/portal";
+}
+
+function PortalContent({
+	children,
+	user,
+}: {
+	children: React.ReactNode;
+	user: AuthUser;
+}) {
 	const { isPermanentlyExpanded, handleManualToggle } = useSidebarControl();
 	const [sidebarOpen, setSidebarOpen] = useState(false);
-	const { user } = useAuth();
 	const isMobile = useIsMobile();
 
 	const sidebarEffectivelyOpen = sidebarOpen || isPermanentlyExpanded;
@@ -52,9 +74,13 @@ function PortalContent({ children }: { children: React.ReactNode }) {
 		};
 	}, [showBackdrop]);
 
-	const visibleNav = useMemo(
-		() => filterNavItemsByRole(navigationItems, user?.role),
-		[user?.role],
+	const ctx: RouteAccessContext = {
+		role: user.role,
+		capabilities: user.capabilities,
+	};
+	const visibleNav = filterNavItemsByRole(
+		getNavigationItems(user.activeMode, user.role === "admin"),
+		ctx,
 	);
 
 	return (
@@ -149,13 +175,43 @@ function PortalRoleGuard({ children }: { children: React.ReactNode }) {
 
 	if (!user) return null;
 
-	if (!isUserAuthorizedForRoute(pathname, user.role)) {
-		// If /portal itself is restricted and the user isn't allowed, bouncing
-		// back to /portal would loop. Send them to marketing instead.
-		redirect(pathname === "/portal" ? "/" : "/portal");
+	const ctx: RouteAccessContext = {
+		role: user.role,
+		capabilities: user.capabilities,
+	};
+
+	if (!isUserAuthorizedForRoute(pathname, ctx)) {
+		const home = homeForUser(user);
+		// Avoid a redirect loop if the user isn't allowed on their own home.
+		redirect(pathname === home ? "/" : home);
 	}
 
-	return <PortalContent>{children}</PortalContent>;
+	// Enforce onboarding once per capability area. Admins bypass; shared pages
+	// (profile/about) and admin surfaces have no capability, so they're exempt.
+	if (user.role !== "admin") {
+		const areaCapability = routeCapability(pathname);
+		if (areaCapability) {
+			const completed =
+				areaCapability === "vendor"
+					? user.onboarding.vendor
+					: user.onboarding.couple;
+			const onboardingRoute: Route =
+				areaCapability === "vendor"
+					? "/portal/vendor/onboarding"
+					: "/portal/onboarding";
+			if (!completed && pathname !== onboardingRoute) {
+				redirect(onboardingRoute);
+			}
+		}
+	}
+
+	// Onboarding is a focused, full-screen flow — render it without the sidebar
+	// and header chrome (but still behind the auth + capability guards above).
+	if (ONBOARDING_ROUTES.includes(pathname)) {
+		return <>{children}</>;
+	}
+
+	return <PortalContent user={user}>{children}</PortalContent>;
 }
 
 export default function PortalLayout({
