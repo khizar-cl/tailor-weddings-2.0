@@ -2,6 +2,8 @@ import { ORPCError } from "@orpc/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockFindFirst = vi.fn();
+const mockWeddingFindFirst = vi.fn();
+const mockVendorAccountFindFirst = vi.fn();
 const mockUpdate = vi.fn();
 const mockSet = vi.fn(() => ({ where: mockWhere }));
 const mockWhere = vi.fn(() => ({ returning: mockReturning }));
@@ -18,6 +20,12 @@ vi.mock("../../db/db", () => ({
 			users: {
 				findFirst: (...args: unknown[]) => mockFindFirst(...args),
 			},
+			weddings: {
+				findFirst: (...args: unknown[]) => mockWeddingFindFirst(...args),
+			},
+			vendorAccounts: {
+				findFirst: (...args: unknown[]) => mockVendorAccountFindFirst(...args),
+			},
 		},
 		update: (...args: unknown[]) => {
 			mockUpdate(...args);
@@ -32,6 +40,12 @@ vi.mock("../../db/db", () => ({
 
 vi.mock("../../db", () => ({
 	users: { id: "id", clerkId: "clerk_id" },
+	weddings: {
+		id: "id",
+		ownerUserId: "owner_user_id",
+		partnerUserId: "partner_user_id",
+	},
+	vendorAccounts: { id: "id", userId: "user_id" },
 }));
 
 vi.mock("../../utils/logger", () => ({
@@ -53,13 +67,18 @@ vi.mock("@clerk/express", () => ({
 
 import {
 	ensureUserExists,
+	getCapabilities,
 	getUserById,
 	getUserPreferences,
+	resolveActiveMode,
 	updateUserPreferences,
 } from "./user.service";
 
 beforeEach(() => {
 	vi.clearAllMocks();
+	// Default: no backing rows exist, so provisioning inserts fresh.
+	mockWeddingFindFirst.mockResolvedValue(undefined);
+	mockVendorAccountFindFirst.mockResolvedValue(undefined);
 });
 
 describe("getUserById", () => {
@@ -242,19 +261,19 @@ describe("ensureUserExists", () => {
 		expect(mockGetUser).not.toHaveBeenCalled();
 	});
 
-	it("creates new user with role from Clerk unsafeMetadata", async () => {
+	it("creates new user from Clerk profile data", async () => {
 		mockFindFirst.mockResolvedValueOnce(undefined);
 		mockGetUser.mockResolvedValueOnce({
 			emailAddresses: [{ emailAddress: "new@example.com" }],
 			firstName: "New",
 			lastName: "User",
 			imageUrl: "https://img",
-			unsafeMetadata: { role: "admin" },
+			unsafeMetadata: {},
 		});
 		const inserted = {
 			id: 3,
 			uuid: "uuid-3",
-			role: "admin",
+			role: "member",
 			deletedAt: null,
 		};
 		mockInsertReturning.mockResolvedValueOnce([inserted]);
@@ -268,27 +287,25 @@ describe("ensureUserExists", () => {
 				email: "new@example.com",
 				name: "New User",
 				imageUrl: "https://img",
-				role: "admin",
+				role: "member",
 			}),
 		);
 	});
 
-	it("defaults to member when Clerk metadata role is invalid", async () => {
+	it("ignores a client-supplied admin role and creates a member", async () => {
 		mockFindFirst.mockResolvedValueOnce(undefined);
 		mockGetUser.mockResolvedValueOnce({
-			emailAddresses: [{ emailAddress: "x@example.com" }],
-			firstName: null,
-			lastName: null,
+			emailAddresses: [{ emailAddress: "attacker@example.com" }],
+			firstName: "Mal",
+			lastName: "Ory",
 			imageUrl: null,
-			unsafeMetadata: { role: "superadmin" },
+			// unsafeMetadata is client-writable — a self-assigned admin role here
+			// must never be honored.
+			unsafeMetadata: { role: "admin" },
 		});
-		const inserted = {
-			id: 4,
-			uuid: "uuid-4",
-			role: "member",
-			deletedAt: null,
-		};
-		mockInsertReturning.mockResolvedValueOnce([inserted]);
+		mockInsertReturning.mockResolvedValueOnce([
+			{ id: 4, uuid: "uuid-4", role: "member", deletedAt: null },
+		]);
 
 		await ensureUserExists("user_clerk_4");
 
@@ -346,5 +363,115 @@ describe("ensureUserExists", () => {
 		await expect(ensureUserExists("user_clerk_7")).rejects.toThrow(
 			"Failed to create user account",
 		);
+	});
+
+	it("provisions a couple wedding by default and sets active mode", async () => {
+		mockFindFirst.mockResolvedValueOnce(undefined);
+		mockGetUser.mockResolvedValueOnce({
+			emailAddresses: [{ emailAddress: "couple@example.com" }],
+			firstName: "Cee",
+			lastName: "Ople",
+			imageUrl: null,
+			unsafeMetadata: {},
+		});
+		mockInsertReturning.mockResolvedValueOnce([
+			{ id: 10, uuid: "uuid-10", role: "member", deletedAt: null },
+		]);
+
+		await ensureUserExists("user_clerk_couple");
+
+		expect(mockValues).toHaveBeenCalledWith(
+			expect.objectContaining({ preferences: { activeMode: "couple" } }),
+		);
+		expect(mockValues).toHaveBeenCalledWith(
+			expect.objectContaining({ ownerUserId: 10 }),
+		);
+	});
+
+	it("provisions a vendor account when intent is vendor", async () => {
+		mockFindFirst.mockResolvedValueOnce(undefined);
+		mockGetUser.mockResolvedValueOnce({
+			emailAddresses: [{ emailAddress: "vendor@example.com" }],
+			firstName: "Ven",
+			lastName: "Dor",
+			imageUrl: null,
+			unsafeMetadata: { intent: "vendor" },
+		});
+		mockInsertReturning.mockResolvedValueOnce([
+			{ id: 11, uuid: "uuid-11", role: "member", deletedAt: null },
+		]);
+
+		await ensureUserExists("user_clerk_vendor");
+
+		expect(mockValues).toHaveBeenCalledWith(
+			expect.objectContaining({ preferences: { activeMode: "vendor" } }),
+		);
+		expect(mockValues).toHaveBeenCalledWith(
+			expect.objectContaining({ userId: 11 }),
+		);
+	});
+});
+
+describe("resolveActiveMode", () => {
+	it("honors the stored mode when the capability exists", () => {
+		expect(
+			resolveActiveMode(
+				{ activeMode: "vendor" },
+				{ isCouple: true, isVendor: true },
+			),
+		).toBe("vendor");
+	});
+
+	it("falls back to couple when the stored mode lacks its capability", () => {
+		expect(
+			resolveActiveMode(
+				{ activeMode: "vendor" },
+				{ isCouple: true, isVendor: false },
+			),
+		).toBe("couple");
+	});
+
+	it("falls back to the only capability when no mode is stored", () => {
+		expect(resolveActiveMode({}, { isCouple: false, isVendor: true })).toBe(
+			"vendor",
+		);
+	});
+
+	it("defaults to couple when there is no capability yet", () => {
+		expect(resolveActiveMode({}, { isCouple: false, isVendor: false })).toBe(
+			"couple",
+		);
+	});
+});
+
+describe("getCapabilities", () => {
+	it("is a couple when a wedding row exists", async () => {
+		mockWeddingFindFirst.mockResolvedValueOnce({ id: 1 });
+		mockVendorAccountFindFirst.mockResolvedValueOnce(undefined);
+
+		expect(await getCapabilities(1)).toEqual({
+			isCouple: true,
+			isVendor: false,
+		});
+	});
+
+	it("is a vendor when a vendor account exists", async () => {
+		mockWeddingFindFirst.mockResolvedValueOnce(undefined);
+		mockVendorAccountFindFirst.mockResolvedValueOnce({ id: 2 });
+
+		expect(await getCapabilities(1)).toEqual({
+			isCouple: false,
+			isVendor: true,
+		});
+	});
+
+	it("is neither when no backing rows exist", async () => {
+		mockWeddingFindFirst.mockResolvedValueOnce(undefined);
+		mockVendorAccountFindFirst.mockResolvedValueOnce(undefined);
+
+		expect(await getCapabilities(1)).toEqual({
+			isCouple: false,
+			isVendor: false,
+		});
 	});
 });
