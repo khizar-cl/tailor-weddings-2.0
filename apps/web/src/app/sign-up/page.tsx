@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth, useSignUp as useClerkSignUp } from "@clerk/nextjs";
-import { Roles, type UserRole, UserRoleEnum } from "@repo/shared";
+import { ActiveModeEnum } from "@repo/shared";
 import { Button } from "@repo/ui/components/button";
 import {
 	Card,
@@ -34,12 +34,16 @@ const SignUpSchema = z
 			.email("Please enter a valid email address"),
 		password: z.string().min(1, "Please enter password"),
 		confirmPassword: z.string().min(1, "Please confirm password"),
-		role: UserRoleEnum,
 	})
 	.refine((data) => data.password === data.confirmPassword, {
 		message: "Passwords do not match",
 		path: ["confirmPassword"],
 	});
+
+const INTENT_COPY = {
+	couple: "Start planning your day with a team you can trust.",
+	vendor: "Showcase your work and connect with the right couples.",
+} as const;
 
 function SignUpContent() {
 	const { signUp, errors, fetchStatus } = useClerkSignUp();
@@ -47,6 +51,11 @@ function SignUpContent() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const isInvitation = searchParams.has("__clerk_ticket");
+	// The landing page's dual CTAs carry ?intent=couple|vendor; it selects the
+	// capability we provision server-side and where we land the user.
+	const intent =
+		ActiveModeEnum.safeParse(searchParams.get("intent")).data ?? "couple";
+	const portalHome = intent === "vendor" ? "/portal/vendor" : "/portal";
 	const [error, setError] = useState("");
 	const [passwordValue, setPasswordValue] = useState("");
 	const [passwordFocused, setPasswordFocused] = useState(false);
@@ -61,7 +70,6 @@ function SignUpContent() {
 			email: "",
 			password: "",
 			confirmPassword: "",
-			role: Roles.MEMBER as UserRole,
 		},
 		validators: {
 			onChange: SignUpSchema,
@@ -83,7 +91,7 @@ function SignUpContent() {
 				password: value.password,
 				firstName: value.name.split(" ")[0] || value.name,
 				lastName: value.name.split(" ").slice(1).join(" ") || undefined,
-				unsafeMetadata: isInvitation ? undefined : { role: value.role },
+				unsafeMetadata: isInvitation ? undefined : { intent },
 			});
 
 			if (signUpError) {
@@ -104,7 +112,7 @@ function SignUpContent() {
 				await signUp.finalize({
 					navigate: ({ session, decorateUrl }) => {
 						if (session?.currentTask) return;
-						window.location.href = decorateUrl("/portal");
+						window.location.href = decorateUrl(portalHome);
 					},
 				});
 				return;
@@ -115,7 +123,9 @@ function SignUpContent() {
 				signUp.unverifiedFields.includes("email_address")
 			) {
 				await signUp.verifications.sendEmailCode();
-				router.push(`/verify-email?email=${encodeURIComponent(emailValue)}`);
+				router.push(
+					`/verify-email?email=${encodeURIComponent(emailValue)}&intent=${intent}`,
+				);
 			} else {
 				setError(
 					"We couldn't finish creating your account. Please try again or contact support.",
@@ -148,7 +158,10 @@ function SignUpContent() {
 		signUp.sso({
 			strategy: "oauth_google",
 			redirectCallbackUrl: "/sign-in/sso-callback",
-			redirectUrl: "/complete-profile",
+			redirectUrl: portalHome,
+			// Copied to the user's unsafeMetadata on completion, so the server
+			// provisions the right capability for OAuth sign-ups too.
+			unsafeMetadata: { intent },
 		});
 	}
 
@@ -161,7 +174,7 @@ function SignUpContent() {
 				<CardDescription>
 					{isInvitation
 						? "Set up your password to join the team"
-						: "Enter your details to create a new account"}
+						: INTENT_COPY[intent]}
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
@@ -314,41 +327,6 @@ function SignUpContent() {
 							</div>
 						)}
 					/>
-
-					{!isInvitation && (
-						<form.Field
-							name="role"
-							children={(field) => (
-								<div className="space-y-2">
-									<Label>Role</Label>
-									<div className="flex gap-3">
-										<Button
-											type="button"
-											tone="secondary"
-											variant={
-												field.state.value !== Roles.MEMBER ? "solid" : "outline"
-											}
-											className="flex-1"
-											onClick={() => field.handleChange(Roles.MEMBER)}
-										>
-											Member
-										</Button>
-										<Button
-											type="button"
-											tone="secondary"
-											variant={
-												field.state.value !== Roles.ADMIN ? "solid" : "outline"
-											}
-											className="flex-1"
-											onClick={() => field.handleChange(Roles.ADMIN)}
-										>
-											Admin
-										</Button>
-									</div>
-								</div>
-							)}
-						/>
-					)}
 
 					<Button type="submit" className="w-full" disabled={isBusy}>
 						{isSubmitting && <Spinner className="mr-2 size-4" />}
