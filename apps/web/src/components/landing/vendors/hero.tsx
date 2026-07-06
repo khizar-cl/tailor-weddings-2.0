@@ -1,3 +1,4 @@
+import vendorHero from "../../../assets/images/landing/vendor-hero.jpg";
 import { Container, Eyebrow, LandingButton, Media } from "../primitives";
 
 const signUp = { pathname: "/sign-up/" as const, query: { intent: "vendor" } };
@@ -27,12 +28,9 @@ export function Hero() {
 				</div>
 				<div className="relative md:col-span-5">
 					<Media
-						keywords="wedding,photographer,camera"
-						lock={131}
+						src={vendorHero}
 						alt="A wedding photographer working during a celebration"
 						ratioClassName="aspect-[4/5]"
-						width={900}
-						height={1125}
 						priority
 						zoom
 					/>

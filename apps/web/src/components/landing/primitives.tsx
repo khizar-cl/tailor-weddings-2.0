@@ -1,5 +1,6 @@
 import { Button } from "@repo/ui/components/button";
 import { ArrowRightIcon, Flower2Icon } from "lucide-react";
+import Image, { type StaticImageData } from "next/image";
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 
@@ -98,50 +99,38 @@ export function Eyebrow({ children }: { children: ReactNode }) {
 	return <p className="eyebrow mb-4">{children}</p>;
 }
 
-const LOREMFLICKR = "https://loremflickr.com";
-
 /**
- * Topical photography. Every image is served by keyword match (LoremFlickr),
- * so it always depicts its subject, and the `lock` makes each placement stable
- * across reloads. `keywords` are AND-matched; keep them specific to the use.
+ * Topical photography. Images are bundled static assets (see
+ * src/assets/images/landing) so placements never depend on a live external
+ * host that can break. Pass the imported image module as `src`; its intrinsic
+ * dimensions drive optimization and the blur placeholder.
  */
 export function Media({
-	keywords,
-	lock,
+	src,
 	alt,
 	className = "",
 	ratioClassName = "",
-	width = 1200,
-	height = 900,
 	priority = false,
 	zoom = false,
 }: {
-	keywords: string;
-	lock: number;
+	src: StaticImageData;
 	alt: string;
 	className?: string;
 	/** Aspect-ratio utility applied to the wrapper, e.g. "aspect-[4/5]". */
 	ratioClassName?: string;
-	width?: number;
-	height?: number;
 	priority?: boolean;
 	zoom?: boolean;
 }) {
-	const src = `${LOREMFLICKR}/${width}/${height}/${keywords}?lock=${lock}`;
 	return (
 		<div
 			className={`media ${zoom ? "media-zoom" : ""} ${ratioClassName} ${className}`}
 		>
-			{/* biome-ignore lint/performance/noImgElement: redirect-based host,
-			    next/image remote optimization is intentionally not used here. */}
-			<img
+			<Image
 				src={src}
 				alt={alt}
-				width={width}
-				height={height}
-				loading={priority ? "eager" : "lazy"}
-				fetchPriority={priority ? "high" : "auto"}
-				decoding="async"
+				placeholder="blur"
+				priority={priority}
+				sizes="(max-width: 768px) 100vw, 50vw"
 			/>
 		</div>
 	);

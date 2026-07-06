@@ -1,36 +1,36 @@
+import offeringsCake from "../../../assets/images/landing/offerings-cake.jpg";
+import offeringsCouple from "../../../assets/images/landing/offerings-couple.jpg";
+import offeringsPhotographer from "../../../assets/images/landing/offerings-photographer.jpg";
+import offeringsPortrait from "../../../assets/images/landing/offerings-portrait.jpg";
+import offeringsReception from "../../../assets/images/landing/offerings-reception.jpg";
 import { Container, Eyebrow, Media } from "../primitives";
 import { Reveal } from "../reveal";
 
 const offerings = [
 	{
 		label: "Portfolio",
-		keywords: "wedding,portrait",
-		lock: 171,
+		src: offeringsPortrait,
 		alt: "A wedding portrait from a photographer's portfolio",
 		big: true,
 	},
 	{
 		label: "Service packages",
-		keywords: "wedding,cake",
-		lock: 27,
+		src: offeringsCake,
 		alt: "A wedding cake, the kind of service a vendor can package and price",
 	},
 	{
 		label: "Peer reviews",
-		keywords: "wedding,photographer",
-		lock: 201,
+		src: offeringsPhotographer,
 		alt: "A wedding photographer at work, the kind of peer who reviews vendors",
 	},
 	{
 		label: "Couple matches",
-		keywords: "wedding,couple",
-		lock: 51,
+		src: offeringsCouple,
 		alt: "A couple whose style and budget suit a vendor's work",
 	},
 	{
 		label: "Bookings",
-		keywords: "wedding,reception,table",
-		lock: 122,
+		src: offeringsReception,
 		alt: "A booked wedding reception styled by a vendor",
 	},
 ];
@@ -54,13 +54,7 @@ export function OfferingsBento() {
 									: "flex flex-col gap-2"
 							}
 						>
-							<Media
-								keywords={tile.keywords}
-								lock={tile.lock}
-								alt={tile.alt}
-								className="flex-1"
-								zoom
-							/>
+							<Media src={tile.src} alt={tile.alt} className="flex-1" zoom />
 							<p className="font-semibold text-sm">{tile.label}</p>
 						</Reveal>
 					))}

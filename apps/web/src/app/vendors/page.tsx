@@ -21,7 +21,7 @@ export default function VendorsLandingPage() {
 	return (
 		<>
 			<SignedInRedirect />
-			<div className="landing flex min-h-[100dvh] flex-col">
+			<div className="landing flex min-h-dvh flex-col">
 				<LandingNav audience="vendor" />
 				<main className="flex-1">
 					<Hero />
