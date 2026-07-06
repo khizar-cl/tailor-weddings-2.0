@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -10,58 +10,62 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-	/* Core */
-	--background: #f8f1ec;
-	--foreground: #2a1a1e;
+	/* Core: porcelain + evergreen ink ("garden at golden hour") */
+	--background: #eef1ea;
+	--foreground: #14231b;
 
 	/* Surfaces */
-	--card: #fffaf6;
+	--card: #f7f9f4;
 	--card-foreground: var(--foreground);
 	--popover: var(--card);
 	--popover-foreground: var(--foreground);
 
-	/* Brand */
-	--primary: #7a2437;
-	--primary-foreground: #fbf1ee;
-	--secondary: #f0e2e0;
+	/* Brand: deep evergreen */
+	--primary: #1d3a2c;
+	--primary-foreground: #f2f5ee;
+	--secondary: #e2e8db;
 	--secondary-foreground: var(--foreground);
-	--muted: #efe7df;
-	--muted-foreground: #6f5a56;
-	--accent: #f3e7e4;
+	--muted: #e6ebdf;
+	--muted-foreground: #4c5a4f;
+	--accent: #e6ebdf;
 	--accent-foreground: var(--foreground);
 
-	/* Gold accent (sharp brand highlight) */
-	--gold: #b8893f;
-	--gold-foreground: #2a1a1e;
+	/* Amber accent (single locked brand highlight) */
+	--gold: #b9722a;
+	--gold-foreground: #f7f4ec;
+
+	/* Emphasis: inverted dark band, deep in both modes */
+	--emphasis: #1d3a2c;
+	--emphasis-foreground: #eef1ea;
 
 	/* Borders & rings */
-	--border: rgba(42, 26, 30, 0.14);
-	--input: var(--border);
-	--ring: #a85266;
+	--border: rgba(20, 35, 27, 0.14);
+	--input: rgba(20, 35, 27, 0.18);
+	--ring: #1d3a2c;
 	--radius: 0.625rem;
 
 	/* Overlay (modal/drawer backdrops) */
-	--overlay: rgba(30, 18, 20, 0.45);
+	--overlay: rgba(13, 23, 18, 0.45);
 
 	/* State */
-	--destructive: #fce9e6;
-	--destructive-foreground: #c8371f;
-	--success: #e9f3ea;
-	--success-foreground: #3a7a52;
-	--warning: #fbf0e0;
-	--warning-foreground: #b3762a;
-	--info: #eaf0f6;
-	--info-foreground: #3f6ca3;
+	--destructive: #fbe8e4;
+	--destructive-foreground: #b5341c;
+	--success: #e4efe3;
+	--success-foreground: #2f6f45;
+	--warning: #f6eddb;
+	--warning-foreground: #9a6420;
+	--info: #e6edf2;
+	--info-foreground: #3a6795;
 
 	/* Chart */
-	--chart-1: #7a2437;
-	--chart-2: #b8893f;
-	--chart-3: #c17a8a;
-	--chart-4: #5e8a72;
+	--chart-1: #1d3a2c;
+	--chart-2: #b9722a;
+	--chart-3: #5e8a72;
+	--chart-4: #8aad8f;
 	--chart-5: #6a8caf;
 
 	/* Sidebar */
-	--sidebar: #f2e9e0;
+	--sidebar: #e6ebdf;
 	--sidebar-foreground: var(--foreground);
 	--sidebar-primary: var(--primary);
 	--sidebar-primary-foreground: var(--primary-foreground);
@@ -72,60 +76,64 @@
 }
 
 .dark {
-	/* Core */
-	--background: #1a1113;
-	--foreground: #f0e6e2;
+	/* Core: deep forest ink + porcelain */
+	--background: #0d1712;
+	--foreground: #e9eee4;
 
 	/* Surfaces */
-	--card: #221619;
+	--card: #14211a;
 	--card-foreground: var(--foreground);
 	--popover: var(--card);
 	--popover-foreground: var(--foreground);
 
-	/* Brand */
-	--primary: #e698a6;
-	--primary-foreground: var(--background);
-	--secondary: #2c1f22;
+	/* Brand: light sage so actions pop on the dark ground */
+	--primary: #8fc4a4;
+	--primary-foreground: #0c1611;
+	--secondary: #1b2a22;
 	--secondary-foreground: var(--foreground);
-	--muted: #261a1d;
-	--muted-foreground: #b3a09c;
-	--accent: #2c1f22;
+	--muted: #1b2a22;
+	--muted-foreground: #a7b4a8;
+	--accent: #1b2a22;
 	--accent-foreground: var(--foreground);
 
-	/* Gold accent (sharp brand highlight) */
-	--gold: #d8ad5f;
-	--gold-foreground: var(--background);
+	/* Amber accent (single locked brand highlight) */
+	--gold: #e0a24e;
+	--gold-foreground: #1a1204;
+
+	/* Emphasis: elevated dark-green band */
+	--emphasis: #16281e;
+	--emphasis-foreground: #e9eee4;
 
 	/* Borders & rings */
-	--border: rgba(210, 180, 180, 0.16);
-	--input: var(--border);
+	--border: rgba(226, 232, 220, 0.14);
+	--input: rgba(226, 232, 220, 0.2);
 	--ring: var(--primary);
 
 	/* Overlay (modal/drawer backdrops) */
 	--overlay: rgba(0, 0, 0, 0.6);
 
 	/* State */
-	--destructive: #2f1614;
-	--destructive-foreground: #ec7a63;
-	--success: #16271c;
-	--success-foreground: #5da86e;
-	--warning: #2c2113;
+	--destructive: #2c1613;
+	--destructive-foreground: #ec8163;
+	--success: #14251b;
+	--success-foreground: #63ad78;
+	--warning: #29200f;
 	--warning-foreground: #e0a94e;
-	--info: #161f2e;
-	--info-foreground: #6a9bd0;
+	--info: #14202e;
+	--info-foreground: #79a4d0;
 
 	/* Chart */
-	--chart-1: #e0899a;
-	--chart-2: #d8ad5f;
-	--chart-3: #cf8fa0;
-	--chart-4: #79b394;
+	--chart-1: #8fc4a4;
+	--chart-2: #e0a24e;
+	--chart-3: #79b394;
+	--chart-4: #b7d3ba;
 	--chart-5: #8bacce;
 
 	/* Sidebar */
-	--sidebar: #160e10;
+	--sidebar: #101c15;
 	--sidebar-foreground: var(--foreground);
 	--sidebar-primary: var(--primary);
-	--sidebar-primary-foreground: var(--background);
+	--sidebar-primary-foreground: var(--primary-foreground);
 	--sidebar-accent: var(--accent);
 	--sidebar-accent-foreground: var(--foreground);
 	--sidebar-border: var(--border);
@@ -133,9 +141,10 @@
 }
 
 @theme inline {
-	/* Font */
+	/* Font: Bricolage Grotesque display + Hanken Grotesk body */
 	--font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
-	--font-serif: "Fraunces", Georgia, serif;
+	--font-serif: "Bricolage Grotesque", Georgia, serif;
+	--font-display: "Bricolage Grotesque", Georgia, serif;
 
 	/* Core */
 	--color-background: var(--background);
@@ -160,6 +169,10 @@
 	/* Gold accent */
 	--color-gold: var(--gold);
 	--color-gold-foreground: var(--gold-foreground);
+
+	/* Emphasis (inverted band) */
+	--color-emphasis: var(--emphasis);
+	--color-emphasis-foreground: var(--emphasis-foreground);
 
 	/* Borders & rings */
 	--color-border: var(--border);
@@ -324,5 +337,169 @@ a {
 	}
 	.stagger > *:nth-child(6) {
 		animation-delay: 400ms;
+	}
+}
+
+/* ---------------------------------------------------------------------------
+   Marketing surface helpers (public landing pages).
+   Scoped under `.landing` to keep these generic class names from colliding
+   with app UI. They read the same design tokens as the rest of the app; there
+   is no separate landing theme.
+   --------------------------------------------------------------------------- */
+.landing .display {
+	font-family: var(--font-display, "Bricolage Grotesque", Georgia, serif);
+	font-weight: 600;
+	letter-spacing: -0.02em;
+	line-height: 1.03;
+	color: var(--foreground);
+	text-wrap: balance;
+}
+.landing .eyebrow {
+	font-size: 0.72rem;
+	font-weight: 600;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	color: var(--gold);
+}
+.landing .ink-soft {
+	color: var(--muted-foreground);
+}
+.landing .ink-faint {
+	color: color-mix(in oklab, var(--muted-foreground) 78%, var(--background));
+}
+.landing .accent-text {
+	color: var(--gold);
+}
+
+.landing .sec-surface {
+	background-color: var(--card);
+}
+.landing .sec-panel {
+	background-color: var(--muted);
+}
+.landing .sec-forest {
+	background-color: var(--emphasis);
+	color: var(--emphasis-foreground);
+}
+.landing .sec-forest .display {
+	color: var(--emphasis-foreground);
+}
+.landing .sec-forest .ink-soft {
+	color: color-mix(in oklab, var(--emphasis-foreground) 74%, transparent);
+}
+
+.landing .hairline {
+	border-color: var(--border);
+}
+.landing .hairline-strong {
+	border-color: color-mix(in oklab, var(--foreground) 26%, transparent);
+}
+
+.landing .link-cta {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	font-weight: 600;
+	color: var(--foreground);
+	position: relative;
+}
+.landing .link-cta::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	bottom: -2px;
+	height: 1.5px;
+	width: 100%;
+	background-color: var(--gold);
+	transform-origin: left;
+	transform: scaleX(0.35);
+	transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.landing .link-cta:hover::after {
+	transform: scaleX(1);
+}
+.landing .link-arrow {
+	transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.landing .link-cta:hover .link-arrow {
+	transform: translateX(3px);
+}
+.landing .sec-forest .link-cta {
+	color: var(--emphasis-foreground);
+}
+
+.landing .media {
+	display: block;
+	overflow: hidden;
+	background-color: var(--muted);
+	position: relative;
+	border-radius: var(--radius);
+}
+.landing .media > img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transition: transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.landing .media-zoom:hover > img {
+	transform: scale(1.04);
+}
+
+.landing .marquee {
+	display: flex;
+	overflow: hidden;
+	user-select: none;
+	gap: 0;
+	mask-image: linear-gradient(
+		90deg,
+		transparent,
+		#000 8%,
+		#000 92%,
+		transparent
+	);
+}
+.landing .marquee__track {
+	display: flex;
+	flex-shrink: 0;
+	align-items: center;
+	gap: 3.5rem;
+	padding-right: 3.5rem;
+	animation: marquee-scroll 42s linear infinite;
+}
+@keyframes marquee-scroll {
+	from {
+		transform: translateX(0);
+	}
+	to {
+		transform: translateX(-50%);
+	}
+}
+
+.landing .reveal {
+	opacity: 0;
+	transform: translateY(22px);
+	transition:
+		opacity 720ms cubic-bezier(0.16, 1, 0.3, 1),
+		transform 720ms cubic-bezier(0.16, 1, 0.3, 1);
+	transition-delay: var(--reveal-delay, 0ms);
+	will-change: opacity, transform;
+}
+.landing .reveal.is-in {
+	opacity: 1;
+	transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.landing .reveal {
+		opacity: 1;
+		transform: none;
+		transition: none;
+	}
+	.landing .marquee__track {
+		animation: none;
+	}
+	.landing .media > img {
+		transition: none;
 	}
 }

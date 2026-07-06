@@ -28,5 +28,5 @@
 }
 
 .display-title {
-	font-family: "Fraunces", Georgia, serif;
+	font-family: var(--font-display, "Bricolage Grotesque", Georgia, serif);
 }
