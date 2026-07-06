@@ -6,7 +6,8 @@ import {
 	withAuth,
 } from "../../../tests/helpers/app.test-helper";
 import { truncateTables } from "../../../tests/helpers/db.test-helper";
-import { users } from "../../db/schema";
+import { db } from "../../db/db";
+import { users, vendorAccounts, weddings } from "../../db/schema";
 
 const app = createTestApp();
 
@@ -94,5 +95,50 @@ describe("user.setPreferences", () => {
 	it("returns 401 without auth", async () => {
 		const res = await request(app).post("/rpc/user/setPreferences");
 		expect(res.status).toBe(401);
+	});
+});
+
+describe("user.me identity payload", () => {
+	it("returns derived capabilities, active mode and onboarding", async () => {
+		const user = await createTestUser();
+		await db.insert(weddings).values({ ownerUserId: user.id });
+
+		const res = await withAuth(request(app).post("/rpc/user/me")).expect(200);
+		const body = rpcBody(res);
+
+		expect(body.capabilities).toEqual({ isCouple: true, isVendor: false });
+		expect(body.activeMode).toBe("couple");
+		expect(body.onboarding).toEqual({ couple: false, vendor: false });
+	});
+});
+
+describe("user.setActiveMode", () => {
+	it("switches to a workspace the user owns", async () => {
+		const user = await createTestUser();
+		await db.insert(weddings).values({ ownerUserId: user.id });
+		await db.insert(vendorAccounts).values({ userId: user.id });
+
+		const res = await withAuth(
+			request(app)
+				.post("/rpc/user/setActiveMode")
+				.set("Content-Type", "application/json")
+				.send(JSON.stringify({ json: { mode: "vendor" } })),
+		).expect(200);
+
+		expect(rpcBody(res).activeMode).toBe("vendor");
+	});
+
+	it("rejects switching to a workspace the user does not own", async () => {
+		const user = await createTestUser();
+		await db.insert(weddings).values({ ownerUserId: user.id });
+
+		const res = await withAuth(
+			request(app)
+				.post("/rpc/user/setActiveMode")
+				.set("Content-Type", "application/json")
+				.send(JSON.stringify({ json: { mode: "vendor" } })),
+		);
+
+		expect(res.status).toBe(403);
 	});
 });
