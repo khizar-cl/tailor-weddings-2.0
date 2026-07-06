@@ -1,5 +1,6 @@
 export * from "./async-task.types";
 export * from "./auth.types";
+export * from "./category.types";
 export * from "./email.types";
 export * from "./email-template.types";
 export * from "./health.types";
