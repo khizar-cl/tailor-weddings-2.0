@@ -2,12 +2,13 @@
 
 import { Menu } from "lucide-react";
 import { useSidebarControl } from "../providers/sidebar-control-provider";
+import { ModeSwitcher } from "./mode-switcher";
 
 export function AppHeader() {
 	const { handleManualToggle } = useSidebarControl();
 
 	return (
-		<header className="sticky top-0 z-30 flex h-16 w-full shrink-0 items-center border-border border-b bg-sidebar px-6 backdrop-blur-md">
+		<header className="sticky top-0 z-30 flex h-16 w-full shrink-0 items-center justify-between border-border border-b bg-sidebar px-6 backdrop-blur-md">
 			<button
 				type="button"
 				onClick={handleManualToggle}
@@ -16,6 +17,7 @@ export function AppHeader() {
 			>
 				<Menu className="h-5 w-5" />
 			</button>
+			<ModeSwitcher />
 		</header>
 	);
 }
