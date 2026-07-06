@@ -9,45 +9,51 @@ import {
 	CardTitle,
 } from "@repo/ui/components/card";
 import {
-	CheckSquareIcon,
+	InboxIcon,
 	type LucideIcon,
-	PaletteIcon,
-	UsersIcon,
-	WalletIcon,
+	SparklesIcon,
+	StarIcon,
+	UserSquareIcon,
 } from "lucide-react";
-import { BaseLayout } from "../../components/base-layout";
-import { useAuth } from "../../hooks/use-auth";
+import { BaseLayout } from "../../../components/base-layout";
+import { useAuth } from "../../../hooks/use-auth";
 
-interface PlanSection {
+interface VendorSection {
 	title: string;
 	description: string;
 	icon: LucideIcon;
+	status: { label: string; tone: "success" | "info" };
 }
 
-const PLAN_SECTIONS: PlanSection[] = [
+const VENDOR_SECTIONS: VendorSection[] = [
 	{
-		title: "Checklist",
-		description: "A personalized, date-aware to-do list for the months ahead.",
-		icon: CheckSquareIcon,
+		title: "Your profile",
+		description:
+			"We saved a draft from your setup. Add photos, packages, and publish it soon.",
+		icon: UserSquareIcon,
+		status: { label: "Draft saved", tone: "success" },
 	},
 	{
-		title: "Budget tracker",
-		description: "Track spending by category and see where every dollar goes.",
-		icon: WalletIcon,
+		title: "Portfolio & packages",
+		description: "Upload your work and list your services with pricing.",
+		icon: SparklesIcon,
+		status: { label: "Coming soon", tone: "info" },
 	},
 	{
-		title: "Your wedding team",
-		description: "Save vendors you love and manage them in one place.",
-		icon: UsersIcon,
+		title: "Leads",
+		description: "Couples matched to your work will show up here.",
+		icon: InboxIcon,
+		status: { label: "Coming soon", tone: "info" },
 	},
 	{
-		title: "Style board",
-		description: "Your palette and vibe, guiding the vendors we surface.",
-		icon: PaletteIcon,
+		title: "Reviews",
+		description: "Build a verifiable record from couples and fellow vendors.",
+		icon: StarIcon,
+		status: { label: "Coming soon", tone: "info" },
 	},
 ];
 
-export default function CoupleDashboard() {
+export default function VendorDashboard() {
 	const { user } = useAuth();
 	const firstName = user?.name?.trim().split(" ")[0] || "there";
 
@@ -59,10 +65,10 @@ export default function CoupleDashboard() {
 					Welcome, <span className="text-gold">{firstName}</span>
 				</>
 			}
-			description="This is your planning home. Here's what's coming together for your day."
+			description="This is your vendor home. Get your studio ready for couples to discover."
 		>
 			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-				{PLAN_SECTIONS.map((section) => {
+				{VENDOR_SECTIONS.map((section) => {
 					const Icon = section.icon;
 					return (
 						<Card key={section.title}>
@@ -74,8 +80,8 @@ export default function CoupleDashboard() {
 										</span>
 										<CardTitle className="text-base">{section.title}</CardTitle>
 									</div>
-									<Badge tone="info" variant="outline">
-										Coming soon
+									<Badge tone={section.status.tone} variant="outline">
+										{section.status.label}
 									</Badge>
 								</div>
 							</CardHeader>
