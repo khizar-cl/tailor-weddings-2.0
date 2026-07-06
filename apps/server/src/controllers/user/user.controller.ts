@@ -1,3 +1,5 @@
+import { Roles } from "@repo/shared";
+import { requireRole } from "../../orpc/middleware";
 import { protectedProcedure } from "../../orpc/procedures";
 import {
 	getMe,
@@ -30,7 +32,9 @@ export const userController = {
 		},
 	),
 
-	list: protectedProcedure.user.list.handler(async () => {
-		return listUsers();
-	}),
+	list: protectedProcedure.user.list
+		.use(requireRole(Roles.ADMIN))
+		.handler(async () => {
+			return listUsers();
+		}),
 };

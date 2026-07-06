@@ -142,3 +142,21 @@ describe("user.setActiveMode", () => {
 		expect(res.status).toBe(403);
 	});
 });
+
+describe("user.list", () => {
+	it("returns all users for an admin", async () => {
+		await createTestUser({ role: "admin" });
+
+		const res = await withAuth(request(app).post("/rpc/user/list")).expect(200);
+
+		expect(Array.isArray(rpcBody(res).users)).toBe(true);
+	});
+
+	it("forbids non-admins", async () => {
+		await createTestUser({ role: "member" });
+
+		const res = await withAuth(request(app).post("/rpc/user/list"));
+
+		expect(res.status).toBe(403);
+	});
+});
