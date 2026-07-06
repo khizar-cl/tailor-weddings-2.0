@@ -7,7 +7,7 @@ export default function SSOCallbackPage() {
 	return (
 		<div className="flex min-h-screen items-center justify-center bg-background">
 			<AuthenticateWithRedirectCallback
-				signUpFallbackRedirectUrl="/complete-profile"
+				signUpFallbackRedirectUrl="/portal"
 				signInFallbackRedirectUrl="/portal"
 			/>
 			<Spinner className="size-8" />

@@ -1,6 +1,7 @@
 "use client";
 
 import { useSignUp } from "@clerk/nextjs";
+import { ActiveModeEnum } from "@repo/shared";
 import { Button } from "@repo/ui/components/button";
 import {
 	Card,
@@ -23,6 +24,9 @@ function VerifyEmailContent() {
 	const { signUp, fetchStatus } = useSignUp();
 	const searchParams = useSearchParams();
 	const email = searchParams.get("email") ?? "";
+	const intent =
+		ActiveModeEnum.safeParse(searchParams.get("intent")).data ?? "couple";
+	const portalHome = intent === "vendor" ? "/portal/vendor" : "/portal";
 	const [code, setCode] = useState("");
 	const [error, setError] = useState("");
 
@@ -47,7 +51,7 @@ function VerifyEmailContent() {
 			await signUp.finalize({
 				navigate: ({ session, decorateUrl }) => {
 					if (session?.currentTask) return;
-					window.location.href = decorateUrl("/portal");
+					window.location.href = decorateUrl(portalHome);
 				},
 			});
 		} else {

@@ -1,37 +1,33 @@
+import type { ActiveMode } from "@repo/shared";
 import {
-	FunctionSquare,
 	HardDriveIcon,
-	HomeIcon,
-	InfoIcon,
+	LayoutDashboardIcon,
 	MailIcon,
 	PaletteIcon,
 	PanelLeftIcon,
+	StoreIcon,
 	TextIcon,
 	UserIcon,
 	UsersIcon,
 } from "lucide-react";
 import type { NavigationItem } from "../components/app-sidebar";
 
-export const navigationItems: NavigationItem[] = [
+export const coupleNavItems: NavigationItem[] = [
+	{ title: "Dashboard", url: "/portal", icon: LayoutDashboardIcon },
+	{ title: "Profile", url: "/portal/profile", icon: UserIcon },
+];
+
+export const vendorNavItems: NavigationItem[] = [
+	{ title: "Dashboard", url: "/portal/vendor", icon: StoreIcon },
+	{ title: "Profile", url: "/portal/profile", icon: UserIcon },
+];
+
+/** Platform/admin-only demo surfaces, appended when the user is an admin. */
+export const adminNavItems: NavigationItem[] = [
 	{
-		title: "Home",
-		url: "/portal",
-		icon: HomeIcon,
-	},
-	{
-		title: "About",
-		url: "/portal/about",
-		icon: InfoIcon,
-	},
-	{
-		title: "Profile",
-		url: "/portal/profile",
-		icon: UserIcon,
-	},
-	{
-		title: "Features",
+		title: "Platform",
 		url: "#",
-		icon: FunctionSquare,
+		icon: PanelLeftIcon,
 		items: [
 			{ title: "Email", url: "/portal/email", icon: MailIcon },
 			{ title: "Storage", url: "/portal/storage", icon: HardDriveIcon },
@@ -48,4 +44,20 @@ export const navigationItems: NavigationItem[] = [
 			{ title: "Components", url: "/portal/components", icon: PanelLeftIcon },
 		],
 	},
+];
+
+/** The sidebar set for a given active mode, plus admin extras when applicable. */
+export function getNavigationItems(
+	activeMode: ActiveMode,
+	isAdmin: boolean,
+): NavigationItem[] {
+	const base = activeMode === "vendor" ? vendorNavItems : coupleNavItems;
+	return isAdmin ? [...base, ...adminNavItems] : base;
+}
+
+/** Union of every nav entry — used only to build breadcrumb labels. */
+export const navigationItems: NavigationItem[] = [
+	...coupleNavItems,
+	...vendorNavItems,
+	...adminNavItems,
 ];
