@@ -177,4 +177,78 @@ describe("onboarding.submitVendor", () => {
 		expect(businesses[0]?.city).toBe("Los Angeles");
 		expect(businesses[0]?.tagline).toBe("Timeless wedding photography");
 	});
+
+	it("swaps services on re-run, soft-deleting the de-selected one", async () => {
+		const photography = await seedCategory("photography", "Photography");
+		const videography = await seedCategory("videography", "Videography");
+
+		await rpc("/rpc/onboarding/submitVendor", {
+			businessName: "Vance Studio",
+			categoryUuids: [photography],
+			region: "Texas",
+		}).expect(200);
+
+		await rpc("/rpc/onboarding/submitVendor", {
+			businessName: "Vance Studio",
+			categoryUuids: [videography],
+			region: "Texas",
+		}).expect(200);
+
+		const business = await db.query.vendorBusinesses.findFirst({
+			where: eq(vendorBusinesses.businessName, "Vance Studio"),
+		});
+		if (!business) throw new Error("Business not created");
+
+		const services = await db.query.vendorServices.findMany({
+			where: eq(vendorServices.vendorBusinessId, business.id),
+		});
+		const live = services.filter((s) => s.deletedAt === null);
+		const removed = services.filter((s) => s.deletedAt !== null);
+		expect(services).toHaveLength(2);
+		expect(live).toHaveLength(1);
+		expect(removed).toHaveLength(1);
+		expect(live[0]?.isPrimary).toBe(true);
+
+		const cats = await db.query.categories.findMany({
+			columns: { id: true, slug: true },
+		});
+		const idBySlug = new Map(cats.map((c) => [c.slug, c.id]));
+		expect(live[0]?.categoryId).toBe(idBySlug.get("videography"));
+		expect(removed[0]?.categoryId).toBe(idBySlug.get("photography"));
+	});
+
+	it("revives a previously removed service instead of duplicating it", async () => {
+		const photography = await seedCategory("photography", "Photography");
+		const videography = await seedCategory("videography", "Videography");
+
+		const submit = (categoryUuid: string) =>
+			rpc("/rpc/onboarding/submitVendor", {
+				businessName: "Vance Studio",
+				categoryUuids: [categoryUuid],
+				region: "Texas",
+			}).expect(200);
+
+		await submit(photography); // add photography
+		await submit(videography); // remove photography, add videography
+		await submit(photography); // revive photography, remove videography
+
+		const business = await db.query.vendorBusinesses.findFirst({
+			where: eq(vendorBusinesses.businessName, "Vance Studio"),
+		});
+		if (!business) throw new Error("Business not created");
+
+		const services = await db.query.vendorServices.findMany({
+			where: eq(vendorServices.vendorBusinessId, business.id),
+		});
+		// Only two rows — photography is revived, not inserted a second time.
+		expect(services).toHaveLength(2);
+		const live = services.filter((s) => s.deletedAt === null);
+		expect(live).toHaveLength(1);
+
+		const cats = await db.query.categories.findMany({
+			columns: { id: true, slug: true },
+		});
+		const idBySlug = new Map(cats.map((c) => [c.slug, c.id]));
+		expect(live[0]?.categoryId).toBe(idBySlug.get("photography"));
+	});
 });
