@@ -87,10 +87,11 @@ export default function VendorOnboardingPage() {
 				{step === 0 ? (
 					<div className="space-y-4">
 						<div>
-							<h2 className="font-semibold text-foreground text-lg">
+							<p className="docket mb-1 text-thread-ink">Step 01</p>
+							<h2 className="display-title text-2xl text-foreground">
 								Your business
 							</h2>
-							<p className="text-muted-foreground text-sm">
+							<p className="mt-1 text-muted-foreground text-sm">
 								This is what couples see first.
 							</p>
 						</div>
@@ -168,10 +169,11 @@ export default function VendorOnboardingPage() {
 				) : (
 					<div className="space-y-4">
 						<div>
-							<h2 className="font-semibold text-foreground text-lg">
+							<p className="docket mb-1 text-thread-ink">Step 02</p>
+							<h2 className="display-title text-2xl text-foreground">
 								Where you work
 							</h2>
-							<p className="text-muted-foreground text-sm">
+							<p className="mt-1 text-muted-foreground text-sm">
 								Help couples nearby discover you.
 							</p>
 						</div>

@@ -129,10 +129,11 @@ export default function CoupleOnboardingPage() {
 				{step === 0 ? (
 					<div className="space-y-4">
 						<div>
-							<h2 className="font-semibold text-foreground text-lg">
+							<p className="docket mb-1 text-thread-ink">Step 01</p>
+							<h2 className="display-title text-2xl text-foreground">
 								The basics
 							</h2>
-							<p className="text-muted-foreground text-sm">
+							<p className="mt-1 text-muted-foreground text-sm">
 								Rough numbers are fine — you can refine them anytime.
 							</p>
 						</div>
@@ -262,10 +263,11 @@ export default function CoupleOnboardingPage() {
 				) : (
 					<div className="space-y-6">
 						<div>
-							<h2 className="font-semibold text-foreground text-lg">
+							<p className="docket mb-1 text-thread-ink">Step 02</p>
+							<h2 className="display-title text-2xl text-foreground">
 								Your style
 							</h2>
-							<p className="text-muted-foreground text-sm">
+							<p className="mt-1 text-muted-foreground text-sm">
 								Pick the words and colors that feel like your day. We use these
 								to match vendors.
 							</p>

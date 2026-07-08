@@ -3,7 +3,7 @@ import teamFlorals from "../../../assets/images/landing/team-florals.jpg";
 import teamMusic from "../../../assets/images/landing/team-music.jpg";
 import teamPhotographer from "../../../assets/images/landing/team-photographer.jpg";
 import teamVenue from "../../../assets/images/landing/team-venue.jpg";
-import { Container, Eyebrow, Media } from "../primitives";
+import { Container, Eyebrow, SwatchMedia } from "../primitives";
 import { Reveal } from "../reveal";
 
 const team = [
@@ -41,7 +41,7 @@ export function TeamBento() {
 			<Container className="py-20 md:py-28">
 				<Eyebrow>Your whole team</Eyebrow>
 				<h2 className="display max-w-[18ch] text-3xl sm:text-4xl md:text-5xl">
-					Everything your day needs, in one dashboard.
+					Every craft your day needs, in one dashboard.
 				</h2>
 				<div className="mt-10 grid auto-rows-[180px] grid-cols-2 gap-4 md:auto-rows-[210px] md:grid-cols-4">
 					{team.map((tile, i) => (
@@ -54,8 +54,13 @@ export function TeamBento() {
 									: "flex flex-col gap-2"
 							}
 						>
-							<Media src={tile.src} alt={tile.alt} className="flex-1" zoom />
-							<p className="font-semibold text-sm">{tile.label}</p>
+							<SwatchMedia
+								src={tile.src}
+								alt={tile.alt}
+								className="flex-1"
+								tag={tile.big}
+							/>
+							<p className="docket">{tile.label}</p>
 						</Reveal>
 					))}
 				</div>

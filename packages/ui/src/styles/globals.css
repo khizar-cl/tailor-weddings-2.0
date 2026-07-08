@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -10,62 +10,71 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-	/* Core: porcelain + evergreen ink ("garden at golden hour") */
-	--background: #eef1ea;
-	--foreground: #14231b;
+	/* Core: oyster paper + espresso-plum ink ("Atelier") */
+	--background: #f7eee7;
+	--foreground: #2e2024;
 
 	/* Surfaces */
-	--card: #f7f9f4;
+	--card: #fcf7f2;
 	--card-foreground: var(--foreground);
 	--popover: var(--card);
 	--popover-foreground: var(--foreground);
 
-	/* Brand: deep evergreen */
-	--primary: #1d3a2c;
-	--primary-foreground: #f2f5ee;
-	--secondary: #e2e8db;
+	/* Brand: deep couture rose */
+	--primary: #a8385a;
+	--primary-foreground: #fbf1ec;
+	--secondary: #efe3da;
 	--secondary-foreground: var(--foreground);
-	--muted: #e6ebdf;
-	--muted-foreground: #4c5a4f;
-	--accent: #e6ebdf;
+	--muted: #f0e6dd;
+	--muted-foreground: #6b5a56;
+	--accent: #f0e6dd;
 	--accent-foreground: var(--foreground);
 
-	/* Amber accent (single locked brand highlight) */
-	--gold: #b9722a;
-	--gold-foreground: #f7f4ec;
+	/* Marigold thread accent (single locked brand highlight; token name kept
+	   as --gold to avoid a rename sweep — it now carries the marigold value) */
+	--gold: #e89a3b;
+	--gold-foreground: #2e2024;
+	/* Deepened marigold that meets AA as text on paper (labels, eyebrows) */
+	--thread-ink: #b26a1e;
 
-	/* Emphasis: inverted dark band, deep in both modes */
-	--emphasis: #1d3a2c;
-	--emphasis-foreground: #eef1ea;
+	/* Emphasis: inverted aubergine band, deep in both modes */
+	--emphasis: #331c27;
+	--emphasis-foreground: #f7eee7;
 
 	/* Borders & rings */
-	--border: rgba(20, 35, 27, 0.14);
-	--input: rgba(20, 35, 27, 0.18);
-	--ring: #1d3a2c;
-	--radius: 0.625rem;
+	--border: rgba(46, 32, 36, 0.14);
+	--input: rgba(46, 32, 36, 0.2);
+	--ring: #a8385a;
+	--radius: 0.25rem;
+
+	/* Warm ink-tinted paper elevation */
+	--shadow-color: 46, 32, 36;
+	--shadow-sm: 0 1px 2px rgba(var(--shadow-color), 0.06);
+	--shadow-md: 0 6px 20px -8px rgba(var(--shadow-color), 0.16);
+	--shadow-lg: 0 18px 48px -18px rgba(var(--shadow-color), 0.24);
 
 	/* Overlay (modal/drawer backdrops) */
-	--overlay: rgba(13, 23, 18, 0.45);
+	--overlay: rgba(30, 18, 22, 0.5);
 
-	/* State */
-	--destructive: #fbe8e4;
-	--destructive-foreground: #b5341c;
-	--success: #e4efe3;
-	--success-foreground: #2f6f45;
-	--warning: #f6eddb;
-	--warning-foreground: #9a6420;
-	--info: #e6edf2;
-	--info-foreground: #3a6795;
+	/* State (harmonized warm) */
+	--destructive: #f6e3dd;
+	--destructive-foreground: #b23a20;
+	--success: #e9ebdd;
+	--success-foreground: #556b3c;
+	--warning: #f6e9d2;
+	--warning-foreground: #9a6a1e;
+	--info: #e8e5ef;
+	--info-foreground: #57508a;
 
 	/* Chart */
-	--chart-1: #1d3a2c;
-	--chart-2: #b9722a;
-	--chart-3: #5e8a72;
-	--chart-4: #8aad8f;
-	--chart-5: #6a8caf;
+	--chart-1: #a8385a;
+	--chart-2: #e89a3b;
+	--chart-3: #7c4a63;
+	--chart-4: #c88aa0;
+	--chart-5: #6e7ba6;
 
 	/* Sidebar */
-	--sidebar: #e6ebdf;
+	--sidebar: #f0e6dd;
 	--sidebar-foreground: var(--foreground);
 	--sidebar-primary: var(--primary);
 	--sidebar-primary-foreground: var(--primary-foreground);
@@ -76,61 +85,68 @@
 }
 
 .dark {
-	/* Core: deep forest ink + porcelain */
-	--background: #0d1712;
-	--foreground: #e9eee4;
+	/* Core: deep espresso-plum + warm oyster text */
+	--background: #201519;
+	--foreground: #f1e7e0;
 
 	/* Surfaces */
-	--card: #14211a;
+	--card: #2a1c21;
 	--card-foreground: var(--foreground);
 	--popover: var(--card);
 	--popover-foreground: var(--foreground);
 
-	/* Brand: light sage so actions pop on the dark ground */
-	--primary: #8fc4a4;
-	--primary-foreground: #0c1611;
-	--secondary: #1b2a22;
+	/* Brand: light rose so actions pop on the dark ground */
+	--primary: #e4859e;
+	--primary-foreground: #24151a;
+	--secondary: #33232a;
 	--secondary-foreground: var(--foreground);
-	--muted: #1b2a22;
-	--muted-foreground: #a7b4a8;
-	--accent: #1b2a22;
+	--muted: #33232a;
+	--muted-foreground: #b6a39d;
+	--accent: #33232a;
 	--accent-foreground: var(--foreground);
 
-	/* Amber accent (single locked brand highlight) */
-	--gold: #e0a24e;
-	--gold-foreground: #1a1204;
+	/* Marigold thread accent (lighter on the dark ground) */
+	--gold: #eeae5c;
+	--gold-foreground: #241109;
+	--thread-ink: #eeae5c;
 
-	/* Emphasis: elevated dark-green band */
-	--emphasis: #16281e;
-	--emphasis-foreground: #e9eee4;
+	/* Emphasis: elevated wine band */
+	--emphasis: #2a1620;
+	--emphasis-foreground: #f1e7e0;
 
 	/* Borders & rings */
-	--border: rgba(226, 232, 220, 0.14);
-	--input: rgba(226, 232, 220, 0.2);
+	--border: rgba(241, 231, 224, 0.14);
+	--input: rgba(241, 231, 224, 0.2);
 	--ring: var(--primary);
 
+	/* Warm ink-tinted paper elevation (near-black in dark) */
+	--shadow-color: 0, 0, 0;
+	--shadow-sm: 0 1px 2px rgba(var(--shadow-color), 0.3);
+	--shadow-md: 0 6px 20px -8px rgba(var(--shadow-color), 0.45);
+	--shadow-lg: 0 18px 48px -18px rgba(var(--shadow-color), 0.6);
+
 	/* Overlay (modal/drawer backdrops) */
-	--overlay: rgba(0, 0, 0, 0.6);
+	--overlay: rgba(0, 0, 0, 0.65);
 
 	/* State */
-	--destructive: #2c1613;
-	--destructive-foreground: #ec8163;
-	--success: #14251b;
-	--success-foreground: #63ad78;
-	--warning: #29200f;
-	--warning-foreground: #e0a94e;
-	--info: #14202e;
-	--info-foreground: #79a4d0;
+	--destructive: #2e1712;
+	--destructive-foreground: #ed8b6f;
+	--success: #1f2417;
+	--success-foreground: #a3bd72;
+	--warning: #2b220f;
+	--warning-foreground: #e6b262;
+	--info: #1b1a2a;
+	--info-foreground: #9a94cf;
 
 	/* Chart */
-	--chart-1: #8fc4a4;
-	--chart-2: #e0a24e;
-	--chart-3: #79b394;
-	--chart-4: #b7d3ba;
-	--chart-5: #8bacce;
+	--chart-1: #e4859e;
+	--chart-2: #eeae5c;
+	--chart-3: #c68aa8;
+	--chart-4: #a86d84;
+	--chart-5: #9aa4cf;
 
 	/* Sidebar */
-	--sidebar: #101c15;
+	--sidebar: #241820;
 	--sidebar-foreground: var(--foreground);
 	--sidebar-primary: var(--primary);
 	--sidebar-primary-foreground: var(--primary-foreground);
@@ -141,10 +157,11 @@
 }
 
 @theme inline {
-	/* Font: Bricolage Grotesque display + Hanken Grotesk body */
-	--font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
-	--font-serif: "Bricolage Grotesque", Georgia, serif;
-	--font-display: "Bricolage Grotesque", Georgia, serif;
+	/* Font: Bodoni Moda display + Instrument Sans body + Space Mono docket */
+	--font-sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+	--font-serif: "Bodoni Moda", Georgia, serif;
+	--font-display: "Bodoni Moda", Georgia, serif;
+	--font-mono: "Space Mono", ui-monospace, "SFMono-Regular", monospace;
 
 	/* Core */
 	--color-background: var(--background);
@@ -166,9 +183,15 @@
 	--color-accent: var(--accent);
 	--color-accent-foreground: var(--accent-foreground);
 
-	/* Gold accent */
+	/* Marigold thread accent */
 	--color-gold: var(--gold);
 	--color-gold-foreground: var(--gold-foreground);
+	--color-thread-ink: var(--thread-ink);
+
+	/* Warm paper elevation */
+	--shadow-paper-sm: var(--shadow-sm);
+	--shadow-paper-md: var(--shadow-md);
+	--shadow-paper-lg: var(--shadow-lg);
 
 	/* Emphasis (inverted band) */
 	--color-emphasis: var(--emphasis);
@@ -269,23 +292,126 @@ a {
 	background-color: var(--background);
 	background-image:
 		radial-gradient(
-			60% 55% at 12% 0%,
-			color-mix(in oklab, var(--primary) 12%, transparent),
-			transparent 70%
+			58% 52% at 8% 0%,
+			color-mix(in oklab, var(--primary) 10%, transparent),
+			transparent 68%
 		),
 		radial-gradient(
-			52% 48% at 100% 8%,
+			50% 46% at 100% 6%,
 			color-mix(in oklab, var(--gold) 14%, transparent),
-			transparent 65%
+			transparent 62%
 		);
 }
 
-/* Champagne-gold hairline divider */
-.gold-rule {
-	height: 1px;
+/* -- Atelier signature: running stitch, ticks, swatch, docket, meta rail -- */
+
+/* Marigold running-stitch divider (horizontal) */
+.stitch-rule {
+	height: 2px;
 	border: 0;
-	background: linear-gradient(90deg, transparent, var(--gold), transparent);
-	opacity: 0.65;
+	background-image: repeating-linear-gradient(
+		90deg,
+		var(--gold) 0 11px,
+		transparent 11px 19px
+	);
+	opacity: 0.9;
+}
+
+/* Animated threading underline: a stitch that draws in left -> right */
+.stitch-draw {
+	position: relative;
+	display: inline-block;
+}
+.stitch-draw::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: -0.12em;
+	height: 3px;
+	background-image: repeating-linear-gradient(
+		90deg,
+		var(--gold) 0 11px,
+		transparent 11px 19px
+	);
+	transform: scaleX(1);
+	transform-origin: left;
+}
+
+/* Measuring-tape rule: fine ticks along a hairline */
+.tick-rule {
+	height: 12px;
+	border-bottom: 1px solid var(--border);
+	background-image: repeating-linear-gradient(
+		90deg,
+		color-mix(in oklab, var(--foreground) 34%, transparent) 0 1px,
+		transparent 1px 12px
+	);
+	background-position: bottom;
+	background-repeat: repeat-x;
+	background-size: 12px 6px;
+}
+
+/* Fabric swatch: stitched frame + folded thread-tag corner */
+.swatch {
+	position: relative;
+	background-color: var(--card);
+	border: 1px solid var(--border);
+	box-shadow:
+		inset 0 0 0 1px var(--background),
+		inset 0 0 0 2px color-mix(in oklab, var(--gold) 55%, transparent);
+	transition:
+		transform 260ms cubic-bezier(0.16, 1, 0.3, 1),
+		box-shadow 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.swatch-lift:hover {
+	transform: translateY(-3px);
+	box-shadow:
+		inset 0 0 0 1px var(--background),
+		inset 0 0 0 2px var(--gold),
+		var(--shadow-md);
+}
+/* Folded corner "thread tag" (top-right) */
+.swatch-tag::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 0;
+	height: 0;
+	border-width: 0 18px 18px 0;
+	border-style: solid;
+	border-color: transparent var(--gold) transparent transparent;
+}
+
+/* Docket / measurement voice (monospace) */
+.docket {
+	font-family: var(--font-mono);
+	font-size: 0.7rem;
+	font-weight: 400;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--muted-foreground);
+}
+.docket-num {
+	font-family: var(--font-mono);
+	font-feature-settings: "tnum" 1;
+	letter-spacing: -0.01em;
+}
+
+/* Sticky metadata rail — mono index + hairline, like a pattern sheet */
+.meta-rail {
+	font-family: var(--font-mono);
+	font-size: 0.7rem;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--muted-foreground);
+}
+@media (min-width: 768px) {
+	.meta-rail-sticky {
+		position: sticky;
+		top: 6rem;
+	}
 }
 
 @layer components {
@@ -314,9 +440,22 @@ a {
 /* Motion is opt-in: only animate when the user hasn't asked to reduce motion.
    Kept after @layer base so the `.stagger > *` selector doesn't descend in
    specificity from the base-layer universal rule. */
+@keyframes stitch-draw {
+	from {
+		transform: scaleX(0);
+	}
+	to {
+		transform: scaleX(1);
+	}
+}
+
 @media (prefers-reduced-motion: no-preference) {
 	.rise-in {
 		animation: rise-in 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
+	}
+
+	.stitch-draw::after {
+		animation: stitch-draw 900ms cubic-bezier(0.16, 1, 0.3, 1) 360ms both;
 	}
 
 	/* Orchestrated page-load reveal: wrap a group, children rise in sequence */
@@ -347,19 +486,20 @@ a {
    is no separate landing theme.
    --------------------------------------------------------------------------- */
 .landing .display {
-	font-family: var(--font-display, "Bricolage Grotesque", Georgia, serif);
-	font-weight: 600;
-	letter-spacing: -0.02em;
-	line-height: 1.03;
+	font-family: var(--font-display, "Bodoni Moda", Georgia, serif);
+	font-weight: 500;
+	letter-spacing: -0.01em;
+	line-height: 1.04;
 	color: var(--foreground);
 	text-wrap: balance;
 }
 .landing .eyebrow {
-	font-size: 0.72rem;
-	font-weight: 600;
-	letter-spacing: 0.16em;
+	font-family: var(--font-mono);
+	font-size: 0.7rem;
+	font-weight: 400;
+	letter-spacing: 0.12em;
 	text-transform: uppercase;
-	color: var(--gold);
+	color: var(--thread-ink);
 }
 .landing .ink-soft {
 	color: var(--muted-foreground);
@@ -368,7 +508,7 @@ a {
 	color: color-mix(in oklab, var(--muted-foreground) 78%, var(--background));
 }
 .landing .accent-text {
-	color: var(--gold);
+	color: var(--thread-ink);
 }
 
 .landing .sec-surface {
@@ -377,15 +517,22 @@ a {
 .landing .sec-panel {
 	background-color: var(--muted);
 }
-.landing .sec-forest {
+.landing .sec-ink {
 	background-color: var(--emphasis);
 	color: var(--emphasis-foreground);
 }
-.landing .sec-forest .display {
+.landing .sec-ink .display {
 	color: var(--emphasis-foreground);
 }
-.landing .sec-forest .ink-soft {
+.landing .sec-ink .ink-soft {
 	color: color-mix(in oklab, var(--emphasis-foreground) 74%, transparent);
+}
+.landing .sec-ink .eyebrow,
+.landing .sec-ink .accent-text {
+	color: color-mix(in oklab, var(--gold) 88%, var(--emphasis-foreground));
+}
+.landing .sec-ink .docket {
+	color: color-mix(in oklab, var(--emphasis-foreground) 70%, transparent);
 }
 
 .landing .hairline {
@@ -408,9 +555,13 @@ a {
 	position: absolute;
 	left: 0;
 	bottom: -2px;
-	height: 1.5px;
+	height: 2px;
 	width: 100%;
-	background-color: var(--gold);
+	background-image: repeating-linear-gradient(
+		90deg,
+		var(--gold) 0 7px,
+		transparent 7px 12px
+	);
 	transform-origin: left;
 	transform: scaleX(0.35);
 	transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -424,7 +575,7 @@ a {
 .landing .link-cta:hover .link-arrow {
 	transform: translateX(3px);
 }
-.landing .sec-forest .link-cta {
+.landing .sec-ink .link-cta {
 	color: var(--emphasis-foreground);
 }
 
@@ -433,7 +584,7 @@ a {
 	overflow: hidden;
 	background-color: var(--muted);
 	position: relative;
-	border-radius: var(--radius);
+	border-radius: 0;
 }
 .landing .media > img {
 	display: block;

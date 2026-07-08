@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth, useSignIn } from "@clerk/nextjs";
+import { ActiveModeEnum } from "@repo/shared";
 import { Button } from "@repo/ui/components/button";
 import {
 	Card,
@@ -19,6 +20,7 @@ import { Suspense, useState } from "react";
 import { z } from "zod";
 import googleIcon from "../../assets/images/google-icon.png";
 import { PasswordInput } from "../../components/password-input";
+import { Wordmark } from "../../components/wordmark";
 import { AnalyticsEvent, analytics } from "../../utils/analytics";
 import { getClerkErrorMessage } from "../../utils/clerk-error";
 
@@ -37,6 +39,11 @@ function SignInContent() {
 	const raw = searchParams.get("redirect_url");
 	const redirectUrl =
 		raw?.startsWith("/") && !raw.startsWith("//") ? raw : "/portal";
+
+	// Preserve the audience intent through to sign-up, so a visitor who clicked
+	// Sign in from the wrong page (e.g. a vendor) doesn't fall back to couple.
+	const intent = ActiveModeEnum.safeParse(searchParams.get("intent")).data;
+	const signUpHref = intent ? `/sign-up?intent=${intent}` : "/sign-up";
 
 	const [error, setError] = useState("");
 	const [googleLoading, setGoogleLoading] = useState(false);
@@ -108,7 +115,9 @@ function SignInContent() {
 	return (
 		<Card className="w-full max-w-md">
 			<CardHeader className="text-center">
-				<CardTitle className="text-2xl">Sign In</CardTitle>
+				<hr className="stitch-rule mx-auto mb-4 w-12" aria-hidden />
+				<p className="docket text-center">Welcome back</p>
+				<CardTitle className="display text-3xl">Sign in</CardTitle>
 				<CardDescription>
 					Enter your credentials to access your account
 				</CardDescription>
@@ -126,7 +135,9 @@ function SignInContent() {
 						name="email"
 						children={(field) => (
 							<div className="space-y-2">
-								<Label htmlFor="email">Email</Label>
+								<Label htmlFor="email" className="docket">
+									Email
+								</Label>
 								<Input
 									id="email"
 									name="email"
@@ -159,7 +170,9 @@ function SignInContent() {
 						name="password"
 						children={(field) => (
 							<div className="space-y-2">
-								<Label htmlFor="password">Password</Label>
+								<Label htmlFor="password" className="docket">
+									Password
+								</Label>
 								<PasswordInput
 									id="password"
 									name="password"
@@ -202,9 +215,9 @@ function SignInContent() {
 				</form>
 
 				<div className="my-6 flex items-center gap-3">
-					<div className="h-px flex-1 bg-border" />
-					<span className="text-muted-foreground text-sm">or</span>
-					<div className="h-px flex-1 bg-border" />
+					<hr className="stitch-rule flex-1 opacity-70" aria-hidden />
+					<span className="docket">or</span>
+					<hr className="stitch-rule flex-1 opacity-70" aria-hidden />
 				</div>
 
 				<Button
@@ -230,7 +243,7 @@ function SignInContent() {
 
 				<p className="mt-6 text-center text-muted-foreground text-sm">
 					Don't have an account?{" "}
-					<a href="/sign-up" className="text-primary underline">
+					<a href={signUpHref} className="text-primary underline">
 						Sign up
 					</a>
 				</p>
@@ -241,7 +254,8 @@ function SignInContent() {
 
 export default function SignInPage() {
 	return (
-		<div className="flex min-h-screen items-center justify-center bg-background p-4">
+		<div className="brand-backdrop flex min-h-screen flex-col items-center justify-center gap-6 p-4">
+			<Wordmark href="/" />
 			<Suspense fallback={<Spinner className="size-8" />}>
 				<SignInContent />
 			</Suspense>

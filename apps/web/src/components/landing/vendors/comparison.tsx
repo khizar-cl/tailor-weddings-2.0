@@ -25,6 +25,7 @@ export function Comparison() {
 		<section className="hairline border-b">
 			<Container className="py-20 md:py-28">
 				<Reveal>
+					<p className="eyebrow mb-4">Made-to-measure vs. off-the-rack</p>
 					<h2 className="display max-w-[18ch] text-3xl sm:text-4xl md:text-5xl">
 						Two ways to find your next{" "}
 						<span className="accent-text">booking.</span>

@@ -4,11 +4,13 @@ const categories = [
 	"Photography",
 	"Videography",
 	"Florals",
+	"Bridal wear",
 	"Planning",
 	"Catering",
 	"Venues",
 	"Music & DJ",
 	"Beauty",
+	"Invitations",
 ];
 
 export function CategoryMarquee() {

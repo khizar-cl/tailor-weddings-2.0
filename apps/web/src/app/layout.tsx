@@ -6,7 +6,8 @@ import Providers from "../providers/providers";
 
 export const metadata: Metadata = {
 	title: "Tailor Weddings",
-	description: "Tailor Weddings",
+	description:
+		"The wedding atelier — a checklist, a budget, and a team of vendors tailored to your day.",
 };
 
 export default function RootLayout({

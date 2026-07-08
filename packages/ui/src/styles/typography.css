@@ -1,13 +1,15 @@
 @layer base {
 	h1,
 	.h1 {
-		@apply text-3xl font-semibold leading-tight tracking-tight text-foreground;
+		@apply text-3xl font-medium leading-tight text-foreground;
 		font-family: var(--font-serif);
+		letter-spacing: -0.005em;
 	}
 	h2,
 	.h2 {
-		@apply text-2xl font-semibold leading-tight tracking-tight text-foreground;
+		@apply text-2xl font-medium leading-tight text-foreground;
 		font-family: var(--font-serif);
+		letter-spacing: -0.005em;
 	}
 	h3,
 	.h3 {

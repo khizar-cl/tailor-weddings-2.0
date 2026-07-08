@@ -5,9 +5,10 @@ const signUp = { pathname: "/sign-up/" as const, query: { intent: "couple" } };
 
 export function ClosingCta() {
 	return (
-		<section className="sec-forest">
+		<section className="sec-ink">
 			<Container className="py-24 md:py-32">
 				<Reveal className="max-w-2xl">
+					<p className="eyebrow mb-5">The last stitch</p>
 					<h2 className="display text-4xl sm:text-5xl">
 						Find the people who will make your day.
 					</h2>
