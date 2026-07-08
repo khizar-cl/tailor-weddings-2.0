@@ -1,11 +1,22 @@
 import { getYear } from "date-fns";
 import Link from "next/link";
+import { Wordmark } from "../wordmark";
 import { Container, LandingButton } from "./primitives";
 
 export type Audience = "couple" | "vendor";
 
 const signUp = (intent: Audience) => ({
 	pathname: "/sign-up/" as const,
+	query: { intent },
+});
+
+/**
+ * Carry the audience as `intent` into sign-in too, so a visitor who lands on
+ * the wrong page (e.g. a vendor who clicks Sign in, then Sign up) keeps their
+ * intent through the whole auth flow rather than defaulting to couple.
+ */
+const signIn = (intent: Audience) => ({
+	pathname: "/sign-in/" as const,
 	query: { intent },
 });
 
@@ -22,18 +33,6 @@ const config = {
 	},
 };
 
-function Wordmark({ href }: { href: "/" | "/vendors" }) {
-	return (
-		<Link
-			href={href}
-			aria-label="Tailor Weddings home"
-			className="display text-xl tracking-tight"
-		>
-			Tailor <span className="ink-faint font-normal">Weddings</span>
-		</Link>
-	);
-}
-
 export function LandingNav({ audience }: { audience: Audience }) {
 	const c = config[audience];
 	return (
@@ -48,7 +47,7 @@ export function LandingNav({ audience }: { audience: Audience }) {
 						{c.cross.label}
 					</Link>
 					<Link
-						href={{ pathname: "/sign-in/" }}
+						href={signIn(c.cta.intent)}
 						className="ink-soft hidden text-sm transition-colors hover:text-foreground sm:inline"
 					>
 						Sign in
@@ -77,7 +76,7 @@ export function LandingFooter({ audience }: { audience: Audience }) {
 						</p>
 					</div>
 					<div>
-						<p className="mb-3 font-semibold text-sm">For couples</p>
+						<p className="docket mb-4">For couples</p>
 						<ul className="m-0 list-none space-y-2 p-0 text-sm">
 							<li>
 								<Link href="/" className="ink-soft hover:text-foreground">
@@ -86,7 +85,7 @@ export function LandingFooter({ audience }: { audience: Audience }) {
 							</li>
 							<li>
 								<Link
-									href={{ pathname: "/sign-in/" }}
+									href={signIn("couple")}
 									className="ink-soft hover:text-foreground"
 								>
 									Sign in
@@ -95,7 +94,7 @@ export function LandingFooter({ audience }: { audience: Audience }) {
 						</ul>
 					</div>
 					<div>
-						<p className="mb-3 font-semibold text-sm">For professionals</p>
+						<p className="docket mb-4">For professionals</p>
 						<ul className="m-0 list-none space-y-2 p-0 text-sm">
 							<li>
 								<Link
@@ -107,7 +106,7 @@ export function LandingFooter({ audience }: { audience: Audience }) {
 							</li>
 							<li>
 								<Link
-									href={{ pathname: "/sign-in/" }}
+									href={signIn("vendor")}
 									className="ink-soft hover:text-foreground"
 								>
 									Sign in
@@ -116,11 +115,12 @@ export function LandingFooter({ audience }: { audience: Audience }) {
 						</ul>
 					</div>
 				</div>
-				<div className="hairline ink-faint mt-12 flex flex-col gap-2 border-t pt-6 text-sm sm:flex-row sm:items-center sm:justify-between">
-					<p className="m-0">
-						&copy; {year} Tailor Weddings. All rights reserved.
+				<hr className="stitch-rule mt-12 opacity-60" aria-hidden />
+				<div className="ink-faint mt-6 flex flex-col gap-2 pt-0 text-sm sm:flex-row sm:items-center sm:justify-between">
+					<p className="docket m-0 normal-case">
+						&copy; {year} Tailor Weddings
 					</p>
-					<p className="m-0">Trusted. Transparent. Tailored.</p>
+					<p className="docket m-0">Trusted · Transparent · Tailored</p>
 				</div>
 			</Container>
 		</footer>

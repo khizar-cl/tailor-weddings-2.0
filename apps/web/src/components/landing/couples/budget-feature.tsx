@@ -1,6 +1,5 @@
 import { ClipboardListIcon, UsersRoundIcon, WalletIcon } from "lucide-react";
-import budgetPlanner from "../../../assets/images/landing/budget-planner.jpg";
-import { Container, LinkCta, Media } from "../primitives";
+import { Container, Docket, LinkCta } from "../primitives";
 import { Reveal } from "../reveal";
 
 const signUp = { pathname: "/sign-up/" as const, query: { intent: "couple" } };
@@ -14,13 +13,20 @@ const budgetPoints = [
 	{ icon: UsersRoundIcon, text: "Share it all with your partner" },
 ];
 
+const ledger = [
+	{ item: "Venue", amount: "9,500" },
+	{ item: "Photography", amount: "4,200" },
+	{ item: "Catering", amount: "6,800" },
+	{ item: "Florals", amount: "2,100" },
+];
+
 export function BudgetFeature() {
 	return (
 		<section className="hairline sec-surface border-b">
 			<Container className="grid items-center gap-10 py-20 md:grid-cols-2 md:gap-16 md:py-28">
 				<Reveal>
 					<h2 className="display max-w-[14ch] text-3xl sm:text-4xl md:text-5xl">
-						Your budget updates itself.
+						Your budget, kept to measure.
 					</h2>
 					<p className="ink-soft mt-5 max-w-md text-lg leading-relaxed">
 						Add a vendor to your team and their pricing flows straight into your
@@ -44,12 +50,25 @@ export function BudgetFeature() {
 					</div>
 				</Reveal>
 				<Reveal delay={120}>
-					<Media
-						src={budgetPlanner}
-						alt="A wedding planning notebook with a checklist and budget"
-						ratioClassName="aspect-[5/4]"
-						zoom
-					/>
+					<div className="swatch swatch-tag p-6 sm:p-8">
+						<Docket className="mb-1">Estimate · updated live</Docket>
+						<hr className="tick-rule mb-5" aria-hidden />
+						<dl className="m-0 grid gap-0">
+							{ledger.map(({ item, amount }) => (
+								<div
+									key={item}
+									className="hairline flex items-baseline justify-between border-b py-3"
+								>
+									<dt className="text-sm">{item}</dt>
+									<dd className="docket-num m-0 text-sm">${amount}</dd>
+								</div>
+							))}
+							<div className="flex items-baseline justify-between pt-4">
+								<dt className="docket">Est. total</dt>
+								<dd className="docket-num m-0 text-2xl accent-text">$22,600</dd>
+							</div>
+						</dl>
+					</div>
 				</Reveal>
 			</Container>
 		</section>

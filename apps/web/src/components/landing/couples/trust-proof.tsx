@@ -1,4 +1,4 @@
-import { Container } from "../primitives";
+import { Container, MetaRail } from "../primitives";
 import { Reveal } from "../reveal";
 
 const proof = [
@@ -20,26 +20,28 @@ export function TrustProof() {
 	return (
 		<section className="hairline border-b">
 			<Container className="py-20 md:py-28">
-				<Reveal>
-					<h2 className="display max-w-[16ch] text-3xl sm:text-4xl md:text-5xl">
-						Reviews from the people who were{" "}
-						<span className="accent-text">actually there.</span>
-					</h2>
-				</Reveal>
-				<div className="mt-12 grid gap-px overflow-hidden rounded-md bg-border sm:grid-cols-3">
-					{proof.map((item, i) => (
-						<Reveal
-							key={item.title}
-							delay={i * 90}
-							className="bg-background p-6 md:p-8"
-						>
-							<p className="font-semibold text-lg">{item.title}</p>
-							<p className="ink-soft mt-2 text-sm leading-relaxed">
-								{item.body}
-							</p>
-						</Reveal>
-					))}
-				</div>
+				<MetaRail index="01" label="Why Tailor">
+					<Reveal>
+						<h2 className="display max-w-[16ch] text-3xl sm:text-4xl md:text-5xl">
+							Reviews from the people who were{" "}
+							<span className="accent-text">actually there.</span>
+						</h2>
+					</Reveal>
+					<div className="mt-12 grid gap-x-10 gap-y-10 sm:grid-cols-3">
+						{proof.map((item, i) => (
+							<Reveal key={item.title} delay={i * 90}>
+								<p className="docket accent-text">
+									{String(i + 1).padStart(2, "0")}
+								</p>
+								<hr className="stitch-rule mt-3 w-10" aria-hidden />
+								<p className="mt-4 font-semibold text-lg">{item.title}</p>
+								<p className="ink-soft mt-2 text-sm leading-relaxed">
+									{item.body}
+								</p>
+							</Reveal>
+						))}
+					</div>
+				</MetaRail>
 			</Container>
 		</section>
 	);

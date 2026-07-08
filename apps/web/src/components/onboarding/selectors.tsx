@@ -41,13 +41,13 @@ export function ChipSelect({
 						aria-pressed={isSelected}
 						onClick={() => onToggle(option.value)}
 						className={cn(
-							"inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm transition disabled:opacity-50",
+							"inline-flex items-center gap-1.5 rounded-sm border px-3.5 py-1.5 text-sm transition disabled:opacity-50",
 							isSelected
-								? "border-gold bg-gold/12 text-foreground"
+								? "border-gold bg-gold/12 text-foreground shadow-paper-sm"
 								: "border-border text-muted-foreground hover:border-gold/50 hover:text-foreground",
 						)}
 					>
-						{isSelected && <CheckIcon className="size-3.5 text-gold" />}
+						{isSelected && <CheckIcon className="size-3.5 text-thread-ink" />}
 						{option.label}
 					</button>
 				);
@@ -84,10 +84,10 @@ export function PaletteSelect({
 						onClick={() => onToggle(hex)}
 						style={{ backgroundColor: hex }}
 						className={cn(
-							"flex size-9 items-center justify-center rounded-full border border-black/10 transition disabled:opacity-50",
+							"flex size-10 items-center justify-center rounded-none border border-foreground/10 transition disabled:opacity-50",
 							isSelected
 								? "ring-2 ring-gold ring-offset-2 ring-offset-background"
-								: "hover:scale-105",
+								: "hover:-translate-y-0.5",
 						)}
 					>
 						{isSelected && (

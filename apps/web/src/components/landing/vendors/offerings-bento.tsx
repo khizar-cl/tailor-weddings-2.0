@@ -3,7 +3,7 @@ import offeringsCouple from "../../../assets/images/landing/offerings-couple.jpg
 import offeringsPhotographer from "../../../assets/images/landing/offerings-photographer.jpg";
 import offeringsPortrait from "../../../assets/images/landing/offerings-portrait.jpg";
 import offeringsReception from "../../../assets/images/landing/offerings-reception.jpg";
-import { Container, Eyebrow, Media } from "../primitives";
+import { Container, Eyebrow, SwatchMedia } from "../primitives";
 import { Reveal } from "../reveal";
 
 const offerings = [
@@ -54,8 +54,13 @@ export function OfferingsBento() {
 									: "flex flex-col gap-2"
 							}
 						>
-							<Media src={tile.src} alt={tile.alt} className="flex-1" zoom />
-							<p className="font-semibold text-sm">{tile.label}</p>
+							<SwatchMedia
+								src={tile.src}
+								alt={tile.alt}
+								className="flex-1"
+								tag={tile.big}
+							/>
+							<p className="docket">{tile.label}</p>
 						</Reveal>
 					))}
 				</div>

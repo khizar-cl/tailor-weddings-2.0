@@ -19,9 +19,7 @@ export function SpecialtyRow() {
 			aria-label="Specialties on Tailor"
 		>
 			<Container className="flex flex-wrap items-center gap-3 py-8">
-				<span className="ink-soft mr-2 text-sm">
-					Every discipline couples book:
-				</span>
+				<span className="docket mr-2">Every discipline couples book</span>
 				{specialties.map((item) => (
 					<Badge
 						key={item}

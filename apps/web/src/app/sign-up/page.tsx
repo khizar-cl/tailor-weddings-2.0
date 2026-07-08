@@ -21,6 +21,7 @@ import { z } from "zod";
 import googleIcon from "../../assets/images/google-icon.png";
 import { PasswordInput } from "../../components/password-input";
 import { PasswordStrengthMeter } from "../../components/password-strength-meter";
+import { Wordmark } from "../../components/wordmark";
 import { AnalyticsEvent, analytics } from "../../utils/analytics";
 import { getClerkErrorMessage } from "../../utils/clerk-error";
 import { isPasswordStringValid } from "../../utils/password";
@@ -168,8 +169,16 @@ function SignUpContent() {
 	return (
 		<Card className="w-full max-w-md">
 			<CardHeader className="text-center">
-				<CardTitle className="text-2xl">
-					{isInvitation ? "Accept Invitation" : "Create Account"}
+				<hr className="stitch-rule mx-auto mb-4 w-12" aria-hidden />
+				<p className="docket text-center">
+					{isInvitation
+						? "Join the team"
+						: intent === "vendor"
+							? "For professionals"
+							: "For couples"}
+				</p>
+				<CardTitle className="display text-3xl">
+					{isInvitation ? "Accept invitation" : "Create your account"}
 				</CardTitle>
 				<CardDescription>
 					{isInvitation
@@ -190,7 +199,9 @@ function SignUpContent() {
 						name="name"
 						children={(field) => (
 							<div className="space-y-2">
-								<Label htmlFor="name">Full Name</Label>
+								<Label htmlFor="name" className="docket">
+									Full name
+								</Label>
 								<Input
 									id="name"
 									name="name"
@@ -223,7 +234,9 @@ function SignUpContent() {
 						name="email"
 						children={(field) => (
 							<div className="space-y-2">
-								<Label htmlFor="email">Email</Label>
+								<Label htmlFor="email" className="docket">
+									Email
+								</Label>
 								<Input
 									id="email"
 									name="email"
@@ -267,7 +280,9 @@ function SignUpContent() {
 						name="password"
 						children={(field) => (
 							<div className="space-y-2">
-								<Label htmlFor="password">Password</Label>
+								<Label htmlFor="password" className="docket">
+									Password
+								</Label>
 								<PasswordInput
 									id="password"
 									name="password"
@@ -307,7 +322,9 @@ function SignUpContent() {
 						name="confirmPassword"
 						children={(field) => (
 							<div className="space-y-2">
-								<Label htmlFor="confirmPassword">Confirm Password</Label>
+								<Label htmlFor="confirmPassword" className="docket">
+									Confirm password
+								</Label>
 								<PasswordInput
 									id="confirmPassword"
 									name="confirmPassword"
@@ -343,9 +360,9 @@ function SignUpContent() {
 				{!isInvitation && (
 					<>
 						<div className="my-6 flex items-center gap-3">
-							<div className="h-px flex-1 bg-border" />
-							<span className="text-muted-foreground text-sm">or</span>
-							<div className="h-px flex-1 bg-border" />
+							<hr className="stitch-rule flex-1 opacity-70" aria-hidden />
+							<span className="docket">or</span>
+							<hr className="stitch-rule flex-1 opacity-70" aria-hidden />
 						</div>
 
 						<Button
@@ -373,7 +390,10 @@ function SignUpContent() {
 
 				<p className="mt-6 text-center text-muted-foreground text-sm">
 					Already have an account?{" "}
-					<a href="/sign-in" className="text-primary underline">
+					<a
+						href={`/sign-in?intent=${intent}`}
+						className="text-primary underline"
+					>
 						Sign in
 					</a>
 				</p>
@@ -384,7 +404,8 @@ function SignUpContent() {
 
 export default function SignUpPage() {
 	return (
-		<div className="flex min-h-screen items-center justify-center bg-background p-4">
+		<div className="brand-backdrop flex min-h-screen flex-col items-center justify-center gap-6 p-4">
+			<Wordmark href="/" />
 			<Suspense fallback={<Spinner className="size-8" />}>
 				<SignUpContent />
 			</Suspense>

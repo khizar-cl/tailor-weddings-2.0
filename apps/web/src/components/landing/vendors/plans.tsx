@@ -30,14 +30,21 @@ export function Plans() {
 	return (
 		<section className="hairline border-b">
 			<Container className="py-20 md:py-28">
+				<p className="eyebrow mb-4">The order book</p>
 				<h2 className="display max-w-[16ch] text-3xl sm:text-4xl md:text-5xl">
 					Start free. Upgrade when it pays off.
 				</h2>
 				<div className="mt-10 grid gap-6 md:grid-cols-2">
 					<Card className="h-full">
 						<CardHeader>
-							<CardTitle className="ink-faint text-base">Free</CardTitle>
-							<CardDescription className="display text-2xl text-foreground">
+							<CardTitle className="docket">Free</CardTitle>
+							<p className="docket-num mt-1 text-4xl text-foreground">
+								$0
+								<span className="docket ml-1 align-middle text-muted-foreground">
+									/ mo
+								</span>
+							</p>
+							<CardDescription className="display mt-1 text-2xl text-foreground">
 								For getting established
 							</CardDescription>
 						</CardHeader>
@@ -64,10 +71,16 @@ export function Plans() {
 					<Card className="h-full border-primary/40 bg-secondary">
 						<CardHeader>
 							<div className="flex items-center gap-3">
-								<CardTitle className="ink-faint text-base">Pro</CardTitle>
+								<CardTitle className="docket">Pro</CardTitle>
 								<Badge tone="primary">Coming soon</Badge>
 							</div>
-							<CardDescription className="display text-2xl text-foreground">
+							<p className="docket-num mt-1 text-4xl text-foreground">
+								$—
+								<span className="docket ml-1 align-middle text-muted-foreground">
+									/ mo
+								</span>
+							</p>
+							<CardDescription className="display mt-1 text-2xl text-foreground">
 								For growing studios
 							</CardDescription>
 						</CardHeader>

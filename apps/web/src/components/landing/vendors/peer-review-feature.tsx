@@ -1,6 +1,6 @@
 import { ImageIcon, StarIcon, TagIcon } from "lucide-react";
 import peerReviewVenue from "../../../assets/images/landing/peer-review-venue.jpg";
-import { Container, LinkCta, Media } from "../primitives";
+import { Container, LinkCta, SwatchMedia } from "../primitives";
 import { Reveal } from "../reveal";
 
 const signUp = { pathname: "/sign-up/" as const, query: { intent: "vendor" } };
@@ -16,6 +16,7 @@ export function PeerReviewFeature() {
 		<section className="hairline border-b">
 			<Container className="grid items-center gap-10 py-20 md:grid-cols-2 md:gap-16 md:py-28">
 				<Reveal>
+					<p className="eyebrow mb-4">Cut from real events</p>
 					<h2 className="display max-w-[14ch] text-3xl sm:text-4xl md:text-5xl">
 						Reviews you cannot buy.
 					</h2>
@@ -41,11 +42,11 @@ export function PeerReviewFeature() {
 					</div>
 				</Reveal>
 				<Reveal delay={120}>
-					<Media
+					<SwatchMedia
 						src={peerReviewVenue}
 						alt="A wedding venue set up by a team of vendors"
 						ratioClassName="aspect-[5/4]"
-						zoom
+						tag
 					/>
 				</Reveal>
 			</Container>
