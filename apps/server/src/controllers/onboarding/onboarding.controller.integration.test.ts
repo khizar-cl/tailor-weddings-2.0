@@ -9,9 +9,13 @@ import {
 import { truncateTables } from "../../../tests/helpers/db.test-helper";
 import { db } from "../../db/db";
 import {
+	budgetItems,
 	categories,
+	checklistItems,
 	users,
+	vendorAccounts,
 	vendorBusinesses,
+	vendorRecommendations,
 	vendorServices,
 	weddings,
 } from "../../db/schema";
@@ -35,6 +39,50 @@ async function seedCategory(slug = "photography", name = "Photography") {
 		.returning({ uuid: categories.uuid });
 	if (!row) throw new Error("Failed to seed category");
 	return row.uuid;
+}
+
+/** Seed a published vendor business offering `categorySlug` in `region`. */
+async function seedPublishedVendor(region: string, categorySlug: string) {
+	const category = await db.query.categories.findFirst({
+		where: eq(categories.slug, categorySlug),
+		columns: { id: true },
+	});
+	if (!category) throw new Error("Seed the category before the vendor");
+
+	const [vendorUser] = await db
+		.insert(users)
+		.values({
+			clerkId: `vendor_${categorySlug}`,
+			email: `vendor_${categorySlug}@example.com`,
+			name: "Test Vendor",
+		})
+		.returning({ id: users.id });
+	if (!vendorUser) throw new Error("Failed to seed vendor user");
+
+	const [account] = await db
+		.insert(vendorAccounts)
+		.values({ userId: vendorUser.id })
+		.returning({ id: vendorAccounts.id });
+	if (!account) throw new Error("Failed to seed vendor account");
+
+	const [business] = await db
+		.insert(vendorBusinesses)
+		.values({
+			vendorAccountId: account.id,
+			businessName: "Test Vendor Studio",
+			region,
+			isVerified: true,
+		})
+		.returning({ id: vendorBusinesses.id });
+	if (!business) throw new Error("Failed to seed vendor business");
+
+	await db.insert(vendorServices).values({
+		vendorBusinessId: business.id,
+		categoryId: category.id,
+		isPublished: true,
+		isPrimary: true,
+	});
+	return business.id;
 }
 
 beforeEach(async () => {
@@ -101,6 +149,134 @@ describe("onboarding.submitCouple", () => {
 		expect(wedding?.city).toBe("Austin");
 		expect(wedding?.estimatedBudgetCents).toBe(3_500_000);
 		expect(wedding?.styleTags).toEqual(["Modern", "Garden"]);
+		if (!wedding) throw new Error("Wedding not found");
+
+		const checklist = await db.query.checklistItems.findMany({
+			where: eq(checklistItems.weddingId, wedding.id),
+		});
+		expect(checklist.length).toBeGreaterThan(0);
+		expect(checklist.every((item) => item.source === "generated")).toBe(true);
+
+		const budget = await db.query.budgetItems.findMany({
+			where: eq(budgetItems.weddingId, wedding.id),
+		});
+		expect(budget.length).toBeGreaterThan(0);
+		const totalEstimated = budget.reduce(
+			(sum, line) => sum + (line.estimatedCents ?? 0),
+			0,
+		);
+		// The allocation splits ~100% of the couple's budget (rounding aside).
+		expect(totalEstimated).toBeGreaterThan(3_400_000);
+		expect(totalEstimated).toBeLessThanOrEqual(3_500_000);
+	});
+
+	it("regenerates generated tasks but keeps the couple's manual tasks on re-run", async () => {
+		const first = await rpc("/rpc/onboarding/submitCouple", {
+			estimatedBudgetCents: 3_500_000,
+			guestCountEstimate: 120,
+			city: "Austin",
+			region: "Texas",
+			styleTags: ["Modern"],
+			stylePalette: [],
+		}).expect(200);
+		expect(first.status).toBe(200);
+
+		const addRes = await rpc("/rpc/checklist/addTask", {
+			title: "Taste-test the cake",
+		}).expect(200);
+		const manualUuid = rpcBody(addRes).uuid;
+
+		await rpc("/rpc/onboarding/submitCouple", {
+			estimatedBudgetCents: 3_500_000,
+			guestCountEstimate: 120,
+			city: "Austin",
+			region: "Texas",
+			styleTags: ["Garden"],
+			stylePalette: [],
+		}).expect(200);
+
+		const listRes = await withAuth(
+			request(app).post("/rpc/checklist/list"),
+		).expect(200);
+		const items: Array<{ uuid: string; source: string }> =
+			rpcBody(listRes).items;
+
+		// The manual task survives regeneration; generated tasks are replaced once.
+		expect(items.some((i) => i.uuid === manualUuid)).toBe(true);
+		const generated = items.filter((i) => i.source === "generated");
+		const generatedUuids = new Set(generated.map((i) => i.uuid));
+		expect(generatedUuids.size).toBe(generated.length);
+	});
+
+	it("buckets past-due tasks into 'Start now' when the wedding is close", async () => {
+		// Wedding ~3 months out: long-lead tasks (venue, photographer, etc.)
+		// would fall in the past.
+		const weddingDate = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000);
+
+		await rpc("/rpc/onboarding/submitCouple", {
+			weddingDate: weddingDate.toISOString(),
+			estimatedBudgetCents: 3_500_000,
+			guestCountEstimate: 120,
+			city: "Austin",
+			region: "Texas",
+			styleTags: ["Modern"],
+			stylePalette: [],
+		}).expect(200);
+
+		const [user] = await db
+			.select({ id: users.id })
+			.from(users)
+			.where(eq(users.email, "test@example.com"));
+		if (!user) throw new Error("Test user not found");
+		const wedding = await db.query.weddings.findFirst({
+			where: eq(weddings.ownerUserId, user.id),
+		});
+		if (!wedding) throw new Error("Wedding not found");
+
+		const checklist = await db.query.checklistItems.findMany({
+			where: eq(checklistItems.weddingId, wedding.id),
+		});
+		// No generated task is left with a past due date...
+		expect(
+			checklist.every(
+				(item) => item.dueDate === null || item.dueDate.getTime() > Date.now(),
+			),
+		).toBe(true);
+		// ...and the long-lead ones are collapsed to no due date (shown as "start now").
+		expect(checklist.some((item) => item.dueDate === null)).toBe(true);
+	});
+
+	it("generates vendor recommendations from published businesses in the region", async () => {
+		await seedCategory("photography", "Photography");
+		const businessId = await seedPublishedVendor("Texas", "photography");
+
+		await rpc("/rpc/onboarding/submitCouple", {
+			estimatedBudgetCents: 3_500_000,
+			guestCountEstimate: 120,
+			city: "Austin",
+			region: "Texas",
+			styleTags: ["Modern"],
+			stylePalette: [],
+		}).expect(200);
+
+		const [user] = await db
+			.select({ id: users.id })
+			.from(users)
+			.where(eq(users.email, "test@example.com"));
+		if (!user) throw new Error("Test user not found");
+		const wedding = await db.query.weddings.findFirst({
+			where: eq(weddings.ownerUserId, user.id),
+		});
+		if (!wedding) throw new Error("Wedding not found");
+
+		const recs = await db.query.vendorRecommendations.findMany({
+			where: eq(vendorRecommendations.weddingId, wedding.id),
+		});
+		expect(recs).toHaveLength(1);
+		expect(recs[0]?.vendorBusinessId).toBe(businessId);
+		// region + verified bonuses on top of the base score.
+		expect(recs[0]?.matchScore).toBe(100);
+		expect(recs[0]?.categoryId).not.toBeNull();
 	});
 });
 
