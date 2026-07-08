@@ -390,6 +390,114 @@ describe("onboarding.submitCouple", () => {
 		expect(recs[0]?.vendorBusinessId).toBe(businessId);
 		expect(recs[0]?.matchScore).toBe(100);
 	});
+
+	it("adds a partial bonus when the price is modestly over the slice", async () => {
+		await seedCategory("photography", "Photography");
+		// Photography slice = 10% of $35k = $3,500; $4,000 is within 1.25x ($4,375).
+		await seedPublishedVendor({
+			region: "Texas",
+			categorySlug: "photography",
+			isVerified: false,
+			startingPriceCents: 400_000,
+		});
+
+		await submitTexasCouple();
+
+		const recs = await recommendationsForOwner();
+		expect(recs[0]?.matchScore).toBe(90); // 60 + 25 region + 5 near budget
+		expect(recs[0]?.rationale).not.toContain("fits your budget");
+	});
+
+	it("orders recommendations by match score, highest first", async () => {
+		await seedCategory("photography", "Photography");
+		await seedCategory("catering", "Catering");
+		// Strong match: verified, in-region, fits budget → 100 (clamped).
+		await seedPublishedVendor({
+			region: "Texas",
+			categorySlug: "photography",
+			startingPriceCents: 300_000,
+		});
+		// Weak match: unverified, out-of-region, no price → 60.
+		await seedPublishedVendor({
+			region: "Oregon",
+			categorySlug: "catering",
+			isVerified: false,
+			key: "catering",
+		});
+
+		await submitTexasCouple();
+
+		const [user] = await db
+			.select({ id: users.id })
+			.from(users)
+			.where(eq(users.email, "test@example.com"));
+		if (!user) throw new Error("Test user not found");
+		const wedding = await db.query.weddings.findFirst({
+			where: eq(weddings.ownerUserId, user.id),
+		});
+		if (!wedding) throw new Error("Wedding not found");
+		// Rows are inserted in ranked order, so id-ascending reflects the sort.
+		const recs = await db.query.vendorRecommendations.findMany({
+			where: eq(vendorRecommendations.weddingId, wedding.id),
+			orderBy: (rec, { asc }) => asc(rec.id),
+		});
+		expect(recs.map((r) => r.matchScore)).toEqual([100, 60]);
+	});
+
+	it("excludes custom (uncategorized) services from recommendations", async () => {
+		const [vendorUser] = await db
+			.insert(users)
+			.values({
+				clerkId: "vendor_custom",
+				email: "vendor_custom@example.com",
+				name: "Custom Vendor",
+			})
+			.returning({ id: users.id });
+		if (!vendorUser) throw new Error("Failed to seed vendor user");
+		const [account] = await db
+			.insert(vendorAccounts)
+			.values({ userId: vendorUser.id })
+			.returning({ id: vendorAccounts.id });
+		if (!account) throw new Error("Failed to seed vendor account");
+		const [business] = await db
+			.insert(vendorBusinesses)
+			.values({
+				vendorAccountId: account.id,
+				businessName: "Custom Studio",
+				region: "Texas",
+				isVerified: true,
+			})
+			.returning({ id: vendorBusinesses.id });
+		if (!business) throw new Error("Failed to seed vendor business");
+		// Custom service: no category, free-text label — not discoverable yet.
+		await db.insert(vendorServices).values({
+			vendorBusinessId: business.id,
+			categoryId: null,
+			customLabel: "Balloon artistry",
+			isPublished: true,
+			isPrimary: true,
+		});
+
+		await submitTexasCouple();
+
+		expect(await recommendationsForOwner()).toHaveLength(0);
+	});
+
+	it("excludes services whose business is soft-deleted", async () => {
+		await seedCategory("photography", "Photography");
+		const businessId = await seedPublishedVendor({
+			region: "Texas",
+			categorySlug: "photography",
+		});
+		await db
+			.update(vendorBusinesses)
+			.set({ deletedAt: new Date() })
+			.where(eq(vendorBusinesses.id, businessId));
+
+		await submitTexasCouple();
+
+		expect(await recommendationsForOwner()).toHaveLength(0);
+	});
 });
 
 describe("onboarding.submitVendor", () => {
