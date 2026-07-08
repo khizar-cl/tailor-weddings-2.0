@@ -18,16 +18,27 @@ export const PriceUnitEnum = z.enum(["flat", "hourly", "per_guest"]);
 export type PriceUnit = z.infer<typeof PriceUnitEnum>;
 
 /**
- * Per-tier feature limits. Read on the server to gate publishing / uploads and
- * on the client to show limits and upgrade prompts. Infinity encodes "no cap".
+ * Per-tier feature limits. A vendor has one business offering many services
+ * (categories); these gate how many services it may offer and how many
+ * portfolio images each service may hold. Read on the server to enforce, and on
+ * the client to show limits / upgrade prompts.
  */
 export const TIER_LIMITS = {
-	free: { maxPublishedProfiles: 1, maxPortfolioImages: 10 },
+	free: {
+		maxServices: 1,
+		maxPortfolioImagesPerService: 5,
+		priorityMatching: false,
+	},
 	pro: {
-		maxPublishedProfiles: Number.POSITIVE_INFINITY,
-		maxPortfolioImages: Number.POSITIVE_INFINITY,
+		maxServices: 10,
+		maxPortfolioImagesPerService: 20,
+		priorityMatching: true,
 	},
 } as const satisfies Record<
 	SubscriptionTier,
-	{ maxPublishedProfiles: number; maxPortfolioImages: number }
+	{
+		maxServices: number;
+		maxPortfolioImagesPerService: number;
+		priorityMatching: boolean;
+	}
 >;

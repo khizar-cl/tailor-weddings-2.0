@@ -1,5 +1,6 @@
 "use client";
 
+import { TIER_LIMITS } from "@repo/shared";
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { Label } from "@repo/ui/components/label";
@@ -14,9 +15,13 @@ import { useSubmitVendorOnboarding } from "../../../../api/onboarding.api";
 import { OnboardingShell } from "../../../../components/onboarding/onboarding-shell";
 import { ChipSelect } from "../../../../components/onboarding/selectors";
 
+// New vendors start on the free tier, which caps how many services they can
+// offer. The server enforces the same limit against the account's actual tier.
+const MAX_SERVICES = TIER_LIMITS.free.maxServices;
+
 const VendorFormSchema = z.object({
 	businessName: z.string().trim().min(2, "Enter your business name"),
-	categoryUuid: z.string().min(1, "Choose a category"),
+	categoryUuids: z.array(z.string()).min(1, "Choose at least one service"),
 	region: z.string().trim().min(1, "Enter the region you serve"),
 	city: z.string(),
 	tagline: z.string().max(200, "Keep your tagline under 200 characters"),
@@ -36,7 +41,7 @@ export default function VendorOnboardingPage() {
 	const form = useForm({
 		defaultValues: {
 			businessName: "",
-			categoryUuid: "",
+			categoryUuids: [] as string[],
 			region: "",
 			city: "",
 			tagline: "",
@@ -45,7 +50,7 @@ export default function VendorOnboardingPage() {
 		onSubmit: ({ value }) => {
 			submit.mutate({
 				businessName: value.businessName.trim(),
-				categoryUuid: value.categoryUuid,
+				categoryUuids: value.categoryUuids,
 				region: value.region.trim(),
 				city: value.city.trim() || undefined,
 				tagline: value.tagline.trim() || undefined,
@@ -56,7 +61,7 @@ export default function VendorOnboardingPage() {
 	async function goToReach() {
 		const errors = await Promise.all([
 			form.validateField("businessName", "change"),
-			form.validateField("categoryUuid", "change"),
+			form.validateField("categoryUuids", "change"),
 		]);
 		if (errors.every((e) => e.length === 0)) setStep(1);
 	}
@@ -121,10 +126,15 @@ export default function VendorOnboardingPage() {
 							)}
 						</form.Field>
 
-						<form.Field name="categoryUuid">
+						<form.Field name="categoryUuids">
 							{(field) => (
 								<div className="form-container">
-									<Label>Category</Label>
+									<Label>Services you offer</Label>
+									<p className="help-text">
+										Your plan includes {MAX_SERVICES} service
+										{MAX_SERVICES === 1 ? "" : "s"}. You can add more after
+										upgrading.
+									</p>
 									{categoriesQuery.isLoading ? (
 										<div className="flex items-center gap-2 text-muted-foreground text-sm">
 											<Spinner className="size-4" />
@@ -137,12 +147,19 @@ export default function VendorOnboardingPage() {
 									) : (
 										<ChipSelect
 											options={categoryOptions}
-											selected={field.state.value ? [field.state.value] : []}
-											onToggle={(value) =>
-												field.handleChange(
-													field.state.value === value ? "" : value,
-												)
-											}
+											selected={field.state.value}
+											onToggle={(value) => {
+												const current = field.state.value;
+												if (current.includes(value)) {
+													field.handleChange(
+														current.filter((v) => v !== value),
+													);
+												} else if (MAX_SERVICES === 1) {
+													field.handleChange([value]);
+												} else if (current.length < MAX_SERVICES) {
+													field.handleChange([...current, value]);
+												}
+											}}
 											invalid={
 												field.state.meta.isTouched &&
 												field.state.meta.errors.length > 0

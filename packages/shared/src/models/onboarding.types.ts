@@ -35,12 +35,17 @@ export const CoupleOnboardingInput = z.object({
 export type CoupleOnboardingInput = z.infer<typeof CoupleOnboardingInput>;
 
 /**
- * Lightweight vendor onboarding capture — creates the vendor's first (draft,
- * unpublished) profile. Packages, portfolio, and publishing come later.
+ * Lightweight vendor onboarding capture — creates the vendor's single (draft,
+ * unpublished) business and one draft service per selected category. Packages,
+ * portfolio, custom services, and publishing come later. The number of services
+ * a tier allows is enforced server-side against TIER_LIMITS.
  */
 export const VendorOnboardingInput = z.object({
 	businessName: z.string().trim().min(2, "Enter your business name").max(120),
-	categoryUuid: z.string().uuid("Choose a category"),
+	categoryUuids: z
+		.array(z.string().uuid("Choose a category"))
+		.min(1, "Choose at least one service")
+		.max(20, "That's too many services"),
 	region: z.string().trim().min(1, "Enter the region you serve").max(120),
 	city: z.string().trim().max(120).optional(),
 	tagline: z.string().trim().max(200).optional(),

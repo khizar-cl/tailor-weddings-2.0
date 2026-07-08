@@ -11,7 +11,7 @@ import {
 import { auditColumns } from "./_shared";
 import { reviewTypeEnum } from "./enums.schema";
 import { users } from "./users.schema";
-import { vendorProfiles } from "./vendor-profile.schema";
+import { vendorBusinesses } from "./vendor-business.schema";
 import { weddings } from "./wedding.schema";
 
 // Paired with ReviewRequestStatusEnum in packages/shared/src/models/review.types.ts.
@@ -35,9 +35,9 @@ export const reviewRequests = pgTable(
 		weddingId: integer("wedding_id")
 			.notNull()
 			.references(() => weddings.id),
-		subjectVendorProfileId: integer("subject_vendor_profile_id")
+		subjectVendorBusinessId: integer("subject_vendor_business_id")
 			.notNull()
-			.references(() => vendorProfiles.id),
+			.references(() => vendorBusinesses.id),
 		targetUserId: integer("target_user_id")
 			.notNull()
 			.references(() => users.id),
@@ -50,8 +50,8 @@ export const reviewRequests = pgTable(
 	},
 	(table) => [
 		index("review_requests_target_user_id_idx").on(table.targetUserId),
-		index("review_requests_subject_vendor_profile_id_idx").on(
-			table.subjectVendorProfileId,
+		index("review_requests_subject_vendor_business_id_idx").on(
+			table.subjectVendorBusinessId,
 		),
 		index("review_requests_wedding_id_idx").on(table.weddingId),
 	],
@@ -62,9 +62,9 @@ export const reviewRequestsRelations = relations(reviewRequests, ({ one }) => ({
 		fields: [reviewRequests.weddingId],
 		references: [weddings.id],
 	}),
-	subjectVendorProfile: one(vendorProfiles, {
-		fields: [reviewRequests.subjectVendorProfileId],
-		references: [vendorProfiles.id],
+	subjectVendorBusiness: one(vendorBusinesses, {
+		fields: [reviewRequests.subjectVendorBusinessId],
+		references: [vendorBusinesses.id],
 	}),
 	targetUser: one(users, {
 		fields: [reviewRequests.targetUserId],

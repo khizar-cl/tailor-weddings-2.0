@@ -1,0 +1,3479 @@
+{
+	"id": "0effcba2-0cda-49c8-ad67-b00342116159",
+	"prevId": "c6186c97-f7cd-4c5f-b662-de4051733407",
+	"version": "7",
+	"dialect": "postgresql",
+	"tables": {
+		"public.bookings": {
+			"name": "bookings",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"uuid": {
+					"name": "uuid",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"wedding_id": {
+					"name": "wedding_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"vendor_business_id": {
+					"name": "vendor_business_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"service_package_id": {
+					"name": "service_package_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"status": {
+					"name": "status",
+					"type": "booking_status",
+					"typeSchema": "public",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'pending'"
+				},
+				"booked_at": {
+					"name": "booked_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"confirmed_at": {
+					"name": "confirmed_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_by": {
+					"name": "created_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_by": {
+					"name": "updated_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"deleted_at": {
+					"name": "deleted_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {
+				"bookings_wedding_id_idx": {
+					"name": "bookings_wedding_id_idx",
+					"columns": [
+						{
+							"expression": "wedding_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"bookings_vendor_business_id_idx": {
+					"name": "bookings_vendor_business_id_idx",
+					"columns": [
+						{
+							"expression": "vendor_business_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"bookings_wedding_id_weddings_id_fk": {
+					"name": "bookings_wedding_id_weddings_id_fk",
+					"tableFrom": "bookings",
+					"tableTo": "weddings",
+					"columnsFrom": ["wedding_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"bookings_vendor_business_id_vendor_businesses_id_fk": {
+					"name": "bookings_vendor_business_id_vendor_businesses_id_fk",
+					"tableFrom": "bookings",
+					"tableTo": "vendor_businesses",
+					"columnsFrom": ["vendor_business_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"bookings_service_package_id_service_packages_id_fk": {
+					"name": "bookings_service_package_id_service_packages_id_fk",
+					"tableFrom": "bookings",
+					"tableTo": "service_packages",
+					"columnsFrom": ["service_package_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"bookings_created_by_users_id_fk": {
+					"name": "bookings_created_by_users_id_fk",
+					"tableFrom": "bookings",
+					"tableTo": "users",
+					"columnsFrom": ["created_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"bookings_updated_by_users_id_fk": {
+					"name": "bookings_updated_by_users_id_fk",
+					"tableFrom": "bookings",
+					"tableTo": "users",
+					"columnsFrom": ["updated_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"bookings_uuid_unique": {
+					"name": "bookings_uuid_unique",
+					"nullsNotDistinct": false,
+					"columns": ["uuid"]
+				},
+				"bookings_wedding_vendor_uniq": {
+					"name": "bookings_wedding_vendor_uniq",
+					"nullsNotDistinct": false,
+					"columns": ["wedding_id", "vendor_business_id"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.budget_items": {
+			"name": "budget_items",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"uuid": {
+					"name": "uuid",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"wedding_id": {
+					"name": "wedding_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"category": {
+					"name": "category",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"label": {
+					"name": "label",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"estimated_cents": {
+					"name": "estimated_cents",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"actual_cents": {
+					"name": "actual_cents",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"vendor_business_id": {
+					"name": "vendor_business_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"service_package_id": {
+					"name": "service_package_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"source": {
+					"name": "source",
+					"type": "content_source",
+					"typeSchema": "public",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'manual'"
+				},
+				"created_by": {
+					"name": "created_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_by": {
+					"name": "updated_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"deleted_at": {
+					"name": "deleted_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {
+				"budget_items_wedding_id_idx": {
+					"name": "budget_items_wedding_id_idx",
+					"columns": [
+						{
+							"expression": "wedding_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"budget_items_vendor_business_id_idx": {
+					"name": "budget_items_vendor_business_id_idx",
+					"columns": [
+						{
+							"expression": "vendor_business_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"budget_items_wedding_id_weddings_id_fk": {
+					"name": "budget_items_wedding_id_weddings_id_fk",
+					"tableFrom": "budget_items",
+					"tableTo": "weddings",
+					"columnsFrom": ["wedding_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"budget_items_vendor_business_id_vendor_businesses_id_fk": {
+					"name": "budget_items_vendor_business_id_vendor_businesses_id_fk",
+					"tableFrom": "budget_items",
+					"tableTo": "vendor_businesses",
+					"columnsFrom": ["vendor_business_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"budget_items_service_package_id_service_packages_id_fk": {
+					"name": "budget_items_service_package_id_service_packages_id_fk",
+					"tableFrom": "budget_items",
+					"tableTo": "service_packages",
+					"columnsFrom": ["service_package_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"budget_items_created_by_users_id_fk": {
+					"name": "budget_items_created_by_users_id_fk",
+					"tableFrom": "budget_items",
+					"tableTo": "users",
+					"columnsFrom": ["created_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"budget_items_updated_by_users_id_fk": {
+					"name": "budget_items_updated_by_users_id_fk",
+					"tableFrom": "budget_items",
+					"tableTo": "users",
+					"columnsFrom": ["updated_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"budget_items_uuid_unique": {
+					"name": "budget_items_uuid_unique",
+					"nullsNotDistinct": false,
+					"columns": ["uuid"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.categories": {
+			"name": "categories",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"uuid": {
+					"name": "uuid",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"slug": {
+					"name": "slug",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"name": {
+					"name": "name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"sort_order": {
+					"name": "sort_order",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"is_active": {
+					"name": "is_active",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": true,
+					"default": true
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"categories_uuid_unique": {
+					"name": "categories_uuid_unique",
+					"nullsNotDistinct": false,
+					"columns": ["uuid"]
+				},
+				"categories_slug_unique": {
+					"name": "categories_slug_unique",
+					"nullsNotDistinct": false,
+					"columns": ["slug"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.checklist_items": {
+			"name": "checklist_items",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"uuid": {
+					"name": "uuid",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"wedding_id": {
+					"name": "wedding_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"title": {
+					"name": "title",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"description": {
+					"name": "description",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"category": {
+					"name": "category",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"due_date": {
+					"name": "due_date",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"is_complete": {
+					"name": "is_complete",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": true,
+					"default": false
+				},
+				"source": {
+					"name": "source",
+					"type": "content_source",
+					"typeSchema": "public",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'manual'"
+				},
+				"sort_order": {
+					"name": "sort_order",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"created_by": {
+					"name": "created_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_by": {
+					"name": "updated_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"deleted_at": {
+					"name": "deleted_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {
+				"checklist_items_wedding_id_idx": {
+					"name": "checklist_items_wedding_id_idx",
+					"columns": [
+						{
+							"expression": "wedding_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"checklist_items_wedding_id_weddings_id_fk": {
+					"name": "checklist_items_wedding_id_weddings_id_fk",
+					"tableFrom": "checklist_items",
+					"tableTo": "weddings",
+					"columnsFrom": ["wedding_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"checklist_items_created_by_users_id_fk": {
+					"name": "checklist_items_created_by_users_id_fk",
+					"tableFrom": "checklist_items",
+					"tableTo": "users",
+					"columnsFrom": ["created_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"checklist_items_updated_by_users_id_fk": {
+					"name": "checklist_items_updated_by_users_id_fk",
+					"tableFrom": "checklist_items",
+					"tableTo": "users",
+					"columnsFrom": ["updated_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"checklist_items_uuid_unique": {
+					"name": "checklist_items_uuid_unique",
+					"nullsNotDistinct": false,
+					"columns": ["uuid"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.conversation_participants": {
+			"name": "conversation_participants",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"conversation_id": {
+					"name": "conversation_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"last_read_at": {
+					"name": "last_read_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {
+				"conversation_participants_user_id_idx": {
+					"name": "conversation_participants_user_id_idx",
+					"columns": [
+						{
+							"expression": "user_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"conversation_participants_conversation_id_conversations_id_fk": {
+					"name": "conversation_participants_conversation_id_conversations_id_fk",
+					"tableFrom": "conversation_participants",
+					"tableTo": "conversations",
+					"columnsFrom": ["conversation_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"conversation_participants_user_id_users_id_fk": {
+					"name": "conversation_participants_user_id_users_id_fk",
+					"tableFrom": "conversation_participants",
+					"tableTo": "users",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"conversation_participants_conversation_user_uniq": {
+					"name": "conversation_participants_conversation_user_uniq",
+					"nullsNotDistinct": false,
+					"columns": ["conversation_id", "user_id"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.conversations": {
+			"name": "conversations",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"uuid": {
+					"name": "uuid",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"wedding_id": {
+					"name": "wedding_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"vendor_business_id": {
+					"name": "vendor_business_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"last_message_at": {
+					"name": "last_message_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_by": {
+					"name": "created_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_by": {
+					"name": "updated_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"deleted_at": {
+					"name": "deleted_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {
+				"conversations_wedding_id_idx": {
+					"name": "conversations_wedding_id_idx",
+					"columns": [
+						{
+							"expression": "wedding_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"conversations_vendor_business_id_idx": {
+					"name": "conversations_vendor_business_id_idx",
+					"columns": [
+						{
+							"expression": "vendor_business_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"conversations_wedding_id_weddings_id_fk": {
+					"name": "conversations_wedding_id_weddings_id_fk",
+					"tableFrom": "conversations",
+					"tableTo": "weddings",
+					"columnsFrom": ["wedding_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"conversations_vendor_business_id_vendor_businesses_id_fk": {
+					"name": "conversations_vendor_business_id_vendor_businesses_id_fk",
+					"tableFrom": "conversations",
+					"tableTo": "vendor_businesses",
+					"columnsFrom": ["vendor_business_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"conversations_created_by_users_id_fk": {
+					"name": "conversations_created_by_users_id_fk",
+					"tableFrom": "conversations",
+					"tableTo": "users",
+					"columnsFrom": ["created_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"conversations_updated_by_users_id_fk": {
+					"name": "conversations_updated_by_users_id_fk",
+					"tableFrom": "conversations",
+					"tableTo": "users",
+					"columnsFrom": ["updated_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"conversations_uuid_unique": {
+					"name": "conversations_uuid_unique",
+					"nullsNotDistinct": false,
+					"columns": ["uuid"]
+				},
+				"conversations_wedding_vendor_uniq": {
+					"name": "conversations_wedding_vendor_uniq",
+					"nullsNotDistinct": false,
+					"columns": ["wedding_id", "vendor_business_id"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.files": {
+			"name": "files",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"uuid": {
+					"name": "uuid",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"key": {
+					"name": "key",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"bucket": {
+					"name": "bucket",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"file_name": {
+					"name": "file_name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"content_type": {
+					"name": "content_type",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"size_bytes": {
+					"name": "size_bytes",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"created_by": {
+					"name": "created_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_by": {
+					"name": "updated_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"deleted_at": {
+					"name": "deleted_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"files_created_by_users_id_fk": {
+					"name": "files_created_by_users_id_fk",
+					"tableFrom": "files",
+					"tableTo": "users",
+					"columnsFrom": ["created_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"files_updated_by_users_id_fk": {
+					"name": "files_updated_by_users_id_fk",
+					"tableFrom": "files",
+					"tableTo": "users",
+					"columnsFrom": ["updated_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"files_uuid_unique": {
+					"name": "files_uuid_unique",
+					"nullsNotDistinct": false,
+					"columns": ["uuid"]
+				},
+				"files_key_unique": {
+					"name": "files_key_unique",
+					"nullsNotDistinct": false,
+					"columns": ["key"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.messages": {
+			"name": "messages",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"uuid": {
+					"name": "uuid",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"conversation_id": {
+					"name": "conversation_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"sender_user_id": {
+					"name": "sender_user_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"body": {
+					"name": "body",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"created_by": {
+					"name": "created_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_by": {
+					"name": "updated_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"deleted_at": {
+					"name": "deleted_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {
+				"messages_conversation_id_created_at_idx": {
+					"name": "messages_conversation_id_created_at_idx",
+					"columns": [
+						{
+							"expression": "conversation_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "created_at",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"messages_sender_user_id_idx": {
+					"name": "messages_sender_user_id_idx",
+					"columns": [
+						{
+							"expression": "sender_user_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"messages_conversation_id_conversations_id_fk": {
+					"name": "messages_conversation_id_conversations_id_fk",
+					"tableFrom": "messages",
+					"tableTo": "conversations",
+					"columnsFrom": ["conversation_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"messages_sender_user_id_users_id_fk": {
+					"name": "messages_sender_user_id_users_id_fk",
+					"tableFrom": "messages",
+					"tableTo": "users",
+					"columnsFrom": ["sender_user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"messages_created_by_users_id_fk": {
+					"name": "messages_created_by_users_id_fk",
+					"tableFrom": "messages",
+					"tableTo": "users",
+					"columnsFrom": ["created_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"messages_updated_by_users_id_fk": {
+					"name": "messages_updated_by_users_id_fk",
+					"tableFrom": "messages",
+					"tableTo": "users",
+					"columnsFrom": ["updated_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"messages_uuid_unique": {
+					"name": "messages_uuid_unique",
+					"nullsNotDistinct": false,
+					"columns": ["uuid"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.notifications": {
+			"name": "notifications",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"uuid": {
+					"name": "uuid",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"type": {
+					"name": "type",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"title": {
+					"name": "title",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"body": {
+					"name": "body",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"data": {
+					"name": "data",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'{}'::jsonb"
+				},
+				"action_url": {
+					"name": "action_url",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"read_at": {
+					"name": "read_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {
+				"notifications_user_id_read_at_idx": {
+					"name": "notifications_user_id_read_at_idx",
+					"columns": [
+						{
+							"expression": "user_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "read_at",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"notifications_type_idx": {
+					"name": "notifications_type_idx",
+					"columns": [
+						{
+							"expression": "type",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"notifications_user_id_users_id_fk": {
+					"name": "notifications_user_id_users_id_fk",
+					"tableFrom": "notifications",
+					"tableTo": "users",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"notifications_uuid_unique": {
+					"name": "notifications_uuid_unique",
+					"nullsNotDistinct": false,
+					"columns": ["uuid"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.portfolio_media": {
+			"name": "portfolio_media",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"uuid": {
+					"name": "uuid",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"vendor_service_id": {
+					"name": "vendor_service_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"file_id": {
+					"name": "file_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"caption": {
+					"name": "caption",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"sort_order": {
+					"name": "sort_order",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"created_by": {
+					"name": "created_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_by": {
+					"name": "updated_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"deleted_at": {
+					"name": "deleted_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {
+				"portfolio_media_vendor_service_id_idx": {
+					"name": "portfolio_media_vendor_service_id_idx",
+					"columns": [
+						{
+							"expression": "vendor_service_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"portfolio_media_file_id_idx": {
+					"name": "portfolio_media_file_id_idx",
+					"columns": [
+						{
+							"expression": "file_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"portfolio_media_vendor_service_id_vendor_services_id_fk": {
+					"name": "portfolio_media_vendor_service_id_vendor_services_id_fk",
+					"tableFrom": "portfolio_media",
+					"tableTo": "vendor_services",
+					"columnsFrom": ["vendor_service_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"portfolio_media_file_id_files_id_fk": {
+					"name": "portfolio_media_file_id_files_id_fk",
+					"tableFrom": "portfolio_media",
+					"tableTo": "files",
+					"columnsFrom": ["file_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"portfolio_media_created_by_users_id_fk": {
+					"name": "portfolio_media_created_by_users_id_fk",
+					"tableFrom": "portfolio_media",
+					"tableTo": "users",
+					"columnsFrom": ["created_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"portfolio_media_updated_by_users_id_fk": {
+					"name": "portfolio_media_updated_by_users_id_fk",
+					"tableFrom": "portfolio_media",
+					"tableTo": "users",
+					"columnsFrom": ["updated_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"portfolio_media_uuid_unique": {
+					"name": "portfolio_media_uuid_unique",
+					"nullsNotDistinct": false,
+					"columns": ["uuid"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.reviews": {
+			"name": "reviews",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"uuid": {
+					"name": "uuid",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"review_request_id": {
+					"name": "review_request_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"type": {
+					"name": "type",
+					"type": "review_type",
+					"typeSchema": "public",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"author_user_id": {
+					"name": "author_user_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"author_vendor_business_id": {
+					"name": "author_vendor_business_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"subject_vendor_business_id": {
+					"name": "subject_vendor_business_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"wedding_id": {
+					"name": "wedding_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"overall_rating": {
+					"name": "overall_rating",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"ratings": {
+					"name": "ratings",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"body": {
+					"name": "body",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"status": {
+					"name": "status",
+					"type": "review_status",
+					"typeSchema": "public",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'pending'"
+				},
+				"verified_at": {
+					"name": "verified_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"published_at": {
+					"name": "published_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_by": {
+					"name": "created_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_by": {
+					"name": "updated_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"deleted_at": {
+					"name": "deleted_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {
+				"reviews_subject_status_idx": {
+					"name": "reviews_subject_status_idx",
+					"columns": [
+						{
+							"expression": "subject_vendor_business_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "status",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"reviews_review_request_id_review_requests_id_fk": {
+					"name": "reviews_review_request_id_review_requests_id_fk",
+					"tableFrom": "reviews",
+					"tableTo": "review_requests",
+					"columnsFrom": ["review_request_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"reviews_author_user_id_users_id_fk": {
+					"name": "reviews_author_user_id_users_id_fk",
+					"tableFrom": "reviews",
+					"tableTo": "users",
+					"columnsFrom": ["author_user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"reviews_author_vendor_business_id_vendor_businesses_id_fk": {
+					"name": "reviews_author_vendor_business_id_vendor_businesses_id_fk",
+					"tableFrom": "reviews",
+					"tableTo": "vendor_businesses",
+					"columnsFrom": ["author_vendor_business_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"reviews_subject_vendor_business_id_vendor_businesses_id_fk": {
+					"name": "reviews_subject_vendor_business_id_vendor_businesses_id_fk",
+					"tableFrom": "reviews",
+					"tableTo": "vendor_businesses",
+					"columnsFrom": ["subject_vendor_business_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"reviews_wedding_id_weddings_id_fk": {
+					"name": "reviews_wedding_id_weddings_id_fk",
+					"tableFrom": "reviews",
+					"tableTo": "weddings",
+					"columnsFrom": ["wedding_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"reviews_created_by_users_id_fk": {
+					"name": "reviews_created_by_users_id_fk",
+					"tableFrom": "reviews",
+					"tableTo": "users",
+					"columnsFrom": ["created_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"reviews_updated_by_users_id_fk": {
+					"name": "reviews_updated_by_users_id_fk",
+					"tableFrom": "reviews",
+					"tableTo": "users",
+					"columnsFrom": ["updated_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"reviews_uuid_unique": {
+					"name": "reviews_uuid_unique",
+					"nullsNotDistinct": false,
+					"columns": ["uuid"]
+				},
+				"reviews_author_subject_wedding_uniq": {
+					"name": "reviews_author_subject_wedding_uniq",
+					"nullsNotDistinct": false,
+					"columns": [
+						"author_user_id",
+						"subject_vendor_business_id",
+						"wedding_id"
+					]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {
+				"reviews_overall_rating_chk": {
+					"name": "reviews_overall_rating_chk",
+					"value": "\"reviews\".\"overall_rating\" between 1 and 5"
+				}
+			},
+			"isRLSEnabled": false
+		},
+		"public.review_requests": {
+			"name": "review_requests",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"uuid": {
+					"name": "uuid",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"wedding_id": {
+					"name": "wedding_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"subject_vendor_business_id": {
+					"name": "subject_vendor_business_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"target_user_id": {
+					"name": "target_user_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"type": {
+					"name": "type",
+					"type": "review_type",
+					"typeSchema": "public",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"token": {
+					"name": "token",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"status": {
+					"name": "status",
+					"type": "review_request_status",
+					"typeSchema": "public",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'sent'"
+				},
+				"sent_at": {
+					"name": "sent_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"completed_at": {
+					"name": "completed_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_by": {
+					"name": "created_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_by": {
+					"name": "updated_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"deleted_at": {
+					"name": "deleted_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {
+				"review_requests_target_user_id_idx": {
+					"name": "review_requests_target_user_id_idx",
+					"columns": [
+						{
+							"expression": "target_user_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"review_requests_subject_vendor_business_id_idx": {
+					"name": "review_requests_subject_vendor_business_id_idx",
+					"columns": [
+						{
+							"expression": "subject_vendor_business_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"review_requests_wedding_id_idx": {
+					"name": "review_requests_wedding_id_idx",
+					"columns": [
+						{
+							"expression": "wedding_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"review_requests_wedding_id_weddings_id_fk": {
+					"name": "review_requests_wedding_id_weddings_id_fk",
+					"tableFrom": "review_requests",
+					"tableTo": "weddings",
+					"columnsFrom": ["wedding_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"review_requests_subject_vendor_business_id_vendor_businesses_id_fk": {
+					"name": "review_requests_subject_vendor_business_id_vendor_businesses_id_fk",
+					"tableFrom": "review_requests",
+					"tableTo": "vendor_businesses",
+					"columnsFrom": ["subject_vendor_business_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"review_requests_target_user_id_users_id_fk": {
+					"name": "review_requests_target_user_id_users_id_fk",
+					"tableFrom": "review_requests",
+					"tableTo": "users",
+					"columnsFrom": ["target_user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"review_requests_created_by_users_id_fk": {
+					"name": "review_requests_created_by_users_id_fk",
+					"tableFrom": "review_requests",
+					"tableTo": "users",
+					"columnsFrom": ["created_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"review_requests_updated_by_users_id_fk": {
+					"name": "review_requests_updated_by_users_id_fk",
+					"tableFrom": "review_requests",
+					"tableTo": "users",
+					"columnsFrom": ["updated_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"review_requests_uuid_unique": {
+					"name": "review_requests_uuid_unique",
+					"nullsNotDistinct": false,
+					"columns": ["uuid"]
+				},
+				"review_requests_token_unique": {
+					"name": "review_requests_token_unique",
+					"nullsNotDistinct": false,
+					"columns": ["token"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.saved_vendors": {
+			"name": "saved_vendors",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"uuid": {
+					"name": "uuid",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"wedding_id": {
+					"name": "wedding_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"vendor_business_id": {
+					"name": "vendor_business_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"notes": {
+					"name": "notes",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"saved_at": {
+					"name": "saved_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"created_by": {
+					"name": "created_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_by": {
+					"name": "updated_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"deleted_at": {
+					"name": "deleted_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {
+				"saved_vendors_wedding_id_idx": {
+					"name": "saved_vendors_wedding_id_idx",
+					"columns": [
+						{
+							"expression": "wedding_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"saved_vendors_vendor_business_id_idx": {
+					"name": "saved_vendors_vendor_business_id_idx",
+					"columns": [
+						{
+							"expression": "vendor_business_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"saved_vendors_wedding_id_weddings_id_fk": {
+					"name": "saved_vendors_wedding_id_weddings_id_fk",
+					"tableFrom": "saved_vendors",
+					"tableTo": "weddings",
+					"columnsFrom": ["wedding_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"saved_vendors_vendor_business_id_vendor_businesses_id_fk": {
+					"name": "saved_vendors_vendor_business_id_vendor_businesses_id_fk",
+					"tableFrom": "saved_vendors",
+					"tableTo": "vendor_businesses",
+					"columnsFrom": ["vendor_business_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"saved_vendors_created_by_users_id_fk": {
+					"name": "saved_vendors_created_by_users_id_fk",
+					"tableFrom": "saved_vendors",
+					"tableTo": "users",
+					"columnsFrom": ["created_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"saved_vendors_updated_by_users_id_fk": {
+					"name": "saved_vendors_updated_by_users_id_fk",
+					"tableFrom": "saved_vendors",
+					"tableTo": "users",
+					"columnsFrom": ["updated_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"saved_vendors_uuid_unique": {
+					"name": "saved_vendors_uuid_unique",
+					"nullsNotDistinct": false,
+					"columns": ["uuid"]
+				},
+				"saved_vendors_wedding_vendor_uniq": {
+					"name": "saved_vendors_wedding_vendor_uniq",
+					"nullsNotDistinct": false,
+					"columns": ["wedding_id", "vendor_business_id"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.service_packages": {
+			"name": "service_packages",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"uuid": {
+					"name": "uuid",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"vendor_service_id": {
+					"name": "vendor_service_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"name": {
+					"name": "name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"description": {
+					"name": "description",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"price_cents": {
+					"name": "price_cents",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"price_unit": {
+					"name": "price_unit",
+					"type": "price_unit",
+					"typeSchema": "public",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'flat'"
+				},
+				"is_active": {
+					"name": "is_active",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": true,
+					"default": true
+				},
+				"sort_order": {
+					"name": "sort_order",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"created_by": {
+					"name": "created_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_by": {
+					"name": "updated_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"deleted_at": {
+					"name": "deleted_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {
+				"service_packages_vendor_service_id_idx": {
+					"name": "service_packages_vendor_service_id_idx",
+					"columns": [
+						{
+							"expression": "vendor_service_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"service_packages_vendor_service_id_vendor_services_id_fk": {
+					"name": "service_packages_vendor_service_id_vendor_services_id_fk",
+					"tableFrom": "service_packages",
+					"tableTo": "vendor_services",
+					"columnsFrom": ["vendor_service_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"service_packages_created_by_users_id_fk": {
+					"name": "service_packages_created_by_users_id_fk",
+					"tableFrom": "service_packages",
+					"tableTo": "users",
+					"columnsFrom": ["created_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"service_packages_updated_by_users_id_fk": {
+					"name": "service_packages_updated_by_users_id_fk",
+					"tableFrom": "service_packages",
+					"tableTo": "users",
+					"columnsFrom": ["updated_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"service_packages_uuid_unique": {
+					"name": "service_packages_uuid_unique",
+					"nullsNotDistinct": false,
+					"columns": ["uuid"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.stripe_events": {
+			"name": "stripe_events",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"stripe_event_id": {
+					"name": "stripe_event_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"type": {
+					"name": "type",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"processed_at": {
+					"name": "processed_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"stripe_events_stripe_event_id_unique": {
+					"name": "stripe_events_stripe_event_id_unique",
+					"nullsNotDistinct": false,
+					"columns": ["stripe_event_id"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.subscriptions": {
+			"name": "subscriptions",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"uuid": {
+					"name": "uuid",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"vendor_account_id": {
+					"name": "vendor_account_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"stripe_subscription_id": {
+					"name": "stripe_subscription_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"tier": {
+					"name": "tier",
+					"type": "subscription_tier",
+					"typeSchema": "public",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"status": {
+					"name": "status",
+					"type": "subscription_status",
+					"typeSchema": "public",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"current_period_end": {
+					"name": "current_period_end",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_by": {
+					"name": "created_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_by": {
+					"name": "updated_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"deleted_at": {
+					"name": "deleted_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"subscriptions_vendor_account_id_vendor_accounts_id_fk": {
+					"name": "subscriptions_vendor_account_id_vendor_accounts_id_fk",
+					"tableFrom": "subscriptions",
+					"tableTo": "vendor_accounts",
+					"columnsFrom": ["vendor_account_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"subscriptions_created_by_users_id_fk": {
+					"name": "subscriptions_created_by_users_id_fk",
+					"tableFrom": "subscriptions",
+					"tableTo": "users",
+					"columnsFrom": ["created_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"subscriptions_updated_by_users_id_fk": {
+					"name": "subscriptions_updated_by_users_id_fk",
+					"tableFrom": "subscriptions",
+					"tableTo": "users",
+					"columnsFrom": ["updated_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"subscriptions_uuid_unique": {
+					"name": "subscriptions_uuid_unique",
+					"nullsNotDistinct": false,
+					"columns": ["uuid"]
+				},
+				"subscriptions_vendor_account_id_unique": {
+					"name": "subscriptions_vendor_account_id_unique",
+					"nullsNotDistinct": false,
+					"columns": ["vendor_account_id"]
+				},
+				"subscriptions_stripe_subscription_id_unique": {
+					"name": "subscriptions_stripe_subscription_id_unique",
+					"nullsNotDistinct": false,
+					"columns": ["stripe_subscription_id"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.users": {
+			"name": "users",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"uuid": {
+					"name": "uuid",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"clerk_id": {
+					"name": "clerk_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"email": {
+					"name": "email",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"name": {
+					"name": "name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"role": {
+					"name": "role",
+					"type": "user_role",
+					"typeSchema": "public",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'member'"
+				},
+				"image_url": {
+					"name": "image_url",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"preferences": {
+					"name": "preferences",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'{}'::jsonb"
+				},
+				"created_by": {
+					"name": "created_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_by": {
+					"name": "updated_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"deleted_at": {
+					"name": "deleted_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"users_created_by_users_id_fk": {
+					"name": "users_created_by_users_id_fk",
+					"tableFrom": "users",
+					"tableTo": "users",
+					"columnsFrom": ["created_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"users_updated_by_users_id_fk": {
+					"name": "users_updated_by_users_id_fk",
+					"tableFrom": "users",
+					"tableTo": "users",
+					"columnsFrom": ["updated_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"users_uuid_unique": {
+					"name": "users_uuid_unique",
+					"nullsNotDistinct": false,
+					"columns": ["uuid"]
+				},
+				"users_clerk_id_unique": {
+					"name": "users_clerk_id_unique",
+					"nullsNotDistinct": false,
+					"columns": ["clerk_id"]
+				},
+				"users_email_unique": {
+					"name": "users_email_unique",
+					"nullsNotDistinct": false,
+					"columns": ["email"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.vendor_accounts": {
+			"name": "vendor_accounts",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"uuid": {
+					"name": "uuid",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"user_id": {
+					"name": "user_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"subscription_tier": {
+					"name": "subscription_tier",
+					"type": "subscription_tier",
+					"typeSchema": "public",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'free'"
+				},
+				"stripe_customer_id": {
+					"name": "stripe_customer_id",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_by": {
+					"name": "created_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_by": {
+					"name": "updated_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"deleted_at": {
+					"name": "deleted_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {
+				"vendor_accounts_user_id_users_id_fk": {
+					"name": "vendor_accounts_user_id_users_id_fk",
+					"tableFrom": "vendor_accounts",
+					"tableTo": "users",
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"vendor_accounts_created_by_users_id_fk": {
+					"name": "vendor_accounts_created_by_users_id_fk",
+					"tableFrom": "vendor_accounts",
+					"tableTo": "users",
+					"columnsFrom": ["created_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"vendor_accounts_updated_by_users_id_fk": {
+					"name": "vendor_accounts_updated_by_users_id_fk",
+					"tableFrom": "vendor_accounts",
+					"tableTo": "users",
+					"columnsFrom": ["updated_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"vendor_accounts_uuid_unique": {
+					"name": "vendor_accounts_uuid_unique",
+					"nullsNotDistinct": false,
+					"columns": ["uuid"]
+				},
+				"vendor_accounts_user_id_unique": {
+					"name": "vendor_accounts_user_id_unique",
+					"nullsNotDistinct": false,
+					"columns": ["user_id"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.vendor_businesses": {
+			"name": "vendor_businesses",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"uuid": {
+					"name": "uuid",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"vendor_account_id": {
+					"name": "vendor_account_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"business_name": {
+					"name": "business_name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"tagline": {
+					"name": "tagline",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"bio": {
+					"name": "bio",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"logo_file_id": {
+					"name": "logo_file_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"website": {
+					"name": "website",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"city": {
+					"name": "city",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"region": {
+					"name": "region",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"years_in_business": {
+					"name": "years_in_business",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"is_verified": {
+					"name": "is_verified",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": true,
+					"default": false
+				},
+				"verified_at": {
+					"name": "verified_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_by": {
+					"name": "created_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_by": {
+					"name": "updated_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"deleted_at": {
+					"name": "deleted_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {
+				"vendor_businesses_region_idx": {
+					"name": "vendor_businesses_region_idx",
+					"columns": [
+						{
+							"expression": "region",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"vendor_businesses_vendor_account_id_vendor_accounts_id_fk": {
+					"name": "vendor_businesses_vendor_account_id_vendor_accounts_id_fk",
+					"tableFrom": "vendor_businesses",
+					"tableTo": "vendor_accounts",
+					"columnsFrom": ["vendor_account_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"vendor_businesses_logo_file_id_files_id_fk": {
+					"name": "vendor_businesses_logo_file_id_files_id_fk",
+					"tableFrom": "vendor_businesses",
+					"tableTo": "files",
+					"columnsFrom": ["logo_file_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"vendor_businesses_created_by_users_id_fk": {
+					"name": "vendor_businesses_created_by_users_id_fk",
+					"tableFrom": "vendor_businesses",
+					"tableTo": "users",
+					"columnsFrom": ["created_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"vendor_businesses_updated_by_users_id_fk": {
+					"name": "vendor_businesses_updated_by_users_id_fk",
+					"tableFrom": "vendor_businesses",
+					"tableTo": "users",
+					"columnsFrom": ["updated_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"vendor_businesses_uuid_unique": {
+					"name": "vendor_businesses_uuid_unique",
+					"nullsNotDistinct": false,
+					"columns": ["uuid"]
+				},
+				"vendor_businesses_vendor_account_id_unique": {
+					"name": "vendor_businesses_vendor_account_id_unique",
+					"nullsNotDistinct": false,
+					"columns": ["vendor_account_id"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.vendor_recommendations": {
+			"name": "vendor_recommendations",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"uuid": {
+					"name": "uuid",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"wedding_id": {
+					"name": "wedding_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"vendor_business_id": {
+					"name": "vendor_business_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"category_id": {
+					"name": "category_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"match_score": {
+					"name": "match_score",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"rationale": {
+					"name": "rationale",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"status": {
+					"name": "status",
+					"type": "recommendation_status",
+					"typeSchema": "public",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'suggested'"
+				},
+				"created_by": {
+					"name": "created_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_by": {
+					"name": "updated_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"deleted_at": {
+					"name": "deleted_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {
+				"vendor_recommendations_wedding_id_idx": {
+					"name": "vendor_recommendations_wedding_id_idx",
+					"columns": [
+						{
+							"expression": "wedding_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"vendor_recommendations_vendor_business_id_idx": {
+					"name": "vendor_recommendations_vendor_business_id_idx",
+					"columns": [
+						{
+							"expression": "vendor_business_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"vendor_recommendations_wedding_id_weddings_id_fk": {
+					"name": "vendor_recommendations_wedding_id_weddings_id_fk",
+					"tableFrom": "vendor_recommendations",
+					"tableTo": "weddings",
+					"columnsFrom": ["wedding_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"vendor_recommendations_vendor_business_id_vendor_businesses_id_fk": {
+					"name": "vendor_recommendations_vendor_business_id_vendor_businesses_id_fk",
+					"tableFrom": "vendor_recommendations",
+					"tableTo": "vendor_businesses",
+					"columnsFrom": ["vendor_business_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"vendor_recommendations_category_id_categories_id_fk": {
+					"name": "vendor_recommendations_category_id_categories_id_fk",
+					"tableFrom": "vendor_recommendations",
+					"tableTo": "categories",
+					"columnsFrom": ["category_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"vendor_recommendations_created_by_users_id_fk": {
+					"name": "vendor_recommendations_created_by_users_id_fk",
+					"tableFrom": "vendor_recommendations",
+					"tableTo": "users",
+					"columnsFrom": ["created_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"vendor_recommendations_updated_by_users_id_fk": {
+					"name": "vendor_recommendations_updated_by_users_id_fk",
+					"tableFrom": "vendor_recommendations",
+					"tableTo": "users",
+					"columnsFrom": ["updated_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"vendor_recommendations_uuid_unique": {
+					"name": "vendor_recommendations_uuid_unique",
+					"nullsNotDistinct": false,
+					"columns": ["uuid"]
+				},
+				"vendor_recommendations_wedding_vendor_uniq": {
+					"name": "vendor_recommendations_wedding_vendor_uniq",
+					"nullsNotDistinct": false,
+					"columns": ["wedding_id", "vendor_business_id"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.vendor_services": {
+			"name": "vendor_services",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"uuid": {
+					"name": "uuid",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"vendor_business_id": {
+					"name": "vendor_business_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"category_id": {
+					"name": "category_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"custom_label": {
+					"name": "custom_label",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"description": {
+					"name": "description",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"starting_price_cents": {
+					"name": "starting_price_cents",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"price_unit": {
+					"name": "price_unit",
+					"type": "price_unit",
+					"typeSchema": "public",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'flat'"
+				},
+				"is_primary": {
+					"name": "is_primary",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": true,
+					"default": false
+				},
+				"is_published": {
+					"name": "is_published",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": true,
+					"default": false
+				},
+				"details": {
+					"name": "details",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"sort_order": {
+					"name": "sort_order",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"created_by": {
+					"name": "created_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_by": {
+					"name": "updated_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"deleted_at": {
+					"name": "deleted_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {
+				"vendor_services_vendor_business_id_idx": {
+					"name": "vendor_services_vendor_business_id_idx",
+					"columns": [
+						{
+							"expression": "vendor_business_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"vendor_services_category_id_idx": {
+					"name": "vendor_services_category_id_idx",
+					"columns": [
+						{
+							"expression": "category_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"vendor_services_is_published_idx": {
+					"name": "vendor_services_is_published_idx",
+					"columns": [
+						{
+							"expression": "is_published",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"vendor_services_vendor_business_id_vendor_businesses_id_fk": {
+					"name": "vendor_services_vendor_business_id_vendor_businesses_id_fk",
+					"tableFrom": "vendor_services",
+					"tableTo": "vendor_businesses",
+					"columnsFrom": ["vendor_business_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"vendor_services_category_id_categories_id_fk": {
+					"name": "vendor_services_category_id_categories_id_fk",
+					"tableFrom": "vendor_services",
+					"tableTo": "categories",
+					"columnsFrom": ["category_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"vendor_services_created_by_users_id_fk": {
+					"name": "vendor_services_created_by_users_id_fk",
+					"tableFrom": "vendor_services",
+					"tableTo": "users",
+					"columnsFrom": ["created_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"vendor_services_updated_by_users_id_fk": {
+					"name": "vendor_services_updated_by_users_id_fk",
+					"tableFrom": "vendor_services",
+					"tableTo": "users",
+					"columnsFrom": ["updated_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"vendor_services_uuid_unique": {
+					"name": "vendor_services_uuid_unique",
+					"nullsNotDistinct": false,
+					"columns": ["uuid"]
+				},
+				"vendor_services_business_category_uniq": {
+					"name": "vendor_services_business_category_uniq",
+					"nullsNotDistinct": false,
+					"columns": ["vendor_business_id", "category_id"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {
+				"vendor_services_category_xor_custom_chk": {
+					"name": "vendor_services_category_xor_custom_chk",
+					"value": "(\"vendor_services\".\"category_id\" is not null) <> (\"vendor_services\".\"custom_label\" is not null)"
+				}
+			},
+			"isRLSEnabled": false
+		},
+		"public.weddings": {
+			"name": "weddings",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "serial",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"uuid": {
+					"name": "uuid",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"owner_user_id": {
+					"name": "owner_user_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"partner_user_id": {
+					"name": "partner_user_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"wedding_date": {
+					"name": "wedding_date",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"estimated_budget_cents": {
+					"name": "estimated_budget_cents",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"guest_count_estimate": {
+					"name": "guest_count_estimate",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"city": {
+					"name": "city",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"region": {
+					"name": "region",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"style_tags": {
+					"name": "style_tags",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'[]'::jsonb"
+				},
+				"style_palette": {
+					"name": "style_palette",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'[]'::jsonb"
+				},
+				"onboarding_answers": {
+					"name": "onboarding_answers",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"status": {
+					"name": "status",
+					"type": "wedding_status",
+					"typeSchema": "public",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'planning'"
+				},
+				"created_by": {
+					"name": "created_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_by": {
+					"name": "updated_by",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"deleted_at": {
+					"name": "deleted_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"indexes": {
+				"weddings_partner_user_id_idx": {
+					"name": "weddings_partner_user_id_idx",
+					"columns": [
+						{
+							"expression": "partner_user_id",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				},
+				"weddings_wedding_date_idx": {
+					"name": "weddings_wedding_date_idx",
+					"columns": [
+						{
+							"expression": "wedding_date",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"concurrently": false,
+					"method": "btree",
+					"with": {}
+				}
+			},
+			"foreignKeys": {
+				"weddings_owner_user_id_users_id_fk": {
+					"name": "weddings_owner_user_id_users_id_fk",
+					"tableFrom": "weddings",
+					"tableTo": "users",
+					"columnsFrom": ["owner_user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"weddings_partner_user_id_users_id_fk": {
+					"name": "weddings_partner_user_id_users_id_fk",
+					"tableFrom": "weddings",
+					"tableTo": "users",
+					"columnsFrom": ["partner_user_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"weddings_created_by_users_id_fk": {
+					"name": "weddings_created_by_users_id_fk",
+					"tableFrom": "weddings",
+					"tableTo": "users",
+					"columnsFrom": ["created_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				},
+				"weddings_updated_by_users_id_fk": {
+					"name": "weddings_updated_by_users_id_fk",
+					"tableFrom": "weddings",
+					"tableTo": "users",
+					"columnsFrom": ["updated_by"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {
+				"weddings_uuid_unique": {
+					"name": "weddings_uuid_unique",
+					"nullsNotDistinct": false,
+					"columns": ["uuid"]
+				},
+				"weddings_owner_user_id_uniq": {
+					"name": "weddings_owner_user_id_uniq",
+					"nullsNotDistinct": false,
+					"columns": ["owner_user_id"]
+				}
+			},
+			"policies": {},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		}
+	},
+	"enums": {
+		"public.booking_status": {
+			"name": "booking_status",
+			"schema": "public",
+			"values": ["pending", "confirmed", "cancelled"]
+		},
+		"public.content_source": {
+			"name": "content_source",
+			"schema": "public",
+			"values": ["generated", "manual", "booking"]
+		},
+		"public.price_unit": {
+			"name": "price_unit",
+			"schema": "public",
+			"values": ["flat", "hourly", "per_guest"]
+		},
+		"public.review_type": {
+			"name": "review_type",
+			"schema": "public",
+			"values": ["peer", "client"]
+		},
+		"public.subscription_tier": {
+			"name": "subscription_tier",
+			"schema": "public",
+			"values": ["free", "pro"]
+		},
+		"public.review_status": {
+			"name": "review_status",
+			"schema": "public",
+			"values": ["pending", "published", "rejected", "flagged"]
+		},
+		"public.review_request_status": {
+			"name": "review_request_status",
+			"schema": "public",
+			"values": ["sent", "completed", "expired"]
+		},
+		"public.subscription_status": {
+			"name": "subscription_status",
+			"schema": "public",
+			"values": ["trialing", "active", "past_due", "canceled"]
+		},
+		"public.user_role": {
+			"name": "user_role",
+			"schema": "public",
+			"values": ["admin", "member"]
+		},
+		"public.recommendation_status": {
+			"name": "recommendation_status",
+			"schema": "public",
+			"values": ["suggested", "accepted", "dismissed"]
+		},
+		"public.wedding_status": {
+			"name": "wedding_status",
+			"schema": "public",
+			"values": ["planning", "complete"]
+		}
+	},
+	"schemas": {},
+	"sequences": {},
+	"roles": {},
+	"policies": {},
+	"views": {},
+	"_meta": {
+		"columns": {},
+		"schemas": {},
+		"tables": {}
+	}
+}

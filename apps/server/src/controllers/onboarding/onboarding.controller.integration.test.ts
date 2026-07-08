@@ -8,7 +8,13 @@ import {
 } from "../../../tests/helpers/app.test-helper";
 import { truncateTables } from "../../../tests/helpers/db.test-helper";
 import { db } from "../../db/db";
-import { categories, users, vendorProfiles, weddings } from "../../db/schema";
+import {
+	categories,
+	users,
+	vendorBusinesses,
+	vendorServices,
+	weddings,
+} from "../../db/schema";
 
 const app = createTestApp();
 
@@ -22,10 +28,10 @@ function rpc(path: string, input: unknown) {
 		.send(JSON.stringify({ json: input }));
 }
 
-async function seedCategory() {
+async function seedCategory(slug = "photography", name = "Photography") {
 	const [row] = await db
 		.insert(categories)
-		.values({ slug: "photography", name: "Photography" })
+		.values({ slug, name })
 		.returning({ uuid: categories.uuid });
 	if (!row) throw new Error("Failed to seed category");
 	return row.uuid;
@@ -99,12 +105,12 @@ describe("onboarding.submitCouple", () => {
 });
 
 describe("onboarding.submitVendor", () => {
-	it("creates an unpublished draft profile and completes vendor onboarding", async () => {
+	it("creates one business with a primary draft service and completes vendor onboarding", async () => {
 		const categoryUuid = await seedCategory();
 
 		const res = await rpc("/rpc/onboarding/submitVendor", {
 			businessName: "Vance Studio",
-			categoryUuid,
+			categoryUuids: [categoryUuid],
 			region: "Texas",
 		}).expect(200);
 		const body = rpcBody(res);
@@ -112,44 +118,137 @@ describe("onboarding.submitVendor", () => {
 		expect(body.capabilities.isVendor).toBe(true);
 		expect(body.onboarding.vendor).toBe(true);
 
-		const profile = await db.query.vendorProfiles.findFirst({
-			where: eq(vendorProfiles.businessName, "Vance Studio"),
+		const business = await db.query.vendorBusinesses.findFirst({
+			where: eq(vendorBusinesses.businessName, "Vance Studio"),
 		});
-		expect(profile?.isPublished).toBe(false);
-		expect(profile?.region).toBe("Texas");
+		expect(business?.region).toBe("Texas");
+		if (!business) throw new Error("Business not created");
+
+		const services = await db.query.vendorServices.findMany({
+			where: eq(vendorServices.vendorBusinessId, business.id),
+		});
+		expect(services).toHaveLength(1);
+		expect(services[0]?.isPublished).toBe(false);
+		expect(services[0]?.isPrimary).toBe(true);
 	});
 
 	it("rejects an unknown category", async () => {
 		const res = await rpc("/rpc/onboarding/submitVendor", {
 			businessName: "Vance Studio",
-			categoryUuid: "00000000-0000-0000-0000-000000000000",
+			categoryUuids: ["00000000-0000-0000-0000-000000000000"],
 			region: "Texas",
 		});
 		expect(res.status).toBe(404);
 	});
 
-	it("updates the existing draft on re-run instead of creating a duplicate", async () => {
+	it("rejects more services than the free tier allows", async () => {
+		const first = await seedCategory("photography", "Photography");
+		const second = await seedCategory("videography", "Videography");
+
+		const res = await rpc("/rpc/onboarding/submitVendor", {
+			businessName: "Vance Studio",
+			categoryUuids: [first, second],
+			region: "Texas",
+		});
+		expect(res.status).toBe(403);
+	});
+
+	it("updates the existing business on re-run instead of creating a duplicate", async () => {
 		const categoryUuid = await seedCategory();
 
 		await rpc("/rpc/onboarding/submitVendor", {
 			businessName: "Vance Studio",
-			categoryUuid,
+			categoryUuids: [categoryUuid],
 			region: "Texas",
 		}).expect(200);
 
 		await rpc("/rpc/onboarding/submitVendor", {
 			businessName: "Vance Photography",
-			categoryUuid,
+			categoryUuids: [categoryUuid],
 			region: "California",
 			city: "Los Angeles",
 			tagline: "Timeless wedding photography",
 		}).expect(200);
 
-		const profiles = await db.query.vendorProfiles.findMany();
-		expect(profiles).toHaveLength(1);
-		expect(profiles[0]?.businessName).toBe("Vance Photography");
-		expect(profiles[0]?.region).toBe("California");
-		expect(profiles[0]?.city).toBe("Los Angeles");
-		expect(profiles[0]?.tagline).toBe("Timeless wedding photography");
+		const businesses = await db.query.vendorBusinesses.findMany();
+		expect(businesses).toHaveLength(1);
+		expect(businesses[0]?.businessName).toBe("Vance Photography");
+		expect(businesses[0]?.region).toBe("California");
+		expect(businesses[0]?.city).toBe("Los Angeles");
+		expect(businesses[0]?.tagline).toBe("Timeless wedding photography");
+	});
+
+	it("swaps services on re-run, soft-deleting the de-selected one", async () => {
+		const photography = await seedCategory("photography", "Photography");
+		const videography = await seedCategory("videography", "Videography");
+
+		await rpc("/rpc/onboarding/submitVendor", {
+			businessName: "Vance Studio",
+			categoryUuids: [photography],
+			region: "Texas",
+		}).expect(200);
+
+		await rpc("/rpc/onboarding/submitVendor", {
+			businessName: "Vance Studio",
+			categoryUuids: [videography],
+			region: "Texas",
+		}).expect(200);
+
+		const business = await db.query.vendorBusinesses.findFirst({
+			where: eq(vendorBusinesses.businessName, "Vance Studio"),
+		});
+		if (!business) throw new Error("Business not created");
+
+		const services = await db.query.vendorServices.findMany({
+			where: eq(vendorServices.vendorBusinessId, business.id),
+		});
+		const live = services.filter((s) => s.deletedAt === null);
+		const removed = services.filter((s) => s.deletedAt !== null);
+		expect(services).toHaveLength(2);
+		expect(live).toHaveLength(1);
+		expect(removed).toHaveLength(1);
+		expect(live[0]?.isPrimary).toBe(true);
+
+		const cats = await db.query.categories.findMany({
+			columns: { id: true, slug: true },
+		});
+		const idBySlug = new Map(cats.map((c) => [c.slug, c.id]));
+		expect(live[0]?.categoryId).toBe(idBySlug.get("videography"));
+		expect(removed[0]?.categoryId).toBe(idBySlug.get("photography"));
+	});
+
+	it("revives a previously removed service instead of duplicating it", async () => {
+		const photography = await seedCategory("photography", "Photography");
+		const videography = await seedCategory("videography", "Videography");
+
+		const submit = (categoryUuid: string) =>
+			rpc("/rpc/onboarding/submitVendor", {
+				businessName: "Vance Studio",
+				categoryUuids: [categoryUuid],
+				region: "Texas",
+			}).expect(200);
+
+		await submit(photography); // add photography
+		await submit(videography); // remove photography, add videography
+		await submit(photography); // revive photography, remove videography
+
+		const business = await db.query.vendorBusinesses.findFirst({
+			where: eq(vendorBusinesses.businessName, "Vance Studio"),
+		});
+		if (!business) throw new Error("Business not created");
+
+		const services = await db.query.vendorServices.findMany({
+			where: eq(vendorServices.vendorBusinessId, business.id),
+		});
+		// Only two rows — photography is revived, not inserted a second time.
+		expect(services).toHaveLength(2);
+		const live = services.filter((s) => s.deletedAt === null);
+		expect(live).toHaveLength(1);
+
+		const cats = await db.query.categories.findMany({
+			columns: { id: true, slug: true },
+		});
+		const idBySlug = new Map(cats.map((c) => [c.slug, c.id]));
+		expect(live[0]?.categoryId).toBe(idBySlug.get("photography"));
 	});
 });

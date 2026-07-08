@@ -16,7 +16,7 @@ import { auditColumns } from "./_shared";
 import { reviewTypeEnum } from "./enums.schema";
 import { reviewRequests } from "./review-request.schema";
 import { users } from "./users.schema";
-import { vendorProfiles } from "./vendor-profile.schema";
+import { vendorBusinesses } from "./vendor-business.schema";
 import { weddings } from "./wedding.schema";
 
 // Paired with ReviewStatusEnum in packages/shared/src/models/review.types.ts.
@@ -28,9 +28,9 @@ export const reviewStatusEnum = pgEnum("review_status", [
 ]);
 
 /**
- * A verified review of a vendor. `type` is peer (vendor→vendor) or client
- * (couple→vendor). Tied to the review request that authorized it and to the
- * wedding the collaboration happened on. `ratings` holds the structured
+ * A verified review of a vendor business. `type` is peer (vendor→vendor) or
+ * client (couple→vendor). Tied to the review request that authorized it and to
+ * the wedding the collaboration happened on. `ratings` holds the structured
  * breakdown (professionalism, communication, quality); overallRating is 1–5.
  */
 export const reviews = pgTable(
@@ -45,12 +45,12 @@ export const reviews = pgTable(
 		authorUserId: integer("author_user_id")
 			.notNull()
 			.references(() => users.id),
-		authorVendorProfileId: integer("author_vendor_profile_id").references(
-			() => vendorProfiles.id,
+		authorVendorBusinessId: integer("author_vendor_business_id").references(
+			() => vendorBusinesses.id,
 		),
-		subjectVendorProfileId: integer("subject_vendor_profile_id")
+		subjectVendorBusinessId: integer("subject_vendor_business_id")
 			.notNull()
-			.references(() => vendorProfiles.id),
+			.references(() => vendorBusinesses.id),
 		weddingId: integer("wedding_id")
 			.notNull()
 			.references(() => weddings.id),
@@ -65,11 +65,11 @@ export const reviews = pgTable(
 	(table) => [
 		unique("reviews_author_subject_wedding_uniq").on(
 			table.authorUserId,
-			table.subjectVendorProfileId,
+			table.subjectVendorBusinessId,
 			table.weddingId,
 		),
 		index("reviews_subject_status_idx").on(
-			table.subjectVendorProfileId,
+			table.subjectVendorBusinessId,
 			table.status,
 		),
 		check(
@@ -88,15 +88,15 @@ export const reviewsRelations = relations(reviews, ({ one }) => ({
 		fields: [reviews.authorUserId],
 		references: [users.id],
 	}),
-	authorVendorProfile: one(vendorProfiles, {
-		fields: [reviews.authorVendorProfileId],
-		references: [vendorProfiles.id],
-		relationName: "reviews_author_vendor",
+	authorVendorBusiness: one(vendorBusinesses, {
+		fields: [reviews.authorVendorBusinessId],
+		references: [vendorBusinesses.id],
+		relationName: "reviews_author_business",
 	}),
-	subjectVendorProfile: one(vendorProfiles, {
-		fields: [reviews.subjectVendorProfileId],
-		references: [vendorProfiles.id],
-		relationName: "reviews_subject_vendor",
+	subjectVendorBusiness: one(vendorBusinesses, {
+		fields: [reviews.subjectVendorBusinessId],
+		references: [vendorBusinesses.id],
+		relationName: "reviews_subject_business",
 	}),
 	wedding: one(weddings, {
 		fields: [reviews.weddingId],

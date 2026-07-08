@@ -10,7 +10,7 @@ import {
 	uuid,
 } from "drizzle-orm/pg-core";
 import { auditColumns } from "./_shared";
-import { vendorProfiles } from "./vendor-profile.schema";
+import { vendorBusinesses } from "./vendor-business.schema";
 import { weddings } from "./wedding.schema";
 
 /**
@@ -26,9 +26,9 @@ export const savedVendors = pgTable(
 		weddingId: integer("wedding_id")
 			.notNull()
 			.references(() => weddings.id),
-		vendorProfileId: integer("vendor_profile_id")
+		vendorBusinessId: integer("vendor_business_id")
 			.notNull()
-			.references(() => vendorProfiles.id),
+			.references(() => vendorBusinesses.id),
 		notes: text("notes"),
 		savedAt: timestamp("saved_at", { withTimezone: true })
 			.defaultNow()
@@ -38,10 +38,10 @@ export const savedVendors = pgTable(
 	(table) => [
 		unique("saved_vendors_wedding_vendor_uniq").on(
 			table.weddingId,
-			table.vendorProfileId,
+			table.vendorBusinessId,
 		),
 		index("saved_vendors_wedding_id_idx").on(table.weddingId),
-		index("saved_vendors_vendor_profile_id_idx").on(table.vendorProfileId),
+		index("saved_vendors_vendor_business_id_idx").on(table.vendorBusinessId),
 	],
 );
 
@@ -50,8 +50,8 @@ export const savedVendorsRelations = relations(savedVendors, ({ one }) => ({
 		fields: [savedVendors.weddingId],
 		references: [weddings.id],
 	}),
-	vendorProfile: one(vendorProfiles, {
-		fields: [savedVendors.vendorProfileId],
-		references: [vendorProfiles.id],
+	vendorBusiness: one(vendorBusinesses, {
+		fields: [savedVendors.vendorBusinessId],
+		references: [vendorBusinesses.id],
 	}),
 }));

@@ -3,13 +3,13 @@ import { integer, pgTable, serial, text, uuid } from "drizzle-orm/pg-core";
 import { auditColumns } from "./_shared";
 import { subscriptionTierEnum } from "./enums.schema";
 import { users } from "./users.schema";
-import { vendorProfiles } from "./vendor-profile.schema";
+import { vendorBusinesses } from "./vendor-business.schema";
 
 /**
  * Billing container for a vendor, one per vendor user. Holds the Stripe
- * customer and the subscription tier that gates all of the account's profiles.
- * Separate from vendor_profiles because one vendor may run several
- * single-category profiles under one subscription.
+ * customer and the subscription tier that gates the vendor's business and its
+ * services. Kept separate from vendor_businesses so billing state is isolated
+ * from the public listing and can exist before onboarding creates the business.
  */
 export const vendorAccounts = pgTable("vendor_accounts", {
 	id: serial("id").primaryKey(),
@@ -25,13 +25,10 @@ export const vendorAccounts = pgTable("vendor_accounts", {
 	...auditColumns(),
 });
 
-export const vendorAccountsRelations = relations(
-	vendorAccounts,
-	({ one, many }) => ({
-		user: one(users, {
-			fields: [vendorAccounts.userId],
-			references: [users.id],
-		}),
-		profiles: many(vendorProfiles),
+export const vendorAccountsRelations = relations(vendorAccounts, ({ one }) => ({
+	user: one(users, {
+		fields: [vendorAccounts.userId],
+		references: [users.id],
 	}),
-);
+	business: one(vendorBusinesses),
+}));

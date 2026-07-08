@@ -24,3 +24,10 @@ export const contentSourceEnum = pgEnum("content_source", [
 
 // reviews + review_requests
 export const reviewTypeEnum = pgEnum("review_type", ["peer", "client"]);
+
+// vendor_services + service_packages
+export const priceUnitEnum = pgEnum("price_unit", [
+	"flat",
+	"hourly",
+	"per_guest",
+]);

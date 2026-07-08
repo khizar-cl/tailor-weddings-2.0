@@ -10,12 +10,12 @@ import {
 } from "drizzle-orm/pg-core";
 import { auditColumns } from "./_shared";
 import { messages } from "./message.schema";
-import { vendorProfiles } from "./vendor-profile.schema";
+import { vendorBusinesses } from "./vendor-business.schema";
 import { weddings } from "./wedding.schema";
 
 /**
- * A message thread between a couple and a vendor profile — one per
- * (wedding, vendor profile) pair. Only created once the couple has saved or
+ * A message thread between a couple and a vendor business — one per
+ * (wedding, vendor business) pair. Only created once the couple has saved or
  * booked the vendor, so vendors can't be cold-messaged.
  */
 export const conversations = pgTable(
@@ -26,19 +26,19 @@ export const conversations = pgTable(
 		weddingId: integer("wedding_id")
 			.notNull()
 			.references(() => weddings.id),
-		vendorProfileId: integer("vendor_profile_id")
+		vendorBusinessId: integer("vendor_business_id")
 			.notNull()
-			.references(() => vendorProfiles.id),
+			.references(() => vendorBusinesses.id),
 		lastMessageAt: timestamp("last_message_at", { withTimezone: true }),
 		...auditColumns(),
 	},
 	(table) => [
 		unique("conversations_wedding_vendor_uniq").on(
 			table.weddingId,
-			table.vendorProfileId,
+			table.vendorBusinessId,
 		),
 		index("conversations_wedding_id_idx").on(table.weddingId),
-		index("conversations_vendor_profile_id_idx").on(table.vendorProfileId),
+		index("conversations_vendor_business_id_idx").on(table.vendorBusinessId),
 	],
 );
 
@@ -49,9 +49,9 @@ export const conversationsRelations = relations(
 			fields: [conversations.weddingId],
 			references: [weddings.id],
 		}),
-		vendorProfile: one(vendorProfiles, {
-			fields: [conversations.vendorProfileId],
-			references: [vendorProfiles.id],
+		vendorBusiness: one(vendorBusinesses, {
+			fields: [conversations.vendorBusinessId],
+			references: [vendorBusinesses.id],
 		}),
 		messages: many(messages),
 	}),
