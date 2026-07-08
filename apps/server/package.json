@@ -34,6 +34,7 @@
 		"@t3-oss/env-core": "^0.13.11",
 		"bullmq": "^5.75.2",
 		"cors": "^2.8.5",
+		"date-fns": "catalog:",
 		"dotenv": "catalog:",
 		"drizzle-orm": "^0.45.2",
 		"express": "^5.1.0",

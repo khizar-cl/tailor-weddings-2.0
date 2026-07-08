@@ -20,6 +20,7 @@ import {
 	markOnboardingComplete,
 	provisionCapability,
 } from "../user/user.service";
+import { generateCouplePlan } from "./plan-generation";
 
 export async function submitCoupleOnboarding(
 	dbUserId: number,
@@ -29,34 +30,47 @@ export async function submitCoupleOnboarding(
 	// so a provisioning gap can't trap the user on the onboarding screen.
 	await provisionCapability(dbUserId, "couple");
 
-	const [updated] = await db
-		.update(weddings)
-		.set({
-			weddingDate: input.weddingDate ?? null,
-			estimatedBudgetCents: input.estimatedBudgetCents,
-			guestCountEstimate: input.guestCountEstimate,
-			city: input.city,
-			region: input.region ?? null,
-			styleTags: input.styleTags,
-			stylePalette: input.stylePalette,
-			onboardingAnswers: {
-				weddingDate: input.weddingDate?.toISOString() ?? null,
+	await db.transaction(async (tx) => {
+		const [updated] = await tx
+			.update(weddings)
+			.set({
+				weddingDate: input.weddingDate ?? null,
 				estimatedBudgetCents: input.estimatedBudgetCents,
 				guestCountEstimate: input.guestCountEstimate,
 				city: input.city,
 				region: input.region ?? null,
 				styleTags: input.styleTags,
 				stylePalette: input.stylePalette,
-			},
-			updatedBy: dbUserId,
-			updatedAt: new Date(),
-		})
-		.where(eq(weddings.ownerUserId, dbUserId))
-		.returning({ id: weddings.id });
+				onboardingAnswers: {
+					weddingDate: input.weddingDate?.toISOString() ?? null,
+					estimatedBudgetCents: input.estimatedBudgetCents,
+					guestCountEstimate: input.guestCountEstimate,
+					city: input.city,
+					region: input.region ?? null,
+					styleTags: input.styleTags,
+					stylePalette: input.stylePalette,
+				},
+				updatedBy: dbUserId,
+				updatedAt: new Date(),
+			})
+			.where(eq(weddings.ownerUserId, dbUserId))
+			.returning({ id: weddings.id });
 
-	if (!updated) {
-		throw new ORPCError("NOT_FOUND", { message: "Wedding not found" });
-	}
+		if (!updated) {
+			throw new ORPCError("NOT_FOUND", { message: "Wedding not found" });
+		}
+
+		// Seed the checklist, budget template, and vendor matches for this
+		// wedding. Idempotent — re-running onboarding regenerates the generated
+		// content while preserving the couple's own manual edits.
+		await generateCouplePlan(tx, {
+			weddingId: updated.id,
+			dbUserId,
+			weddingDate: input.weddingDate ?? null,
+			estimatedBudgetCents: input.estimatedBudgetCents,
+			region: input.region ?? null,
+		});
+	});
 
 	await markOnboardingComplete(dbUserId, "couple");
 	return getMe(dbUserId);
