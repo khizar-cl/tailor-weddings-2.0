@@ -3,8 +3,10 @@ import type {
 	AddChecklistTaskInputSchema,
 	ToggleChecklistTaskInputSchema,
 } from "@repo/shared";
-import { and, asc, desc, eq, isNull } from "drizzle-orm";
+import { and, asc, count, desc, eq, isNull } from "drizzle-orm";
 import { categories, checklistItems, db, weddings } from "../../db";
+
+const MAX_CHECKLIST_ITEMS_PER_WEDDING = 100;
 
 interface ChecklistItemRow {
 	uuid: string;
@@ -90,6 +92,22 @@ export async function addChecklistTask(
 	input: AddChecklistTaskInputSchema,
 ) {
 	const weddingId = await getOwnedWeddingId(dbUserId);
+
+	const [live] = await db
+		.select({ count: count() })
+		.from(checklistItems)
+		.where(
+			and(
+				eq(checklistItems.weddingId, weddingId),
+				isNull(checklistItems.deletedAt),
+			),
+		);
+	if ((live?.count ?? 0) >= MAX_CHECKLIST_ITEMS_PER_WEDDING) {
+		throw new ORPCError("FORBIDDEN", {
+			message: `Your checklist is full (max ${MAX_CHECKLIST_ITEMS_PER_WEDDING} tasks). Remove a task to add another.`,
+		});
+	}
+
 	const categoryId = input.categoryUuid
 		? await resolveCategoryId(input.categoryUuid)
 		: null;

@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import request from "supertest";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createTestUser } from "../../../tests/factories";
@@ -7,7 +8,7 @@ import {
 } from "../../../tests/helpers/app.test-helper";
 import { truncateTables } from "../../../tests/helpers/db.test-helper";
 import { db } from "../../db/db";
-import { categories, users } from "../../db/schema";
+import { categories, checklistItems, users } from "../../db/schema";
 
 const app = createTestApp();
 
@@ -107,6 +108,29 @@ describe("checklist.addTask", () => {
 		await onboardCouple();
 		const res = await rpc("/rpc/checklist/addTask", { title: "" });
 		expect(res.status).toBe(400);
+	});
+
+	it("rejects adding beyond the 100-item cap", async () => {
+		await onboardCouple();
+		const wedding = await db.query.weddings.findFirst({
+			columns: { id: true },
+		});
+		if (!wedding) throw new Error("Expected a wedding after onboarding");
+
+		const existing = await db.query.checklistItems.findMany({
+			where: eq(checklistItems.weddingId, wedding.id),
+			columns: { id: true },
+		});
+		const filler = 100 - existing.length;
+		await db.insert(checklistItems).values(
+			Array.from({ length: filler }, (_, i) => ({
+				weddingId: wedding.id,
+				title: `Filler ${i}`,
+			})),
+		);
+
+		const res = await rpc("/rpc/checklist/addTask", { title: "One too many" });
+		expect(res.status).toBe(403);
 	});
 });
 
