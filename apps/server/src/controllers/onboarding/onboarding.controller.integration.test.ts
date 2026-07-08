@@ -41,19 +41,37 @@ async function seedCategory(slug = "photography", name = "Photography") {
 	return row.uuid;
 }
 
-/** Seed a published vendor business offering `categorySlug` in `region`. */
-async function seedPublishedVendor(region: string, categorySlug: string) {
+async function categoryIdForSlug(slug: string) {
 	const category = await db.query.categories.findFirst({
-		where: eq(categories.slug, categorySlug),
+		where: eq(categories.slug, slug),
 		columns: { id: true },
 	});
-	if (!category) throw new Error("Seed the category before the vendor");
+	if (!category) throw new Error(`Seed the "${slug}" category first`);
+	return category.id;
+}
+
+/** Seed a published vendor business with one service. */
+async function seedPublishedVendor(opts: {
+	region: string;
+	categorySlug: string;
+	isVerified?: boolean;
+	startingPriceCents?: number;
+	key?: string;
+}) {
+	const {
+		region,
+		categorySlug,
+		isVerified = true,
+		startingPriceCents,
+		key = categorySlug,
+	} = opts;
+	const categoryId = await categoryIdForSlug(categorySlug);
 
 	const [vendorUser] = await db
 		.insert(users)
 		.values({
-			clerkId: `vendor_${categorySlug}`,
-			email: `vendor_${categorySlug}@example.com`,
+			clerkId: `vendor_${key}`,
+			email: `vendor_${key}@example.com`,
 			name: "Test Vendor",
 		})
 		.returning({ id: users.id });
@@ -69,20 +87,63 @@ async function seedPublishedVendor(region: string, categorySlug: string) {
 		.insert(vendorBusinesses)
 		.values({
 			vendorAccountId: account.id,
-			businessName: "Test Vendor Studio",
+			businessName: `Studio ${key}`,
 			region,
-			isVerified: true,
+			isVerified,
 		})
 		.returning({ id: vendorBusinesses.id });
 	if (!business) throw new Error("Failed to seed vendor business");
 
 	await db.insert(vendorServices).values({
 		vendorBusinessId: business.id,
-		categoryId: category.id,
+		categoryId,
 		isPublished: true,
 		isPrimary: true,
+		startingPriceCents: startingPriceCents ?? null,
 	});
 	return business.id;
+}
+
+/** Add another published service to an existing business. */
+async function addPublishedService(
+	vendorBusinessId: number,
+	categorySlug: string,
+	startingPriceCents?: number,
+) {
+	const categoryId = await categoryIdForSlug(categorySlug);
+	await db.insert(vendorServices).values({
+		vendorBusinessId,
+		categoryId,
+		isPublished: true,
+		startingPriceCents: startingPriceCents ?? null,
+	});
+}
+
+/** Complete couple onboarding for a $35k Texas wedding (the recommendation base). */
+function submitTexasCouple() {
+	return rpc("/rpc/onboarding/submitCouple", {
+		estimatedBudgetCents: 3_500_000,
+		guestCountEstimate: 120,
+		city: "Austin",
+		region: "Texas",
+		styleTags: ["Modern"],
+		stylePalette: [],
+	}).expect(200);
+}
+
+async function recommendationsForOwner() {
+	const [user] = await db
+		.select({ id: users.id })
+		.from(users)
+		.where(eq(users.email, "test@example.com"));
+	if (!user) throw new Error("Test user not found");
+	const wedding = await db.query.weddings.findFirst({
+		where: eq(weddings.ownerUserId, user.id),
+	});
+	if (!wedding) throw new Error("Wedding not found");
+	return db.query.vendorRecommendations.findMany({
+		where: eq(vendorRecommendations.weddingId, wedding.id),
+	});
 }
 
 beforeEach(async () => {
@@ -246,37 +307,88 @@ describe("onboarding.submitCouple", () => {
 		expect(checklist.some((item) => item.dueDate === null)).toBe(true);
 	});
 
-	it("generates vendor recommendations from published businesses in the region", async () => {
+	it("recommends a verified in-region vendor (region + verified bonuses)", async () => {
 		await seedCategory("photography", "Photography");
-		const businessId = await seedPublishedVendor("Texas", "photography");
-
-		await rpc("/rpc/onboarding/submitCouple", {
-			estimatedBudgetCents: 3_500_000,
-			guestCountEstimate: 120,
-			city: "Austin",
+		const businessId = await seedPublishedVendor({
 			region: "Texas",
-			styleTags: ["Modern"],
-			stylePalette: [],
-		}).expect(200);
-
-		const [user] = await db
-			.select({ id: users.id })
-			.from(users)
-			.where(eq(users.email, "test@example.com"));
-		if (!user) throw new Error("Test user not found");
-		const wedding = await db.query.weddings.findFirst({
-			where: eq(weddings.ownerUserId, user.id),
+			categorySlug: "photography",
 		});
-		if (!wedding) throw new Error("Wedding not found");
 
-		const recs = await db.query.vendorRecommendations.findMany({
-			where: eq(vendorRecommendations.weddingId, wedding.id),
-		});
+		await submitTexasCouple();
+
+		const recs = await recommendationsForOwner();
 		expect(recs).toHaveLength(1);
 		expect(recs[0]?.vendorBusinessId).toBe(businessId);
-		// region + verified bonuses on top of the base score.
-		expect(recs[0]?.matchScore).toBe(100);
+		expect(recs[0]?.matchScore).toBe(100); // 60 + 25 region + 15 verified
 		expect(recs[0]?.categoryId).not.toBeNull();
+	});
+
+	it("scores base-only for an unverified, out-of-region vendor", async () => {
+		await seedCategory("photography", "Photography");
+		const businessId = await seedPublishedVendor({
+			region: "Oregon",
+			categorySlug: "photography",
+			isVerified: false,
+		});
+
+		await submitTexasCouple();
+
+		const recs = await recommendationsForOwner();
+		expect(recs).toHaveLength(1);
+		expect(recs[0]?.vendorBusinessId).toBe(businessId);
+		expect(recs[0]?.matchScore).toBe(60); // no region, no verified, no price
+	});
+
+	it("adds a budget-fit bonus when the price is within the category slice", async () => {
+		await seedCategory("photography", "Photography");
+		// Photography slice = 10% of $35k = $3,500; a $3,000 starting price fits.
+		await seedPublishedVendor({
+			region: "Texas",
+			categorySlug: "photography",
+			isVerified: false,
+			startingPriceCents: 300_000,
+		});
+
+		await submitTexasCouple();
+
+		const recs = await recommendationsForOwner();
+		expect(recs[0]?.matchScore).toBe(100); // 60 + 25 region + 15 budget fit
+		expect(recs[0]?.rationale).toContain("fits your budget");
+	});
+
+	it("penalizes a vendor priced well over its category budget slice", async () => {
+		await seedCategory("photography", "Photography");
+		// $9,000 is far over the $3,500 photography slice (> 1.25x).
+		await seedPublishedVendor({
+			region: "Texas",
+			categorySlug: "photography",
+			isVerified: false,
+			startingPriceCents: 900_000,
+		});
+
+		await submitTexasCouple();
+
+		const recs = await recommendationsForOwner();
+		expect(recs[0]?.matchScore).toBe(75); // 60 + 25 region - 10 over budget
+		expect(recs[0]?.rationale).not.toContain("fits your budget");
+	});
+
+	it("keeps one recommendation per business, at its best-scoring service", async () => {
+		await seedCategory("photography", "Photography");
+		await seedCategory("catering", "Catering");
+		const businessId = await seedPublishedVendor({
+			region: "Texas",
+			categorySlug: "photography",
+			startingPriceCents: 300_000, // fits → 100
+		});
+		await addPublishedService(businessId, "catering", 5_000_000); // over → 90
+
+		await submitTexasCouple();
+
+		const recs = await recommendationsForOwner();
+		expect(recs).toHaveLength(1);
+		expect(recs[0]?.vendorBusinessId).toBe(businessId);
+		expect(recs[0]?.matchScore).toBe(100);
 	});
 });
 

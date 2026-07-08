@@ -56,17 +56,47 @@ const CHECKLIST_TEMPLATE: Array<{
 	},
 ];
 
-/** Starting split of the couple's budget across categories. Sums to 1.0. */
-const BUDGET_ALLOCATION = [
-	{ category: "Venue", label: "Venue", pct: 0.4 },
-	{ category: "Catering", label: "Catering", pct: 0.22 },
-	{ category: "Photography", label: "Photography", pct: 0.1 },
-	{ category: "Floral & Décor", label: "Floral & décor", pct: 0.08 },
-	{ category: "Music", label: "Music & entertainment", pct: 0.07 },
+/**
+ * Starting split of the couple's budget across categories (sums to 1.0).
+ * `slug` ties a line to a vendor category so recommendations can score a
+ * service's starting price against its category's budget slice; lines with no
+ * matching vendor category (Attire, Other) leave it undefined.
+ */
+const BUDGET_ALLOCATION: Array<{
+	slug?: string;
+	category: string;
+	label: string;
+	pct: number;
+}> = [
+	{ slug: "venue", category: "Venue", label: "Venue", pct: 0.4 },
+	{ slug: "catering", category: "Catering", label: "Catering", pct: 0.22 },
+	{
+		slug: "photography",
+		category: "Photography",
+		label: "Photography",
+		pct: 0.1,
+	},
+	{
+		slug: "floral",
+		category: "Floral & Décor",
+		label: "Floral & décor",
+		pct: 0.08,
+	},
+	{
+		slug: "music-dj",
+		category: "Music",
+		label: "Music & entertainment",
+		pct: 0.07,
+	},
 	{ category: "Attire", label: "Attire", pct: 0.06 },
-	{ category: "Stationery", label: "Stationery", pct: 0.03 },
+	{
+		slug: "stationery",
+		category: "Stationery",
+		label: "Stationery",
+		pct: 0.03,
+	},
 	{ category: "Other", label: "Other", pct: 0.04 },
-] as const;
+];
 
 const MAX_RECOMMENDATIONS = 12;
 
@@ -172,7 +202,12 @@ export async function generateCouplePlan(
 		})),
 	);
 
-	await generateRecommendations(tx, { weddingId, dbUserId, region });
+	await generateRecommendations(tx, {
+		weddingId,
+		dbUserId,
+		region,
+		estimatedBudgetCents,
+	});
 }
 
 async function generateRecommendations(
@@ -181,8 +216,25 @@ async function generateRecommendations(
 		weddingId,
 		dbUserId,
 		region,
-	}: { weddingId: number; dbUserId: number; region: string | null },
+		estimatedBudgetCents,
+	}: {
+		weddingId: number;
+		dbUserId: number;
+		region: string | null;
+		estimatedBudgetCents: number;
+	},
 ) {
+	// The couple's budget slice per category, used to score a service's price.
+	const budgetSliceBySlug = new Map<string, number>();
+	for (const line of BUDGET_ALLOCATION) {
+		if (line.slug) {
+			budgetSliceBySlug.set(
+				line.slug,
+				Math.round(estimatedBudgetCents * line.pct),
+			);
+		}
+	}
+
 	const services = await tx.query.vendorServices.findMany({
 		where: and(
 			eq(vendorServices.isPublished, true),
@@ -192,7 +244,7 @@ async function generateRecommendations(
 			business: {
 				columns: { id: true, region: true, isVerified: true, deletedAt: true },
 			},
-			category: { columns: { id: true, name: true } },
+			category: { columns: { id: true, name: true, slug: true } },
 		},
 	});
 
@@ -209,10 +261,14 @@ async function generateRecommendations(
 
 	for (const service of services) {
 		// Custom (uncategorized) services aren't discoverable until promoted.
-		if (service.categoryId === null) continue;
+		if (service.categoryId === null || !service.category) continue;
 		const business = service.business;
 		if (!business || business.deletedAt !== null) continue;
 
+		// Signals: location (the couple's region), vetting (verified badge), and
+		// budget fit (the service's starting price vs its category's budget slice).
+		// This is a deliberately simple heuristic; it does NOT yet use the couple's
+		// style tags or a desired-category preference (none is captured today).
 		const regionMatch =
 			!!region &&
 			!!business.region &&
@@ -222,10 +278,26 @@ async function generateRecommendations(
 		if (regionMatch) matchScore += 25;
 		if (business.isVerified) matchScore += 15;
 
-		const categoryName = service.category?.name ?? "your plan";
-		const rationale = regionMatch
-			? `Matched on ${categoryName} in ${business.region}`
-			: `Matched on ${categoryName}`;
+		const slice = budgetSliceBySlug.get(service.category.slug);
+		let budgetFit = false;
+		if (slice !== undefined && service.startingPriceCents !== null) {
+			if (service.startingPriceCents <= slice) {
+				matchScore += 15;
+				budgetFit = true;
+			} else if (service.startingPriceCents <= slice * 1.25) {
+				matchScore += 5;
+			} else {
+				matchScore -= 10;
+			}
+		}
+		matchScore = Math.max(0, Math.min(100, matchScore));
+
+		// Rationale describes what the business offers and why it surfaced — it
+		// does not claim the couple asked for this category.
+		const parts = [service.category.name];
+		if (regionMatch) parts.push(`serves ${business.region}`);
+		if (budgetFit) parts.push("fits your budget");
+		const rationale = parts.join(" · ");
 
 		const existing = byBusiness.get(business.id);
 		if (!existing || matchScore > existing.matchScore) {
