@@ -10,13 +10,13 @@ import {
 import { auditColumns } from "./_shared";
 import { contentSourceEnum } from "./enums.schema";
 import { servicePackages } from "./service-package.schema";
-import { vendorProfiles } from "./vendor-profile.schema";
+import { vendorBusinesses } from "./vendor-business.schema";
 import { weddings } from "./wedding.schema";
 
 /**
  * A line in a wedding's budget tracker. estimated vs actual cents lets couples
  * track spend. When `source` is "booking" the line is auto-populated from a
- * booked vendor's package (vendorProfileId/servicePackageId set); "manual"
+ * booked vendor's package (vendorBusinessId/servicePackageId set); "manual"
  * lines are the couple's own expenses.
  */
 export const budgetItems = pgTable(
@@ -31,8 +31,8 @@ export const budgetItems = pgTable(
 		label: text("label").notNull(),
 		estimatedCents: integer("estimated_cents"),
 		actualCents: integer("actual_cents"),
-		vendorProfileId: integer("vendor_profile_id").references(
-			() => vendorProfiles.id,
+		vendorBusinessId: integer("vendor_business_id").references(
+			() => vendorBusinesses.id,
 		),
 		servicePackageId: integer("service_package_id").references(
 			() => servicePackages.id,
@@ -42,7 +42,7 @@ export const budgetItems = pgTable(
 	},
 	(table) => [
 		index("budget_items_wedding_id_idx").on(table.weddingId),
-		index("budget_items_vendor_profile_id_idx").on(table.vendorProfileId),
+		index("budget_items_vendor_business_id_idx").on(table.vendorBusinessId),
 	],
 );
 
@@ -51,9 +51,9 @@ export const budgetItemsRelations = relations(budgetItems, ({ one }) => ({
 		fields: [budgetItems.weddingId],
 		references: [weddings.id],
 	}),
-	vendorProfile: one(vendorProfiles, {
-		fields: [budgetItems.vendorProfileId],
-		references: [vendorProfiles.id],
+	vendorBusiness: one(vendorBusinesses, {
+		fields: [budgetItems.vendorBusinessId],
+		references: [vendorBusinesses.id],
 	}),
 	servicePackage: one(servicePackages, {
 		fields: [budgetItems.servicePackageId],

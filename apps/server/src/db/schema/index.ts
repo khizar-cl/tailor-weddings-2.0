@@ -17,6 +17,7 @@ export * from "./stripe-event.schema";
 export * from "./subscription.schema";
 export * from "./users.schema";
 export * from "./vendor-account.schema";
-export * from "./vendor-profile.schema";
+export * from "./vendor-business.schema";
 export * from "./vendor-recommendation.schema";
+export * from "./vendor-service.schema";
 export * from "./wedding.schema";

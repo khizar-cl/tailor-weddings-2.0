@@ -3,35 +3,28 @@ import {
 	boolean,
 	index,
 	integer,
-	pgEnum,
 	pgTable,
 	serial,
 	text,
 	uuid,
 } from "drizzle-orm/pg-core";
 import { auditColumns } from "./_shared";
-import { vendorProfiles } from "./vendor-profile.schema";
-
-// Paired with PriceUnitEnum in packages/shared/src/models/vendor.types.ts.
-export const priceUnitEnum = pgEnum("price_unit", [
-	"flat",
-	"hourly",
-	"per_guest",
-]);
+import { priceUnitEnum } from "./enums.schema";
+import { vendorServices } from "./vendor-service.schema";
 
 /**
- * A priced service offering on a vendor profile. priceUnit says how priceCents
- * is measured (flat total, per hour, or per guest) so the couple's budget
- * tracker can turn it into an estimate.
+ * A priced offering under a vendor service. priceUnit says how priceCents is
+ * measured (flat total, per hour, or per guest) so the couple's budget tracker
+ * can turn it into an estimate.
  */
 export const servicePackages = pgTable(
 	"service_packages",
 	{
 		id: serial("id").primaryKey(),
 		uuid: uuid("uuid").notNull().unique().defaultRandom(),
-		vendorProfileId: integer("vendor_profile_id")
+		vendorServiceId: integer("vendor_service_id")
 			.notNull()
-			.references(() => vendorProfiles.id),
+			.references(() => vendorServices.id),
 		name: text("name").notNull(),
 		description: text("description"),
 		priceCents: integer("price_cents").notNull(),
@@ -41,16 +34,16 @@ export const servicePackages = pgTable(
 		...auditColumns(),
 	},
 	(table) => [
-		index("service_packages_vendor_profile_id_idx").on(table.vendorProfileId),
+		index("service_packages_vendor_service_id_idx").on(table.vendorServiceId),
 	],
 );
 
 export const servicePackagesRelations = relations(
 	servicePackages,
 	({ one }) => ({
-		vendorProfile: one(vendorProfiles, {
-			fields: [servicePackages.vendorProfileId],
-			references: [vendorProfiles.id],
+		vendorService: one(vendorServices, {
+			fields: [servicePackages.vendorServiceId],
+			references: [vendorServices.id],
 		}),
 	}),
 );
