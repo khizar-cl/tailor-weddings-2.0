@@ -2,21 +2,18 @@
 
 import { Button } from "@repo/ui/components/button";
 import { Skeleton } from "@repo/ui/components/skeleton";
-import { useEffect, useState } from "react";
+import { LayoutGridIcon, ListIcon } from "lucide-react";
+import type { Route } from "next";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { useCategories } from "../../../api/category.api";
 import { useVendorSearch } from "../../../api/vendor.api";
 import { AppBreadcrumb } from "../../../components/app-breadcrumb";
 import { DiscoverFilters } from "../../../components/discover/discover-filters";
+import { VendorCard } from "../../../components/discover/vendor-card";
 import { VendorRow } from "../../../components/discover/vendor-row";
 
-function useDebounced<T>(value: T, ms: number): T {
-	const [debounced, setDebounced] = useState(value);
-	useEffect(() => {
-		const timer = setTimeout(() => setDebounced(value), ms);
-		return () => clearTimeout(timer);
-	}, [value, ms]);
-	return debounced;
-}
+type ViewMode = "list" | "grid";
 
 function ResultsSkeleton() {
 	return (
@@ -38,45 +35,93 @@ function ResultsSkeleton() {
 	);
 }
 
-export default function DiscoverPage() {
-	const [query, setQuery] = useState("");
-	const [region, setRegion] = useState("");
-	const [categoryUuid, setCategoryUuid] = useState("");
-	const [page, setPage] = useState(1);
+function ViewToggle({
+	view,
+	onChange,
+}: {
+	view: ViewMode;
+	onChange: (view: ViewMode) => void;
+}) {
+	return (
+		<div className="flex items-center border border-border">
+			<Button
+				type="button"
+				tone="secondary"
+				variant={view === "list" ? "solid" : "ghost"}
+				size="icon-sm"
+				className="rounded-none"
+				aria-pressed={view === "list"}
+				aria-label="List view"
+				onClick={() => onChange("list")}
+			>
+				<ListIcon />
+			</Button>
+			<Button
+				type="button"
+				tone="secondary"
+				variant={view === "grid" ? "solid" : "ghost"}
+				size="icon-sm"
+				className="rounded-none"
+				aria-pressed={view === "grid"}
+				aria-label="Grid view"
+				onClick={() => onChange("grid")}
+			>
+				<LayoutGridIcon />
+			</Button>
+		</div>
+	);
+}
 
-	const debouncedQuery = useDebounced(query, 300);
-	const debouncedRegion = useDebounced(region, 300);
+function DiscoverContent() {
+	const router = useRouter();
+	const pathname = usePathname();
+	const params = useSearchParams();
+
+	const query = params.get("q") ?? "";
+	const region = params.get("region") ?? "";
+	const categoryUuid = params.get("category") ?? "";
+	const view: ViewMode = params.get("view") === "grid" ? "grid" : "list";
+	const pageParam = Number(params.get("page"));
+	const page = Number.isInteger(pageParam) && pageParam > 0 ? pageParam : 1;
 
 	const categories = useCategories();
 	const search = useVendorSearch({
 		page,
-		query: debouncedQuery.trim() || undefined,
-		region: debouncedRegion.trim() || undefined,
+		query: query.trim() || undefined,
+		region: region.trim() || undefined,
 		categoryUuid: categoryUuid || undefined,
 	});
 
-	// Changing any filter returns to the first page.
-	const changeQuery = (value: string) => {
-		setQuery(value);
-		setPage(1);
+	/** Merge param updates into the current URL — the single source of filter truth. */
+	const updateParams = (updates: Record<string, string | null>) => {
+		const next = new URLSearchParams(params.toString());
+		for (const [key, value] of Object.entries(updates)) {
+			if (value) next.set(key, value);
+			else next.delete(key);
+		}
+		const qs = next.toString();
+		router.replace((qs ? `${pathname}?${qs}` : pathname) as Route, {
+			scroll: false,
+		});
 	};
-	const changeRegion = (value: string) => {
-		setRegion(value);
-		setPage(1);
-	};
-	const changeCategory = (value: string) => {
-		setCategoryUuid(value);
-		setPage(1);
-	};
+
+	// Any filter change returns to the first page.
+	const applySearch = (nextQuery: string, nextRegion: string) =>
+		updateParams({
+			q: nextQuery.trim() || null,
+			region: nextRegion.trim() || null,
+			page: null,
+		});
+	const changeCategory = (value: string) =>
+		updateParams({ category: value || null, page: null });
+	const changeView = (next: ViewMode) =>
+		updateParams({ view: next === "grid" ? "grid" : null });
+	const goToPage = (next: number) =>
+		updateParams({ page: next > 1 ? String(next) : null });
+	const reset = () =>
+		updateParams({ q: null, region: null, category: null, page: null });
 
 	const hasActiveFilters = Boolean(query || region || categoryUuid);
-	const reset = () => {
-		setQuery("");
-		setRegion("");
-		setCategoryUuid("");
-		setPage(1);
-	};
-
 	const result = search.data;
 
 	return (
@@ -105,18 +150,22 @@ export default function DiscoverPage() {
 
 				<div className="mt-8">
 					<DiscoverFilters
+						key={`${query}|${region}`}
 						categories={categories.data?.categories ?? []}
 						query={query}
-						onQueryChange={changeQuery}
-						categoryUuid={categoryUuid}
-						onCategoryChange={changeCategory}
 						region={region}
-						onRegionChange={changeRegion}
+						categoryUuid={categoryUuid}
+						onSearch={applySearch}
+						onCategoryChange={changeCategory}
 						onReset={reset}
 						hasActiveFilters={hasActiveFilters}
 					/>
 
-					<div className="mt-8">
+					<div className="mt-8 flex items-center justify-end border-border border-b pb-3">
+						<ViewToggle view={view} onChange={changeView} />
+					</div>
+
+					<div className="mt-6">
 						{search.isLoading ? (
 							<ResultsSkeleton />
 						) : search.error ? (
@@ -125,11 +174,19 @@ export default function DiscoverPage() {
 							</p>
 						) : result && result.items.length > 0 ? (
 							<>
-								<ul>
-									{result.items.map((vendor) => (
-										<VendorRow key={vendor.uuid} vendor={vendor} />
-									))}
-								</ul>
+								{view === "grid" ? (
+									<ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
+										{result.items.map((vendor) => (
+											<VendorCard key={vendor.uuid} vendor={vendor} />
+										))}
+									</ul>
+								) : (
+									<ul>
+										{result.items.map((vendor) => (
+											<VendorRow key={vendor.uuid} vendor={vendor} />
+										))}
+									</ul>
+								)}
 								{(result.page > 1 || result.hasMore) && (
 									<div className="mt-8 flex items-center justify-between">
 										<Button
@@ -137,7 +194,7 @@ export default function DiscoverPage() {
 											tone="secondary"
 											variant="outline"
 											disabled={result.page <= 1}
-											onClick={() => setPage((p) => Math.max(1, p - 1))}
+											onClick={() => goToPage(result.page - 1)}
 										>
 											Previous
 										</Button>
@@ -149,7 +206,7 @@ export default function DiscoverPage() {
 											tone="secondary"
 											variant="outline"
 											disabled={!result.hasMore}
-											onClick={() => setPage((p) => p + 1)}
+											onClick={() => goToPage(result.page + 1)}
 										>
 											Next
 										</Button>
@@ -170,5 +227,13 @@ export default function DiscoverPage() {
 				</div>
 			</div>
 		</div>
+	);
+}
+
+export default function DiscoverPage() {
+	return (
+		<Suspense>
+			<DiscoverContent />
+		</Suspense>
 	);
 }

@@ -6,25 +6,25 @@ import { SaveVendorButton } from "../vendor/save-vendor-button";
 import { VendorRating } from "../vendor/vendor-rating";
 import { VendorThumb } from "../vendor/vendor-thumb";
 
-export function VendorRow({ vendor }: { vendor: VendorCardSchema }) {
+export function VendorCard({ vendor }: { vendor: VendorCardSchema }) {
 	const location = [vendor.city, vendor.region].filter(Boolean).join(", ");
 	const meta = [vendor.featuredService?.categoryName, location]
 		.filter(Boolean)
 		.join(" · ");
 
 	return (
-		<li className="flex items-start gap-5 border-border border-b py-6 first:pt-0">
+		<li className="group relative flex flex-col border border-border">
 			<Link
 				href={`/portal/discover/${vendor.uuid}`}
-				className="group flex min-w-0 flex-1 items-start gap-5"
+				className="flex min-w-0 flex-1 flex-col"
 			>
 				<VendorThumb
 					logoUrl={vendor.logoUrl}
 					name={vendor.businessName}
 					categoryName={vendor.featuredService?.categoryName ?? null}
-					className="size-16"
+					className="aspect-4/5 w-full border-0 border-border border-b"
 				/>
-				<div className="min-w-0 flex-1">
+				<div className="flex flex-1 flex-col p-4">
 					<div className="flex flex-wrap items-center gap-x-2 gap-y-1">
 						<h3 className="font-serif text-foreground text-lg group-hover:underline">
 							{vendor.businessName}
@@ -41,7 +41,7 @@ export function VendorRow({ vendor }: { vendor: VendorCardSchema }) {
 							{vendor.tagline}
 						</p>
 					)}
-					<div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1">
+					<div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1">
 						<VendorRating rating={vendor.rating} />
 						{vendor.fromPriceCents !== null && (
 							<span className="docket text-muted-foreground">
@@ -54,7 +54,7 @@ export function VendorRow({ vendor }: { vendor: VendorCardSchema }) {
 					</div>
 				</div>
 			</Link>
-			<div className="shrink-0 pt-1">
+			<div className="absolute top-2 right-2">
 				<SaveVendorButton vendorUuid={vendor.uuid} isSaved={vendor.isSaved} />
 			</div>
 		</li>
