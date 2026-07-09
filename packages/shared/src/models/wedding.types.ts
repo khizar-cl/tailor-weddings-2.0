@@ -16,3 +16,46 @@ export type ContentSource = z.infer<typeof ContentSourceEnum>;
 
 export const BookingStatusEnum = z.enum(["pending", "confirmed", "cancelled"]);
 export type BookingStatus = z.infer<typeof BookingStatusEnum>;
+
+/**
+ * A vendor match surfaced on the couple dashboard — a read-only snapshot of a
+ * suggested recommendation with the business fields the card renders.
+ */
+export const WeddingRecommendationSchema = z.object({
+	uuid: z.string().uuid(),
+	vendorBusinessUuid: z.string().uuid(),
+	businessName: z.string(),
+	region: z.string().nullable(),
+	isVerified: z.boolean(),
+	categoryName: z.string().nullable(),
+	matchScore: z.number().int().nullable(),
+	rationale: z.string().nullable(),
+});
+export type WeddingRecommendationSchema = z.infer<
+	typeof WeddingRecommendationSchema
+>;
+
+/**
+ * Aggregated planning snapshot for the couple dashboard: checklist progress,
+ * a budget snapshot (the couple's total budget vs. what's been paid), the size
+ * of their vendor team, and top suggested matches.
+ */
+export const WeddingSummarySchema = z.object({
+	wedding: z.object({
+		weddingDate: z.date().nullable(),
+		city: z.string().nullable(),
+		region: z.string().nullable(),
+		guestCountEstimate: z.number().int().nullable(),
+	}),
+	checklist: z.object({
+		done: z.number().int(),
+		total: z.number().int(),
+	}),
+	budget: z.object({
+		estimatedCents: z.number().int().nullable(),
+		paidCents: z.number().int(),
+	}),
+	teamCount: z.number().int(),
+	recommendations: z.array(WeddingRecommendationSchema),
+});
+export type WeddingSummarySchema = z.infer<typeof WeddingSummarySchema>;

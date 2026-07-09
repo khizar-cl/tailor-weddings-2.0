@@ -5,10 +5,12 @@ import { Input } from "@repo/ui/components/input";
 import { Label } from "@repo/ui/components/label";
 import { Spinner } from "@repo/ui/components/spinner";
 import { useForm } from "@tanstack/react-form";
+import { format } from "date-fns";
 import { ArrowLeftIcon, ArrowRightIcon, HeartIcon } from "lucide-react";
 import { useState } from "react";
 import { z } from "zod";
 import { useSubmitCoupleOnboarding } from "../../../api/onboarding.api";
+import { DatePicker } from "../../../components/date-picker";
 import { OnboardingShell } from "../../../components/onboarding/onboarding-shell";
 import {
 	ChipSelect,
@@ -142,12 +144,18 @@ export default function CoupleOnboardingPage() {
 							{(field) => (
 								<div className="form-container">
 									<Label htmlFor="weddingDate">Wedding date (optional)</Label>
-									<Input
+									<DatePicker
 										id="weddingDate"
-										type="date"
-										value={field.state.value}
-										onChange={(e) => field.handleChange(e.target.value)}
-										onBlur={field.handleBlur}
+										placeholder="Choose a date"
+										fromDate={new Date()}
+										value={
+											field.state.value
+												? new Date(`${field.state.value}T00:00:00`)
+												: undefined
+										}
+										onChange={(date) =>
+											field.handleChange(date ? format(date, "yyyy-MM-dd") : "")
+										}
 									/>
 								</div>
 							)}

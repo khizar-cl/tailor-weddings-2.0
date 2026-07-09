@@ -2,6 +2,7 @@ import type { ActiveMode } from "@repo/shared";
 import {
 	HardDriveIcon,
 	LayoutDashboardIcon,
+	ListChecksIcon,
 	MailIcon,
 	PaletteIcon,
 	PanelLeftIcon,
@@ -14,6 +15,7 @@ import type { NavigationItem } from "../components/app-sidebar";
 
 export const coupleNavItems: NavigationItem[] = [
 	{ title: "Dashboard", url: "/portal", icon: LayoutDashboardIcon },
+	{ title: "Checklist", url: "/portal/checklist", icon: ListChecksIcon },
 	{ title: "Profile", url: "/portal/profile", icon: UserIcon },
 ];
 

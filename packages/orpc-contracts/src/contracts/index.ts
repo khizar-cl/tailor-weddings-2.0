@@ -5,6 +5,7 @@ import { emailContract } from "./email.contract";
 import { onboardingContract } from "./onboarding.contract";
 import { storageContract } from "./storage.contract";
 import { userContract } from "./user.contract";
+import { weddingContract } from "./wedding.contract";
 
 export const appContract = {
 	auth: authContract,
@@ -14,4 +15,5 @@ export const appContract = {
 	onboarding: onboardingContract,
 	storage: storageContract,
 	user: userContract,
+	wedding: weddingContract,
 };

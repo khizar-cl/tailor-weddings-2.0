@@ -1,91 +1,65 @@
 "use client";
 
-import { Badge } from "@repo/ui/components/badge";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@repo/ui/components/card";
-import {
-	CheckSquareIcon,
-	type LucideIcon,
-	PaletteIcon,
-	UsersIcon,
-	WalletIcon,
-} from "lucide-react";
-import { BaseLayout } from "../../components/base-layout";
+import { Skeleton } from "@repo/ui/components/skeleton";
+import { useChecklist, useToggleChecklistTask } from "../../api/checklist.api";
+import { useWeddingSummary } from "../../api/wedding.api";
+import { BudgetPanel } from "../../components/dashboard/budget-panel";
+import { ChecklistPreview } from "../../components/dashboard/checklist-preview";
+import { Masthead } from "../../components/dashboard/masthead";
+import { RecommendationList } from "../../components/dashboard/recommendation-list";
 import { useAuth } from "../../hooks/use-auth";
 
-interface PlanSection {
-	title: string;
-	description: string;
-	icon: LucideIcon;
+function DashboardSkeleton() {
+	return (
+		<div className="flex flex-col gap-10">
+			<Skeleton className="h-24 w-full" />
+			<div className="grid gap-8 md:grid-cols-5 md:gap-10">
+				<Skeleton className="h-80 w-full md:col-span-3" />
+				<Skeleton className="h-80 w-full md:col-span-2" />
+			</div>
+		</div>
+	);
 }
-
-const PLAN_SECTIONS: PlanSection[] = [
-	{
-		title: "Checklist",
-		description: "A personalized, date-aware to-do list for the months ahead.",
-		icon: CheckSquareIcon,
-	},
-	{
-		title: "Budget tracker",
-		description: "Track spending by category and see where every dollar goes.",
-		icon: WalletIcon,
-	},
-	{
-		title: "Your wedding team",
-		description: "Save vendors you love and manage them in one place.",
-		icon: UsersIcon,
-	},
-	{
-		title: "Style board",
-		description: "Your palette and vibe, guiding the vendors we surface.",
-		icon: PaletteIcon,
-	},
-];
 
 export default function CoupleDashboard() {
 	const { user } = useAuth();
 	const firstName = user?.name?.trim().split(" ")[0] || "there";
 
+	const summary = useWeddingSummary();
+	const checklist = useChecklist();
+	const toggleTask = useToggleChecklistTask();
+
+	const isLoading = summary.isLoading || checklist.isLoading;
+	const error = summary.error ?? checklist.error;
+
 	return (
-		<BaseLayout
-			showBreadcrumb={false}
-			title={
-				<>
-					Welcome, <span className="text-gold">{firstName}</span>
-				</>
-			}
-			description="This is your planning home. Here's what's coming together for your day."
-		>
-			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-				{PLAN_SECTIONS.map((section) => {
-					const Icon = section.icon;
-					return (
-						<Card key={section.title}>
-							<CardHeader>
-								<div className="flex items-center justify-between">
-									<div className="flex items-center gap-2">
-										<span className="flex size-8 items-center justify-center rounded-md bg-gold/12 text-gold">
-											<Icon className="size-4" />
-										</span>
-										<CardTitle className="text-base">{section.title}</CardTitle>
-									</div>
-									<Badge tone="info" variant="outline">
-										Coming soon
-									</Badge>
-								</div>
-							</CardHeader>
-							<CardContent>
-								<CardDescription>{section.description}</CardDescription>
-							</CardContent>
-						</Card>
-					);
-				})}
-			</div>
-		</BaseLayout>
+		<div className="min-h-screen bg-background p-6">
+			{isLoading ? (
+				<DashboardSkeleton />
+			) : error ? (
+				<p className="text-destructive-foreground text-sm">{error.message}</p>
+			) : summary.data && checklist.data ? (
+				<div className="rise-in flex flex-col gap-10">
+					<Masthead firstName={firstName} summary={summary.data} />
+					<div className="grid gap-8 md:grid-cols-5 md:gap-10">
+						<div className="md:col-span-3">
+							<ChecklistPreview
+								items={checklist.data.items}
+								onToggleTask={(uuid, isComplete) =>
+									toggleTask.mutate({ uuid, isComplete })
+								}
+							/>
+						</div>
+						<div className="flex flex-col gap-8 md:col-span-2">
+							<BudgetPanel budget={summary.data.budget} />
+							<hr className="stitch-rule" />
+							<RecommendationList
+								recommendations={summary.data.recommendations}
+							/>
+						</div>
+					</div>
+				</div>
+			) : null}
+		</div>
 	);
 }
