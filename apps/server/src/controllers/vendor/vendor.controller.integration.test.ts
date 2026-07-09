@@ -142,6 +142,23 @@ describe("vendor.search", () => {
 		expect(body.items[0].fromPriceCents).toBe(300_000);
 	});
 
+	it("returns an empty page when nothing matches the filters", async () => {
+		await seedVendor({
+			key: "tx",
+			categorySlug: "photography",
+			region: "Texas",
+		});
+
+		const body = rpcBody(
+			await rpc("/rpc/vendor/search", { region: "Nowhere" }).expect(200),
+		);
+
+		expect(body.total).toBe(0);
+		expect(body.items).toEqual([]);
+		expect(body.hasMore).toBe(false);
+		expect(body.page).toBe(1);
+	});
+
 	it("filters by category and region", async () => {
 		await seedVendor({
 			key: "tx-photo",
