@@ -14,6 +14,7 @@
  *   4. Runs the `minio-init` one-shot container to create the `file-uploads`
  *      bucket (gated behind the `init` compose profile).
  *   5. Runs database migrations (`pnpm db:migrate`).
+ *   6. Seeds reference and demo data (`pnpm db:seed`).
  *
  * After this, the only thing left to do is fill in the Clerk keys in the
  * generated .env files, then `pnpm dev`.
@@ -86,12 +87,25 @@ async function runMigrations() {
 	}
 }
 
+async function seedDatabase() {
+	const s = spinner();
+	s.start("Seeding reference and demo data…");
+	try {
+		await $`pnpm db:seed`;
+		s.stop("Database seeded.");
+	} catch (err) {
+		s.stop("Seeding failed.");
+		throw err;
+	}
+}
+
 intro(chalk.bold("Genesis local setup"));
 
 const createdEnvs = await ensureEnvFiles();
 await startInfra();
 await createMinioBucket();
 await runMigrations();
+await seedDatabase();
 
 outro(
 	createdEnvs.length > 0
