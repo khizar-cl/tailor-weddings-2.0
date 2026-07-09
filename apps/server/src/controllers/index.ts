@@ -5,6 +5,7 @@ import { emailController } from "./email/email.controller";
 import { onboardingController } from "./onboarding/onboarding.controller";
 import { storageController } from "./storage/storage.controller";
 import { userController } from "./user/user.controller";
+import { weddingController } from "./wedding/wedding.controller";
 
 export const appRouter = {
 	auth: authController,
@@ -14,4 +15,5 @@ export const appRouter = {
 	onboarding: onboardingController,
 	storage: storageController,
 	user: userController,
+	wedding: weddingController,
 };
