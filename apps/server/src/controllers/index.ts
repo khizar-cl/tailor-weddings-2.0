@@ -5,6 +5,8 @@ import { emailController } from "./email/email.controller";
 import { onboardingController } from "./onboarding/onboarding.controller";
 import { storageController } from "./storage/storage.controller";
 import { userController } from "./user/user.controller";
+import { savedVendorController } from "./vendor/saved-vendor.controller";
+import { vendorController } from "./vendor/vendor.controller";
 import { weddingController } from "./wedding/wedding.controller";
 
 export const appRouter = {
@@ -13,7 +15,9 @@ export const appRouter = {
 	checklist: checklistController,
 	email: emailController,
 	onboarding: onboardingController,
+	savedVendor: savedVendorController,
 	storage: storageController,
 	user: userController,
+	vendor: vendorController,
 	wedding: weddingController,
 };

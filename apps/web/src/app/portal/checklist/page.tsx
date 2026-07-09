@@ -100,18 +100,22 @@ export default function ChecklistPage() {
 						</Dialog>
 					</div>
 				) : (
-					<div className="mt-6 grid grid-cols-[minmax(0,1fr)_20rem] gap-10">
-						<div>{board}</div>
-						<aside className="sticky top-20 self-start">
-							<h2 className="text-base">Add a task</h2>
-							<div className="mt-4">
-								<AddTaskForm
-									categories={categoryList}
-									onAdd={(input) => add.mutate(input)}
-									isPending={add.isPending}
-								/>
-							</div>
-						</aside>
+					<div className="@container mt-6">
+						<div className="grid @3xl:grid-cols-[minmax(0,1fr)_20rem] grid-cols-1 gap-10">
+							{/* Single column: form leads, board follows. Two columns: board
+							    left, form right (DOM order kept for desktop focus order). */}
+							<div className="@3xl:order-0 order-last">{board}</div>
+							<aside className="@3xl:sticky @3xl:top-20 @3xl:self-start">
+								<h2 className="text-base">Add a task</h2>
+								<div className="mt-4">
+									<AddTaskForm
+										categories={categoryList}
+										onAdd={(input) => add.mutate(input)}
+										isPending={add.isPending}
+									/>
+								</div>
+							</aside>
+						</div>
 					</div>
 				)}
 			</div>

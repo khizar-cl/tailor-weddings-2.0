@@ -24,6 +24,7 @@ export const routeAccessConfig: Record<string, RouteAccessConfig> = {
 	// Couple area.
 	"/portal": { requiredCapability: "couple" },
 	"/portal/checklist": { requiredCapability: "couple" },
+	"/portal/discover": { requiredCapability: "couple" },
 	"/portal/onboarding": { requiredCapability: "couple" },
 	// Vendor area (prefix-matches its sub-routes, e.g. /portal/vendor/onboarding).
 	"/portal/vendor": { requiredCapability: "vendor" },
