@@ -23,6 +23,9 @@ import {
 
 const app = createTestApp();
 
+/** Well-formed v4 UUID that never matches a seeded row. */
+const MISSING_UUID = "3f0e6b2a-1c4d-4e5f-8a9b-0c1d2e3f4a5b";
+
 function rpcBody(res: request.Response) {
 	return res.body?.json ?? res.body;
 }
@@ -161,6 +164,73 @@ describe("vendorProfile.updateBusiness", () => {
 		expect(body.website).toBe("atelierlumen.com");
 		expect(body.yearsInBusiness).toBe(8);
 	});
+
+	it("clears optional fields when sent blank", async () => {
+		await setupVendor();
+		const body = rpcBody(
+			await rpc("/rpc/vendorProfile/updateBusiness", {
+				businessName: "Studio Test",
+				region: "Texas",
+				tagline: "",
+				bio: "",
+				website: "",
+				city: "",
+			}).expect(200),
+		);
+		expect(body.tagline).toBeNull();
+		expect(body.bio).toBeNull();
+		expect(body.website).toBeNull();
+		expect(body.city).toBeNull();
+	});
+});
+
+describe("vendorProfile.updateService", () => {
+	it("updates a taxonomy service description", async () => {
+		const { serviceUuid } = await setupVendor("pro");
+		const body = rpcBody(
+			await rpc("/rpc/vendorProfile/updateService", {
+				serviceUuid,
+				description: "Updated coverage details.",
+			}).expect(200),
+		);
+		expect(findService(body, serviceUuid)?.description).toBe(
+			"Updated coverage details.",
+		);
+	});
+
+	it("renames a custom service via customLabel", async () => {
+		await setupVendor("pro");
+		const added = rpcBody(
+			await rpc("/rpc/vendorProfile/addService", {
+				customLabel: "Balloon artistry",
+				description: "Whimsical balloon installations.",
+			}).expect(200),
+		);
+		const custom = added.services.find(
+			(s: { customLabel: string | null }) =>
+				s.customLabel === "Balloon artistry",
+		);
+		const body = rpcBody(
+			await rpc("/rpc/vendorProfile/updateService", {
+				serviceUuid: custom.uuid,
+				customLabel: "Balloon design",
+				description: "Refined balloon installations.",
+			}).expect(200),
+		);
+		expect(findService(body, custom.uuid)?.customLabel).toBe("Balloon design");
+		expect(findService(body, custom.uuid)?.description).toBe(
+			"Refined balloon installations.",
+		);
+	});
+
+	it("returns 404 for an unknown service", async () => {
+		await setupVendor("pro");
+		const res = await rpc("/rpc/vendorProfile/updateService", {
+			serviceUuid: MISSING_UUID,
+			description: "No such service.",
+		});
+		expect(res.status).toBe(404);
+	});
 });
 
 describe("vendorProfile.addService", () => {
@@ -220,6 +290,15 @@ describe("vendorProfile.addService", () => {
 			description: "Florals beyond the plan limit.",
 		});
 		expect(res.status).toBe(403);
+	});
+
+	it("returns 404 for an unknown category", async () => {
+		await setupVendor("pro");
+		const res = await rpc("/rpc/vendorProfile/addService", {
+			categoryUuid: MISSING_UUID,
+			description: "Points to a missing category.",
+		});
+		expect(res.status).toBe(404);
 	});
 });
 
@@ -293,6 +372,22 @@ describe("vendorProfile service state", () => {
 		expect(body.services).toHaveLength(1);
 		expect(findService(body, floral.uuid)?.isPrimary).toBe(true);
 	});
+
+	it("returns 404 setting primary on an unknown service", async () => {
+		await setupVendor("pro");
+		const res = await rpc("/rpc/vendorProfile/setServicePrimary", {
+			serviceUuid: MISSING_UUID,
+		});
+		expect(res.status).toBe(404);
+	});
+
+	it("returns 404 removing an unknown service", async () => {
+		await setupVendor("pro");
+		const res = await rpc("/rpc/vendorProfile/removeService", {
+			serviceUuid: MISSING_UUID,
+		});
+		expect(res.status).toBe(404);
+	});
 });
 
 describe("vendorProfile packages", () => {
@@ -358,5 +453,63 @@ describe("vendorProfile packages", () => {
 			}).expect(200),
 		);
 		expect(findService(body, serviceUuid)?.startingPriceCents).toBe(400_000);
+	});
+
+	it("returns 404 adding a package to an unknown service", async () => {
+		await setupVendor();
+		const res = await rpc("/rpc/vendorProfile/addPackage", {
+			serviceUuid: MISSING_UUID,
+			name: "Orphan",
+			description: "No service.",
+			priceCents: 100_000,
+			priceUnit: "flat",
+		});
+		expect(res.status).toBe(404);
+	});
+
+	it("returns 404 updating or removing an unknown package", async () => {
+		await setupVendor();
+		const update = await rpc("/rpc/vendorProfile/updatePackage", {
+			packageUuid: MISSING_UUID,
+			name: "Ghost",
+			description: "Nope.",
+			priceCents: 100_000,
+			priceUnit: "flat",
+		});
+		expect(update.status).toBe(404);
+		const remove = await rpc("/rpc/vendorProfile/removePackage", {
+			packageUuid: MISSING_UUID,
+		});
+		expect(remove.status).toBe(404);
+	});
+});
+
+describe("vendorProfile portfolio", () => {
+	it("reorders portfolio for a service that has none yet", async () => {
+		const { serviceUuid } = await setupVendor("pro");
+		const body = rpcBody(
+			await rpc("/rpc/vendorProfile/reorderPortfolio", {
+				serviceUuid,
+				orderedUuids: [],
+			}).expect(200),
+		);
+		expect(findService(body, serviceUuid)?.portfolio).toHaveLength(0);
+	});
+
+	it("returns 404 reordering an unknown service", async () => {
+		await setupVendor("pro");
+		const res = await rpc("/rpc/vendorProfile/reorderPortfolio", {
+			serviceUuid: MISSING_UUID,
+			orderedUuids: [],
+		});
+		expect(res.status).toBe(404);
+	});
+
+	it("returns 404 removing an unknown portfolio image", async () => {
+		await setupVendor("pro");
+		const res = await rpc("/rpc/vendorProfile/removePortfolio", {
+			portfolioUuid: MISSING_UUID,
+		});
+		expect(res.status).toBe(404);
 	});
 });
