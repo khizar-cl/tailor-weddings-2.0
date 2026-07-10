@@ -22,11 +22,12 @@ export function VendorCard({ vendor }: { vendor: VendorCardSchema }) {
 					logoUrl={vendor.logoUrl}
 					name={vendor.businessName}
 					categoryName={vendor.featuredService?.categoryName ?? null}
-					className="aspect-4/5 w-full border-0 border-border border-b"
+					contain
+					className="aspect-video w-full border-0 border-border border-b"
 				/>
 				<div className="flex flex-1 flex-col p-4">
 					<div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-						<h3 className="font-serif text-foreground text-lg group-hover:underline">
+						<h3 className="font-serif text-base text-foreground group-hover:underline">
 							{vendor.businessName}
 						</h3>
 						{vendor.isVerified && (

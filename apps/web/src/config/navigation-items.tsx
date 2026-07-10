@@ -7,6 +7,7 @@ import {
 	MailIcon,
 	PaletteIcon,
 	PanelLeftIcon,
+	SquarePenIcon,
 	StoreIcon,
 	TextIcon,
 	UserIcon,
@@ -23,6 +24,7 @@ export const coupleNavItems: NavigationItem[] = [
 
 export const vendorNavItems: NavigationItem[] = [
 	{ title: "Dashboard", url: "/portal/vendor", icon: StoreIcon },
+	{ title: "Studio", url: "/portal/vendor/profile", icon: SquarePenIcon },
 	{ title: "Profile", url: "/portal/profile", icon: UserIcon },
 ];
 

@@ -6,14 +6,17 @@ interface VendorThumbProps {
 	name: string;
 	categoryName: string | null;
 	className?: string;
+	/** Contain (padded) rather than cover — better for a logo in a wide band. */
+	contain?: boolean;
 }
 
-/** Square logo swatch, falling back to the category glyph when there's no logo. */
+/** Logo swatch, falling back to the category glyph when there's no logo. */
 export function VendorThumb({
 	logoUrl,
 	name,
 	categoryName,
 	className,
+	contain = false,
 }: VendorThumbProps) {
 	const Icon = categoryIcon(categoryName);
 	return (
@@ -28,7 +31,10 @@ export function VendorThumb({
 				<img
 					src={logoUrl}
 					alt={name}
-					className="h-full w-full object-cover"
+					className={cn(
+						"h-full w-full",
+						contain ? "object-contain p-6" : "object-cover",
+					)}
 					loading="lazy"
 				/>
 			) : (
