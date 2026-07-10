@@ -3,6 +3,9 @@ import { Badge } from "@repo/ui/components/badge";
 import { formatPrice } from "../vendor/price";
 import { SaveVendorButton } from "../vendor/save-vendor-button";
 import { VendorRating } from "../vendor/vendor-rating";
+import { VendorThumb } from "../vendor/vendor-thumb";
+import { websiteHref } from "../vendor/website";
+import { PortfolioCollage } from "./portfolio-collage";
 
 function Fact({
 	label,
@@ -19,37 +22,6 @@ function Fact({
 	);
 }
 
-function websiteHref(website: string) {
-	return website.startsWith("http") ? website : `https://${website}`;
-}
-
-function PortfolioGrid({
-	images,
-}: {
-	images: VendorDetailSchema["services"][number]["portfolio"];
-}) {
-	const shown = images.filter((image) => image.url !== null);
-	if (shown.length === 0) return null;
-	return (
-		<div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-			{shown.map((image) => (
-				<div
-					key={image.uuid}
-					className="aspect-4/5 overflow-hidden border border-border bg-secondary"
-				>
-					{/* biome-ignore lint/performance/noImgElement: presigned S3 URL has a dynamic host/expiry, unsuited to next/image */}
-					<img
-						src={image.url ?? ""}
-						alt={image.caption ?? ""}
-						className="h-full w-full object-cover"
-						loading="lazy"
-					/>
-				</div>
-			))}
-		</div>
-	);
-}
-
 export function VendorDetailView({ vendor }: { vendor: VendorDetailSchema }) {
 	const location = [vendor.city, vendor.region].filter(Boolean).join(", ");
 	const leadCategory = vendor.services[0]?.categoryName ?? "Vendor";
@@ -59,22 +31,30 @@ export function VendorDetailView({ vendor }: { vendor: VendorDetailSchema }) {
 			<header className="border-border border-b pb-8">
 				<span className="docket text-thread-ink">{leadCategory}</span>
 				<div className="mt-2 flex flex-wrap items-start justify-between gap-4">
-					<div className="min-w-0">
-						<h1 className="font-medium font-serif text-3xl text-foreground sm:text-4xl">
-							{vendor.businessName}
-						</h1>
-						{vendor.tagline && (
-							<p className="mt-2 max-w-xl text-muted-foreground text-sm">
-								{vendor.tagline}
-							</p>
-						)}
-						<div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-							{vendor.isVerified && (
-								<Badge tone="success" variant="outline">
-									Verified
-								</Badge>
+					<div className="flex min-w-0 items-start gap-4">
+						<VendorThumb
+							logoUrl={vendor.logoUrl}
+							name={vendor.businessName}
+							categoryName={leadCategory}
+							className="size-20"
+						/>
+						<div className="min-w-0">
+							<h1 className="font-medium font-serif text-3xl text-foreground sm:text-4xl">
+								{vendor.businessName}
+							</h1>
+							{vendor.tagline && (
+								<p className="mt-2 max-w-xl text-muted-foreground text-sm">
+									{vendor.tagline}
+								</p>
 							)}
-							<VendorRating rating={vendor.rating} />
+							<div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+								{vendor.isVerified && (
+									<Badge tone="success" variant="outline">
+										Verified
+									</Badge>
+								)}
+								<VendorRating rating={vendor.rating} />
+							</div>
 						</div>
 					</div>
 					<SaveVendorButton
@@ -131,7 +111,9 @@ export function VendorDetailView({ vendor }: { vendor: VendorDetailSchema }) {
 											</p>
 										)}
 
-										<PortfolioGrid images={service.portfolio} />
+										<div className="mt-4">
+											<PortfolioCollage images={service.portfolio} />
+										</div>
 
 										{service.packages.length > 0 && (
 											<ul className="mt-4 flex flex-col gap-3">
