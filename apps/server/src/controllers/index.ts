@@ -7,6 +7,7 @@ import { storageController } from "./storage/storage.controller";
 import { userController } from "./user/user.controller";
 import { savedVendorController } from "./vendor/saved-vendor.controller";
 import { vendorController } from "./vendor/vendor.controller";
+import { vendorProfileController } from "./vendor/vendor-profile.controller";
 import { weddingController } from "./wedding/wedding.controller";
 
 export const appRouter = {
@@ -19,5 +20,6 @@ export const appRouter = {
 	storage: storageController,
 	user: userController,
 	vendor: vendorController,
+	vendorProfile: vendorProfileController,
 	wedding: weddingController,
 };

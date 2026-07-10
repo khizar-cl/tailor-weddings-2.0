@@ -13,4 +13,5 @@ export * from "./saved-vendor.types";
 export * from "./storage.types";
 export * from "./user.types";
 export * from "./vendor.types";
+export * from "./vendor-profile.types";
 export * from "./wedding.types";

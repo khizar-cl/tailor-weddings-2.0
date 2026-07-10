@@ -7,6 +7,7 @@ import { savedVendorContract } from "./saved-vendor.contract";
 import { storageContract } from "./storage.contract";
 import { userContract } from "./user.contract";
 import { vendorContract } from "./vendor.contract";
+import { vendorProfileContract } from "./vendor-profile.contract";
 import { weddingContract } from "./wedding.contract";
 
 export const appContract = {
@@ -19,5 +20,6 @@ export const appContract = {
 	storage: storageContract,
 	user: userContract,
 	vendor: vendorContract,
+	vendorProfile: vendorProfileContract,
 	wedding: weddingContract,
 };
