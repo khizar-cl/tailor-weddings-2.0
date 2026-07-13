@@ -10,12 +10,12 @@ import { and, desc, eq, inArray, isNull } from "drizzle-orm";
 import {
 	categories,
 	db,
-	files,
 	savedVendors,
 	vendorBusinesses,
 	vendorServices,
 } from "../../db";
-import { getCoupleWeddingId, presignImage } from "./vendor.helpers";
+import { getCoupleWeddingId } from "../wedding/wedding-access";
+import { presignLogosByFileId } from "./vendor.helpers";
 
 interface SavedRow {
 	uuid: string;
@@ -38,11 +38,8 @@ async function assembleSavedVendors(
 	if (rows.length === 0) return [];
 
 	const businessIds = rows.map((row) => row.vendorBusiness.id);
-	const logoFileIds = rows
-		.map((row) => row.vendorBusiness.logoFileId)
-		.filter((id): id is number => id !== null);
 
-	const [primaryRows, logoRows] = await Promise.all([
+	const [primaryRows, logoUrlByFileId] = await Promise.all([
 		db
 			.select({
 				businessId: vendorServices.vendorBusinessId,
@@ -57,22 +54,11 @@ async function assembleSavedVendors(
 					isNull(vendorServices.deletedAt),
 				),
 			),
-		logoFileIds.length === 0
-			? Promise.resolve([])
-			: db
-					.select({ id: files.id, key: files.key, fileName: files.fileName })
-					.from(files)
-					.where(inArray(files.id, logoFileIds)),
+		presignLogosByFileId(rows.map((row) => row.vendorBusiness.logoFileId)),
 	]);
 
 	const primaryByBusiness = new Map(
 		primaryRows.map((row) => [row.businessId, row.categoryName]),
-	);
-	const logoUrlByFileId = new Map<number, string | null>();
-	await Promise.all(
-		logoRows.map(async (file) => {
-			logoUrlByFileId.set(file.id, await presignImage(file));
-		}),
 	);
 
 	return rows.map((row) => ({

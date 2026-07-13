@@ -1,6 +1,7 @@
 import { oc } from "@orpc/contract";
-import { WeddingSummarySchema } from "@repo/shared";
+import { WeddingSummarySchema, WeddingTeamSchema } from "@repo/shared";
 
 export const weddingContract = {
 	getSummary: oc.output(WeddingSummarySchema),
+	getTeam: oc.output(WeddingTeamSchema),
 };

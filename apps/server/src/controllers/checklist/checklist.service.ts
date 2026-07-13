@@ -4,7 +4,9 @@ import type {
 	ToggleChecklistTaskInputSchema,
 } from "@repo/shared";
 import { and, asc, count, desc, eq, isNull } from "drizzle-orm";
-import { categories, checklistItems, db, weddings } from "../../db";
+import { checklistItems, db } from "../../db";
+import { resolveActiveCategoryId } from "../category/category.service";
+import { getOwnedWeddingId } from "../wedding/wedding-access";
 
 const MAX_CHECKLIST_ITEMS_PER_WEDDING = 100;
 
@@ -32,21 +34,6 @@ function toChecklistItem(row: ChecklistItemRow) {
 	};
 }
 
-/**
- * Resolve the wedding the caller owns. Checklist writes are owner-only; the
- * partner has read-only access to a wedding (see wedding.schema).
- */
-async function getOwnedWeddingId(dbUserId: number) {
-	const wedding = await db.query.weddings.findFirst({
-		where: eq(weddings.ownerUserId, dbUserId),
-		columns: { id: true },
-	});
-	if (!wedding) {
-		throw new ORPCError("NOT_FOUND", { message: "Wedding not found" });
-	}
-	return wedding.id;
-}
-
 /** Re-read a task (with its category) so mutations return the full shape. */
 async function loadItemOrThrow(weddingId: number, uuid: string) {
 	const row = await db.query.checklistItems.findFirst({
@@ -61,17 +48,6 @@ async function loadItemOrThrow(weddingId: number, uuid: string) {
 		throw new ORPCError("NOT_FOUND", { message: "Task not found" });
 	}
 	return toChecklistItem(row);
-}
-
-async function resolveCategoryId(categoryUuid: string) {
-	const category = await db.query.categories.findFirst({
-		where: eq(categories.uuid, categoryUuid),
-		columns: { id: true, isActive: true },
-	});
-	if (!category?.isActive) {
-		throw new ORPCError("NOT_FOUND", { message: "Category not found" });
-	}
-	return category.id;
 }
 
 export async function listChecklist(dbUserId: number) {
@@ -109,7 +85,7 @@ export async function addChecklistTask(
 	}
 
 	const categoryId = input.categoryUuid
-		? await resolveCategoryId(input.categoryUuid)
+		? await resolveActiveCategoryId(input.categoryUuid)
 		: null;
 
 	// Manual tasks sort after everything currently on the list.

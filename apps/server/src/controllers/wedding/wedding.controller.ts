@@ -1,5 +1,5 @@
 import { protectedProcedure } from "../../orpc/procedures";
-import { getWeddingSummary } from "./wedding.service";
+import { getWeddingSummary, getWeddingTeam } from "./wedding.service";
 
 export const weddingController = {
 	getSummary: protectedProcedure.wedding.getSummary.handler(
@@ -7,4 +7,7 @@ export const weddingController = {
 			return getWeddingSummary(context.dbUser.id);
 		},
 	),
+	getTeam: protectedProcedure.wedding.getTeam.handler(async ({ context }) => {
+		return getWeddingTeam(context.dbUser.id);
+	}),
 };

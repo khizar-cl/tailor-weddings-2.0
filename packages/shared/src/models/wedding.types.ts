@@ -40,6 +40,41 @@ export type WeddingRecommendationSchema = z.infer<
  * a budget snapshot (the couple's total budget vs. what's been paid), the size
  * of their vendor team, and top suggested matches.
  */
+/**
+ * A vendor on the couple's wedding team — either shortlisted ("saved") or
+ * engaged via a booking. `bookingStatus` is null for save-only members.
+ */
+export const WeddingTeamMemberSchema = z.object({
+	vendorBusinessUuid: z.string().uuid(),
+	businessName: z.string(),
+	city: z.string().nullable(),
+	region: z.string().nullable(),
+	isVerified: z.boolean(),
+	logoUrl: z.string().nullable(),
+	primaryCategoryName: z.string().nullable(),
+	isSaved: z.boolean(),
+	isBooked: z.boolean(),
+	bookingStatus: BookingStatusEnum.nullable(),
+});
+export type WeddingTeamMemberSchema = z.infer<typeof WeddingTeamMemberSchema>;
+
+/** A vendor category the team doesn't cover yet — a prompt to go discover. */
+export const WeddingTeamCategoryGapSchema = z.object({
+	uuid: z.string().uuid(),
+	name: z.string(),
+	slug: z.string(),
+});
+export type WeddingTeamCategoryGapSchema = z.infer<
+	typeof WeddingTeamCategoryGapSchema
+>;
+
+/** The couple's roster plus the categories still missing a team member. */
+export const WeddingTeamSchema = z.object({
+	members: z.array(WeddingTeamMemberSchema),
+	missingCategories: z.array(WeddingTeamCategoryGapSchema),
+});
+export type WeddingTeamSchema = z.infer<typeof WeddingTeamSchema>;
+
 export const WeddingSummarySchema = z.object({
 	wedding: z.object({
 		weddingDate: z.date().nullable(),

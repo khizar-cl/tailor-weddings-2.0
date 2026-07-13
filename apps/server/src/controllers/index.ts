@@ -1,4 +1,5 @@
 import { authController } from "./auth/auth.controller";
+import { budgetController } from "./budget/budget.controller";
 import { categoryController } from "./category/category.controller";
 import { checklistController } from "./checklist/checklist.controller";
 import { emailController } from "./email/email.controller";
@@ -12,6 +13,7 @@ import { weddingController } from "./wedding/wedding.controller";
 
 export const appRouter = {
 	auth: authController,
+	budget: budgetController,
 	category: categoryController,
 	checklist: checklistController,
 	email: emailController,

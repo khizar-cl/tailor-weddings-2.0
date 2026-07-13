@@ -1,35 +1,9 @@
 import { ORPCError } from "@orpc/server";
 import type { SubscriptionTier } from "@repo/shared";
-import { and, eq, isNull, or } from "drizzle-orm";
-import { db, vendorAccounts, vendorBusinesses, weddings } from "../../db";
+import { and, eq, inArray, isNull } from "drizzle-orm";
+import { db, files, vendorAccounts, vendorBusinesses } from "../../db";
 import { createPresignedUrl } from "../../storage";
 import { logger } from "../../utils/logger";
-
-/**
- * The wedding the caller can act on for team/discovery. Owner and partner both
- * manage the shortlist, so either resolves it (see wedding.schema).
- */
-export async function getCoupleWeddingIdOrNull(dbUserId: number) {
-	const wedding = await db.query.weddings.findFirst({
-		where: and(
-			or(
-				eq(weddings.ownerUserId, dbUserId),
-				eq(weddings.partnerUserId, dbUserId),
-			),
-			isNull(weddings.deletedAt),
-		),
-		columns: { id: true },
-	});
-	return wedding?.id ?? null;
-}
-
-export async function getCoupleWeddingId(dbUserId: number) {
-	const weddingId = await getCoupleWeddingIdOrNull(dbUserId);
-	if (weddingId === null) {
-		throw new ORPCError("NOT_FOUND", { message: "Wedding not found" });
-	}
-	return weddingId;
-}
 
 /**
  * Presigned view URL for a public listing image, or null when absent. A failure
@@ -48,6 +22,43 @@ export async function presignImage(
 	}
 }
 
+/** Presigned logo URLs keyed by file id, resolving nulls (and blanks) to null. */
+export async function presignLogosByFileId(
+	fileIds: (number | null)[],
+): Promise<Map<number, string | null>> {
+	const urlByFileId = new Map<number, string | null>();
+	const ids = fileIds.filter((id): id is number => id !== null);
+	if (ids.length === 0) return urlByFileId;
+
+	const rows = await db
+		.select({ id: files.id, key: files.key, fileName: files.fileName })
+		.from(files)
+		.where(inArray(files.id, ids));
+	await Promise.all(
+		rows.map(async (file) => {
+			urlByFileId.set(file.id, await presignImage(file));
+		}),
+	);
+	return urlByFileId;
+}
+
+/** The tier-limit message shown when a vendor hits their service cap. */
+export function maxServicesMessage(maxServices: number) {
+	return `Your plan allows up to ${maxServices} service${maxServices === 1 ? "" : "s"}. Upgrade to add more.`;
+}
+
+/** The caller's vendor account (id + subscription tier), or throw NOT_FOUND. */
+export async function getVendorAccount(dbUserId: number) {
+	const account = await db.query.vendorAccounts.findFirst({
+		where: eq(vendorAccounts.userId, dbUserId),
+		columns: { id: true, subscriptionTier: true },
+	});
+	if (!account) {
+		throw new ORPCError("NOT_FOUND", { message: "Vendor account not found" });
+	}
+	return account;
+}
+
 export interface OwnedBusiness {
 	businessId: number;
 	tier: SubscriptionTier;
@@ -60,13 +71,7 @@ export interface OwnedBusiness {
 export async function getOwnedBusiness(
 	dbUserId: number,
 ): Promise<OwnedBusiness> {
-	const account = await db.query.vendorAccounts.findFirst({
-		where: eq(vendorAccounts.userId, dbUserId),
-		columns: { id: true, subscriptionTier: true },
-	});
-	if (!account) {
-		throw new ORPCError("NOT_FOUND", { message: "Vendor account not found" });
-	}
+	const account = await getVendorAccount(dbUserId);
 	const business = await db.query.vendorBusinesses.findFirst({
 		where: and(
 			eq(vendorBusinesses.vendorAccountId, account.id),
