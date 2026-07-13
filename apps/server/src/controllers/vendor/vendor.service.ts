@@ -22,13 +22,13 @@ import {
 import {
 	categories,
 	db,
-	files,
 	reviews,
 	savedVendors,
 	vendorBusinesses,
 	vendorServices,
 } from "../../db";
-import { getCoupleWeddingIdOrNull, presignImage } from "./vendor.helpers";
+import { getCoupleWeddingIdOrNull } from "../wedding/wedding-access";
+import { presignImage, presignLogosByFileId } from "./vendor.helpers";
 
 /** Mean rating rounded to one decimal, or null when there are no reviews. */
 function toAverage(raw: string | null): number | null {
@@ -104,65 +104,58 @@ export async function searchVendors(
 	}
 
 	const businessIds = pageRows.map((row) => row.id);
-	const logoFileIds = pageRows
-		.map((row) => row.logoFileId)
-		.filter((id): id is number => id !== null);
 	const weddingId = await getCoupleWeddingIdOrNull(dbUserId);
 
-	const [serviceRows, ratingRows, savedRows, logoRows] = await Promise.all([
-		db
-			.select({
-				businessId: vendorServices.vendorBusinessId,
-				categoryName: categories.name,
-				categoryUuid: categories.uuid,
-			})
-			.from(vendorServices)
-			.innerJoin(categories, eq(categories.id, vendorServices.categoryId))
-			.where(
-				and(
-					inArray(vendorServices.vendorBusinessId, businessIds),
-					eq(vendorServices.isPublished, true),
-					isNull(vendorServices.deletedAt),
-				),
-			)
-			.orderBy(
-				desc(vendorServices.isPrimary),
-				asc(vendorServices.sortOrder),
-				asc(vendorServices.id),
-			),
-		db
-			.select({
-				businessId: reviews.subjectVendorBusinessId,
-				average: avg(reviews.overallRating),
-				count: count(),
-			})
-			.from(reviews)
-			.where(
-				and(
-					inArray(reviews.subjectVendorBusinessId, businessIds),
-					eq(reviews.status, "published"),
-				),
-			)
-			.groupBy(reviews.subjectVendorBusinessId),
-		weddingId === null
-			? Promise.resolve([])
-			: db
-					.select({ vendorBusinessId: savedVendors.vendorBusinessId })
-					.from(savedVendors)
-					.where(
-						and(
-							eq(savedVendors.weddingId, weddingId),
-							inArray(savedVendors.vendorBusinessId, businessIds),
-							isNull(savedVendors.deletedAt),
-						),
+	const [serviceRows, ratingRows, savedRows, logoUrlByFileId] =
+		await Promise.all([
+			db
+				.select({
+					businessId: vendorServices.vendorBusinessId,
+					categoryName: categories.name,
+					categoryUuid: categories.uuid,
+				})
+				.from(vendorServices)
+				.innerJoin(categories, eq(categories.id, vendorServices.categoryId))
+				.where(
+					and(
+						inArray(vendorServices.vendorBusinessId, businessIds),
+						eq(vendorServices.isPublished, true),
+						isNull(vendorServices.deletedAt),
 					),
-		logoFileIds.length === 0
-			? Promise.resolve([])
-			: db
-					.select({ id: files.id, key: files.key, fileName: files.fileName })
-					.from(files)
-					.where(inArray(files.id, logoFileIds)),
-	]);
+				)
+				.orderBy(
+					desc(vendorServices.isPrimary),
+					asc(vendorServices.sortOrder),
+					asc(vendorServices.id),
+				),
+			db
+				.select({
+					businessId: reviews.subjectVendorBusinessId,
+					average: avg(reviews.overallRating),
+					count: count(),
+				})
+				.from(reviews)
+				.where(
+					and(
+						inArray(reviews.subjectVendorBusinessId, businessIds),
+						eq(reviews.status, "published"),
+					),
+				)
+				.groupBy(reviews.subjectVendorBusinessId),
+			weddingId === null
+				? Promise.resolve([])
+				: db
+						.select({ vendorBusinessId: savedVendors.vendorBusinessId })
+						.from(savedVendors)
+						.where(
+							and(
+								eq(savedVendors.weddingId, weddingId),
+								inArray(savedVendors.vendorBusinessId, businessIds),
+								isNull(savedVendors.deletedAt),
+							),
+						),
+			presignLogosByFileId(pageRows.map((row) => row.logoFileId)),
+		]);
 
 	// serviceRows are ordered primary-first; keep the first match per business —
 	// the searched category when filtering, else the primary/first service.
@@ -187,13 +180,6 @@ export async function searchVendors(
 		]),
 	);
 	const savedSet = new Set(savedRows.map((row) => row.vendorBusinessId));
-
-	const logoUrlByFileId = new Map<number, string | null>();
-	await Promise.all(
-		logoRows.map(async (file) => {
-			logoUrlByFileId.set(file.id, await presignImage(file));
-		}),
-	);
 
 	const items = pageRows.map((row) => ({
 		uuid: row.uuid,

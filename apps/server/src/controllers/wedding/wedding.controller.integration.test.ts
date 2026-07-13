@@ -177,9 +177,99 @@ describe("wedding.getSummary", () => {
 	});
 });
 
+describe("wedding.getTeam", () => {
+	it("returns 404 for a user without a wedding", async () => {
+		const res = await withAuth(request(app).post("/rpc/wedding/getTeam"));
+		expect(res.status).toBe(404);
+	});
+
+	it("rosters saved and booked vendors and lists uncovered categories", async () => {
+		await seedCategory("photography", "Photography");
+		await seedCategory("floral", "Floral");
+		await seedCategory("catering", "Catering");
+		await onboardCouple();
+		const weddingId = await ownedWeddingId();
+
+		const savedId = await seedBusiness("saved");
+		await attachService(savedId, "photography");
+		const bookedId = await seedBusiness("booked");
+		await attachService(bookedId, "floral");
+
+		await db
+			.insert(savedVendors)
+			.values({ weddingId, vendorBusinessId: savedId });
+		await db
+			.insert(bookings)
+			.values({ weddingId, vendorBusinessId: bookedId, status: "confirmed" });
+
+		const body = rpcBody(
+			await withAuth(request(app).post("/rpc/wedding/getTeam")).expect(200),
+		);
+
+		expect(body.members).toHaveLength(2);
+		const photo = body.members.find(
+			(m: { primaryCategoryName: string | null }) =>
+				m.primaryCategoryName === "Photography",
+		);
+		expect(photo.isSaved).toBe(true);
+		expect(photo.isBooked).toBe(false);
+		expect(photo.bookingStatus).toBeNull();
+		const floral = body.members.find(
+			(m: { primaryCategoryName: string | null }) =>
+				m.primaryCategoryName === "Floral",
+		);
+		expect(floral.isBooked).toBe(true);
+		expect(floral.bookingStatus).toBe("confirmed");
+		expect(floral.isSaved).toBe(false);
+
+		// photography + floral are covered; catering is the only gap.
+		expect(body.missingCategories.map((c: { slug: string }) => c.slug)).toEqual(
+			["catering"],
+		);
+	});
+
+	it("counts a vendor that is both saved and booked once", async () => {
+		await seedCategory("photography", "Photography");
+		await onboardCouple();
+		const weddingId = await ownedWeddingId();
+		const dualId = await seedBusiness("dual");
+		await attachService(dualId, "photography");
+		await db
+			.insert(savedVendors)
+			.values({ weddingId, vendorBusinessId: dualId });
+		await db
+			.insert(bookings)
+			.values({ weddingId, vendorBusinessId: dualId, status: "pending" });
+
+		const body = rpcBody(
+			await withAuth(request(app).post("/rpc/wedding/getTeam")).expect(200),
+		);
+		expect(body.members).toHaveLength(1);
+		expect(body.members[0].isSaved).toBe(true);
+		expect(body.members[0].isBooked).toBe(true);
+		expect(body.members[0].bookingStatus).toBe("pending");
+		expect(body.missingCategories).toHaveLength(0);
+	});
+});
+
 /** Seed an active category, returning nothing (id looked up by slug elsewhere). */
 async function seedCategory(slug: string, name: string) {
 	await db.insert(categories).values({ slug, name });
+}
+
+/** Attach a published primary service in `slug`'s category to a business. */
+async function attachService(businessId: number, slug: string) {
+	const category = await db.query.categories.findFirst({
+		where: eq(categories.slug, slug),
+		columns: { id: true },
+	});
+	if (!category) throw new Error(`Seed the ${slug} category first`);
+	await db.insert(vendorServices).values({
+		vendorBusinessId: businessId,
+		categoryId: category.id,
+		isPrimary: true,
+		isPublished: true,
+	});
 }
 
 /** Seed a published, verified Texas vendor with one photography service. */

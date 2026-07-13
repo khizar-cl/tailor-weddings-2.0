@@ -10,7 +10,6 @@ import {
 	db,
 	portfolioMedia,
 	servicePackages,
-	vendorAccounts,
 	vendorBusinesses,
 	vendorServices,
 	weddings,
@@ -20,6 +19,7 @@ import {
 	markOnboardingComplete,
 	provisionCapability,
 } from "../user/user.service";
+import { getVendorAccount, maxServicesMessage } from "../vendor/vendor.helpers";
 import { generateCouplePlan } from "./plan-generation";
 
 export async function submitCoupleOnboarding(
@@ -82,13 +82,7 @@ export async function submitVendorOnboarding(
 ) {
 	await provisionCapability(dbUserId, "vendor");
 
-	const account = await db.query.vendorAccounts.findFirst({
-		where: eq(vendorAccounts.userId, dbUserId),
-		columns: { id: true, subscriptionTier: true },
-	});
-	if (!account) {
-		throw new ORPCError("NOT_FOUND", { message: "Vendor account not found" });
-	}
+	const account = await getVendorAccount(dbUserId);
 
 	// Resolve the selected categories (deduped, order preserved) to ids,
 	// ensuring each is a real, active category.
@@ -110,7 +104,7 @@ export async function submitVendorOnboarding(
 	const maxServices = TIER_LIMITS[account.subscriptionTier].maxServices;
 	if (selectedCategoryIds.length > maxServices) {
 		throw new ORPCError("FORBIDDEN", {
-			message: `Your plan allows up to ${maxServices} service${maxServices === 1 ? "" : "s"}. Upgrade to add more.`,
+			message: maxServicesMessage(maxServices),
 		});
 	}
 

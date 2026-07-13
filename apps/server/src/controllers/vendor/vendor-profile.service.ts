@@ -15,17 +15,19 @@ import {
 } from "@repo/shared";
 import { and, asc, count, desc, eq, isNull } from "drizzle-orm";
 import {
-	categories,
 	db,
 	portfolioMedia,
 	servicePackages,
 	vendorBusinesses,
 	vendorServices,
 } from "../../db";
-import { handleFileUpload } from "../storage/storage.service";
-import { getOwnedBusiness, presignImage } from "./vendor.helpers";
-
-type DbUser = { id: number; uuid: string };
+import { resolveActiveCategoryId } from "../category/category.service";
+import { type DbUser, handleFileUpload } from "../storage/storage.service";
+import {
+	getOwnedBusiness,
+	maxServicesMessage,
+	presignImage,
+} from "./vendor.helpers";
 
 /** Trim an optional text field, treating blank as "cleared" (null). */
 function optionalText(value: string | undefined) {
@@ -320,7 +322,7 @@ export async function addVendorService(
 	const maxServices = TIER_LIMITS[tier].maxServices;
 	if (liveCount >= maxServices) {
 		throw new ORPCError("FORBIDDEN", {
-			message: `Your plan allows up to ${maxServices} service${maxServices === 1 ? "" : "s"}. Upgrade to add more.`,
+			message: maxServicesMessage(maxServices),
 		});
 	}
 
@@ -340,20 +342,14 @@ export async function addVendorService(
 	};
 
 	if (input.categoryUuid) {
-		const category = await db.query.categories.findFirst({
-			where: eq(categories.uuid, input.categoryUuid),
-			columns: { id: true, isActive: true },
-		});
-		if (!category?.isActive) {
-			throw new ORPCError("NOT_FOUND", { message: "Category not found" });
-		}
+		const categoryId = await resolveActiveCategoryId(input.categoryUuid);
 
 		// (business, category) is unique; revive a soft-deleted row rather than
 		// colliding with the constraint.
 		const existing = await db.query.vendorServices.findFirst({
 			where: and(
 				eq(vendorServices.vendorBusinessId, businessId),
-				eq(vendorServices.categoryId, category.id),
+				eq(vendorServices.categoryId, categoryId),
 			),
 			columns: { id: true, deletedAt: true },
 		});
@@ -370,7 +366,7 @@ export async function addVendorService(
 		} else {
 			await db.insert(vendorServices).values({
 				vendorBusinessId: businessId,
-				categoryId: category.id,
+				categoryId,
 				sortOrder,
 				createdBy: dbUserId,
 				...baseValues,

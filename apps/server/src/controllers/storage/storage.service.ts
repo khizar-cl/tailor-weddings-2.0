@@ -7,7 +7,7 @@ import { db } from "../../db/db";
 import { createPresignedUrl, deleteObject, uploadBuffer } from "../../storage";
 import { env } from "../../utils/env";
 
-type DbUser = { id: number; uuid: string };
+export type DbUser = { id: number; uuid: string };
 
 export async function handleFileUpload(
 	dbUser: DbUser,
