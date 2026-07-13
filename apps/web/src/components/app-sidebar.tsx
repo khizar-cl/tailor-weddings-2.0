@@ -35,6 +35,8 @@ export interface NavigationItem {
 	url: Route;
 	icon?: LucideIcon;
 	items?: NavigationItem[];
+	/** Optional unread/notification count rendered as a badge on the row. */
+	badgeCount?: number;
 }
 
 interface AppSidebarProps {
@@ -180,7 +182,7 @@ export const AppSidebar: FC<AppSidebarProps> = ({
 									href={item.url}
 									title={!showFull ? item.title : undefined}
 									className={cn(
-										"flex items-center border-l-4 py-3 text-sm transition",
+										"relative flex items-center border-l-4 py-3 text-sm transition",
 										"hover:bg-accent hover:text-foreground",
 										showFull ? "gap-3 px-4" : "justify-center px-2",
 										isActive(item.url)
@@ -189,7 +191,19 @@ export const AppSidebar: FC<AppSidebarProps> = ({
 									)}
 								>
 									{item.icon && <item.icon className="h-4 w-4 shrink-0" />}
-									{showFull && item.title}
+									{showFull && <span className="flex-1">{item.title}</span>}
+									{item.badgeCount ? (
+										<span
+											className={cn(
+												"docket-num flex items-center justify-center rounded-full bg-primary px-1 text-primary-foreground",
+												showFull
+													? "h-5 min-w-5 text-[10px]"
+													: "absolute top-1.5 right-1.5 h-4 min-w-4 text-[9px]",
+											)}
+										>
+											{item.badgeCount > 9 ? "9+" : item.badgeCount}
+										</span>
+									) : null}
 								</Link>
 							</li>
 						),

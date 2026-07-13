@@ -31,6 +31,7 @@ export const routeAccessConfig: Record<string, RouteAccessConfig> = {
 	// Vendor area (prefix-matches its sub-routes, e.g. /portal/vendor/onboarding).
 	"/portal/vendor": { requiredCapability: "vendor" },
 	// Shared account surfaces — reachable in either mode.
+	"/portal/messages": {},
 	"/portal/profile": {},
 	"/portal/about": {},
 	// Platform/admin demo surfaces — hidden from couples and vendors.
