@@ -3,6 +3,7 @@ import { budgetController } from "./budget/budget.controller";
 import { categoryController } from "./category/category.controller";
 import { checklistController } from "./checklist/checklist.controller";
 import { emailController } from "./email/email.controller";
+import { messagingController } from "./messaging/messaging.controller";
 import { onboardingController } from "./onboarding/onboarding.controller";
 import { storageController } from "./storage/storage.controller";
 import { userController } from "./user/user.controller";
@@ -17,6 +18,7 @@ export const appRouter = {
 	category: categoryController,
 	checklist: checklistController,
 	email: emailController,
+	messaging: messagingController,
 	onboarding: onboardingController,
 	savedVendor: savedVendorController,
 	storage: storageController,
