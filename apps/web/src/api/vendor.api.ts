@@ -102,6 +102,9 @@ export function useSaveVendor() {
 				queryClient.invalidateQueries({
 					queryKey: orpc.savedVendor.list.key(),
 				});
+				queryClient.invalidateQueries({
+					queryKey: orpc.wedding.getTeam.key(),
+				});
 			},
 		}),
 	);
@@ -119,6 +122,9 @@ export function useUnsaveVendor() {
 			onSettled: () => {
 				queryClient.invalidateQueries({
 					queryKey: orpc.savedVendor.list.key(),
+				});
+				queryClient.invalidateQueries({
+					queryKey: orpc.wedding.getTeam.key(),
 				});
 			},
 		}),
