@@ -12,6 +12,7 @@ import {
 	TextIcon,
 	UserIcon,
 	UsersIcon,
+	WalletIcon,
 } from "lucide-react";
 import type { NavigationItem } from "../components/app-sidebar";
 
@@ -19,6 +20,8 @@ export const coupleNavItems: NavigationItem[] = [
 	{ title: "Dashboard", url: "/portal", icon: LayoutDashboardIcon },
 	{ title: "Checklist", url: "/portal/checklist", icon: ListChecksIcon },
 	{ title: "Discover", url: "/portal/discover", icon: CompassIcon },
+	{ title: "Team", url: "/portal/team", icon: UsersIcon },
+	{ title: "Budget", url: "/portal/budget", icon: WalletIcon },
 	{ title: "Profile", url: "/portal/profile", icon: UserIcon },
 ];
 
