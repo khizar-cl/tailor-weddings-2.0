@@ -7,6 +7,7 @@ export * from "./discovery.types";
 export * from "./email.types";
 export * from "./email-template.types";
 export * from "./health.types";
+export * from "./messaging.types";
 export * from "./onboarding.types";
 export * from "./password";
 export * from "./review.types";

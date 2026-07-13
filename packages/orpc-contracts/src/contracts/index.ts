@@ -3,6 +3,7 @@ import { budgetContract } from "./budget.contract";
 import { categoryContract } from "./category.contract";
 import { checklistContract } from "./checklist.contract";
 import { emailContract } from "./email.contract";
+import { messagingContract } from "./messaging.contract";
 import { onboardingContract } from "./onboarding.contract";
 import { savedVendorContract } from "./saved-vendor.contract";
 import { storageContract } from "./storage.contract";
@@ -17,6 +18,7 @@ export const appContract = {
 	category: categoryContract,
 	checklist: checklistContract,
 	email: emailContract,
+	messaging: messagingContract,
 	onboarding: onboardingContract,
 	savedVendor: savedVendorContract,
 	storage: storageContract,
