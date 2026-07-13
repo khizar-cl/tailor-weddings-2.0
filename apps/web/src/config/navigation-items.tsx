@@ -5,6 +5,7 @@ import {
 	LayoutDashboardIcon,
 	ListChecksIcon,
 	MailIcon,
+	MessageCircleIcon,
 	PaletteIcon,
 	PanelLeftIcon,
 	SquarePenIcon,
@@ -22,12 +23,14 @@ export const coupleNavItems: NavigationItem[] = [
 	{ title: "Discover", url: "/portal/discover", icon: CompassIcon },
 	{ title: "Team", url: "/portal/team", icon: UsersIcon },
 	{ title: "Budget", url: "/portal/budget", icon: WalletIcon },
+	{ title: "Messages", url: "/portal/messages", icon: MessageCircleIcon },
 	{ title: "Profile", url: "/portal/profile", icon: UserIcon },
 ];
 
 export const vendorNavItems: NavigationItem[] = [
 	{ title: "Dashboard", url: "/portal/vendor", icon: StoreIcon },
 	{ title: "Studio", url: "/portal/vendor/profile", icon: SquarePenIcon },
+	{ title: "Messages", url: "/portal/messages", icon: MessageCircleIcon },
 	{ title: "Profile", url: "/portal/profile", icon: UserIcon },
 ];
 

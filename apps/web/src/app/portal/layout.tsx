@@ -6,6 +6,7 @@ import { useIsMobile } from "@repo/ui/hooks/use-mobile";
 import type { Route } from "next";
 import { redirect, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useUnreadMessageCount } from "../../api/messaging.api";
 import { AppHeader } from "../../components/app-header";
 import { AppSidebar } from "../../components/app-sidebar";
 import { getNavigationItems } from "../../config/navigation-items";
@@ -74,6 +75,7 @@ function PortalContent({
 		};
 	}, [showBackdrop]);
 
+	const unreadMessages = useUnreadMessageCount();
 	const ctx: RouteAccessContext = {
 		role: user.role,
 		capabilities: user.capabilities,
@@ -81,6 +83,10 @@ function PortalContent({
 	const visibleNav = filterNavItemsByRole(
 		getNavigationItems(user.activeMode, user.role === "admin"),
 		ctx,
+	).map((item) =>
+		item.url === "/portal/messages"
+			? { ...item, badgeCount: unreadMessages }
+			: item,
 	);
 
 	return (

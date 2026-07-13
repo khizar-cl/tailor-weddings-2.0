@@ -1,5 +1,6 @@
 import type { VendorDetailSchema } from "@repo/shared";
 import { Badge } from "@repo/ui/components/badge";
+import { MessageVendorButton } from "../vendor/message-vendor-button";
 import { formatPrice } from "../vendor/price";
 import { SaveVendorButton } from "../vendor/save-vendor-button";
 import { VendorRating } from "../vendor/vendor-rating";
@@ -57,11 +58,14 @@ export function VendorDetailView({ vendor }: { vendor: VendorDetailSchema }) {
 							</div>
 						</div>
 					</div>
-					<SaveVendorButton
-						vendorUuid={vendor.uuid}
-						isSaved={vendor.isSaved}
-						variant="full"
-					/>
+					<div className="flex shrink-0 items-center gap-2">
+						{vendor.isSaved && <MessageVendorButton vendorUuid={vendor.uuid} />}
+						<SaveVendorButton
+							vendorUuid={vendor.uuid}
+							isSaved={vendor.isSaved}
+							variant="full"
+						/>
+					</div>
 				</div>
 			</header>
 
