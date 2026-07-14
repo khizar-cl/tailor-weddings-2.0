@@ -61,6 +61,7 @@ export default function TeamPage() {
 										</p>
 										<Button
 											className="mt-4"
+											nativeButton={false}
 											render={<Link href="/portal/discover" />}
 										>
 											<CompassIcon className="size-4" />

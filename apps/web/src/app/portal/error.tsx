@@ -29,6 +29,7 @@ export default function PortalError({ error, reset }: PortalErrorProps) {
 					<Button
 						variant="outline"
 						tone="secondary"
+						nativeButton={false}
 						render={<Link href="/portal" />}
 					>
 						Back to dashboard
