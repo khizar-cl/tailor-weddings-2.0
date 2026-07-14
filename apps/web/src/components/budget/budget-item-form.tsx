@@ -1,10 +1,12 @@
-import type { BudgetItemSchema } from "@repo/shared";
+import type { BudgetItemSchema, CategoryItem } from "@repo/shared";
 import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { Label } from "@repo/ui/components/label";
 import { useForm } from "@tanstack/react-form";
+import { useMemo } from "react";
 import { z } from "zod";
 import { useAddBudgetItem, useUpdateBudgetItem } from "../../api/budget.api";
+import { CreatableCombobox } from "../creatable-combobox";
 import { centsToDollars, dollarsToCents } from "../vendor/price";
 
 const BudgetFormSchema = z.object({
@@ -16,14 +18,29 @@ const BudgetFormSchema = z.object({
 
 export function BudgetItemForm({
 	item,
+	categories,
+	customCategories,
 	onDone,
 }: {
 	item?: BudgetItemSchema;
+	/** Seeded categories the line can be filed under (name → uuid). */
+	categories: CategoryItem[];
+	/** Custom category names the couple has already used, for reuse. */
+	customCategories: string[];
 	onDone: () => void;
 }) {
 	const add = useAddBudgetItem();
 	const update = useUpdateBudgetItem();
 	const isPending = add.isPending || update.isPending;
+
+	const uuidByName = useMemo(
+		() => new Map(categories.map((c) => [c.name, c.uuid])),
+		[categories],
+	);
+	const categoryOptions = useMemo(
+		() => [...new Set([...categories.map((c) => c.name), ...customCategories])],
+		[categories, customCategories],
+	);
 
 	const form = useForm({
 		defaultValues: {
@@ -36,11 +53,17 @@ export function BudgetItemForm({
 		onSubmit: ({ value }) => {
 			const category = value.category.trim();
 			const label = value.label.trim();
+			// A name that matches a seeded category links by uuid; anything else is
+			// a custom category. Exactly one, per the input's XOR validation.
+			const categoryUuid = uuidByName.get(category);
+			const categoryFields = categoryUuid
+				? { categoryUuid }
+				: { customCategory: category };
 			if (item) {
 				update.mutate(
 					{
 						uuid: item.uuid,
-						category,
+						...categoryFields,
 						label,
 						estimatedCents: dollarsToCents(value.estimated) ?? null,
 						actualCents: dollarsToCents(value.actual) ?? null,
@@ -50,7 +73,7 @@ export function BudgetItemForm({
 			} else {
 				add.mutate(
 					{
-						category,
+						...categoryFields,
 						label,
 						estimatedCents: dollarsToCents(value.estimated),
 						actualCents: dollarsToCents(value.actual),
@@ -74,11 +97,12 @@ export function BudgetItemForm({
 				children={(field) => (
 					<div className="form-container">
 						<Label htmlFor="budget-category">Category</Label>
-						<Input
+						<CreatableCombobox
 							id="budget-category"
-							placeholder="e.g. Venue"
+							items={categoryOptions}
 							value={field.state.value}
-							onChange={(e) => field.handleChange(e.target.value)}
+							onValueChange={field.handleChange}
+							placeholder="Search or add a category"
 						/>
 					</div>
 				)}

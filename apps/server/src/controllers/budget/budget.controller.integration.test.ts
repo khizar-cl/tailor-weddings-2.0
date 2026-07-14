@@ -6,6 +6,7 @@ import {
 	withAuth,
 } from "../../../tests/helpers/app.test-helper";
 import { truncateTables } from "../../../tests/helpers/db.test-helper";
+import { db } from "../../db/db";
 import { categories, users } from "../../db/schema";
 
 const app = createTestApp();
@@ -66,12 +67,12 @@ describe("budget.list", () => {
 });
 
 describe("budget item mutations", () => {
-	it("adds, updates, and deletes a manual line", async () => {
+	it("adds, updates, and deletes a custom-category manual line", async () => {
 		await onboardCouple();
 
 		let body = rpcBody(
 			await rpc("/rpc/budget/addItem", {
-				category: "Venue",
+				customCategory: "Venue",
 				label: "Reception hall",
 				estimatedCents: 2_000_000,
 				actualCents: 500_000,
@@ -79,6 +80,8 @@ describe("budget item mutations", () => {
 		);
 		expect(body.label).toBe("Reception hall");
 		expect(body.source).toBe("manual");
+		expect(body.category).toBe("Venue");
+		expect(body.categoryUuid).toBeNull();
 		expect(body.estimatedCents).toBe(2_000_000);
 		expect(body.vendorBusinessUuid).toBeNull();
 		const uuid = body.uuid;
@@ -86,7 +89,7 @@ describe("budget item mutations", () => {
 		body = rpcBody(
 			await rpc("/rpc/budget/updateItem", {
 				uuid,
-				category: "Venue",
+				customCategory: "Venue",
 				label: "Reception hall + tent",
 				estimatedCents: 2_200_000,
 				actualCents: 2_200_000,
@@ -114,11 +117,53 @@ describe("budget item mutations", () => {
 		).toBeUndefined();
 	});
 
+	it("links a manual line to an existing category by uuid", async () => {
+		await onboardCouple();
+		const [category] = await db
+			.insert(categories)
+			.values({ slug: "florals", name: "Florals" })
+			.returning({ uuid: categories.uuid });
+		if (!category) throw new Error("Failed to seed category");
+
+		const body = rpcBody(
+			await rpc("/rpc/budget/addItem", {
+				categoryUuid: category.uuid,
+				label: "Centerpieces",
+				estimatedCents: 120_000,
+			}).expect(200),
+		);
+		expect(body.category).toBe("Florals");
+		expect(body.categoryUuid).toBe(category.uuid);
+	});
+
+	it("returns 404 for a categoryUuid that doesn't resolve", async () => {
+		await onboardCouple();
+		const res = await rpc("/rpc/budget/addItem", {
+			categoryUuid: MISSING_UUID,
+			label: "Orphan line",
+		});
+		expect(res.status).toBe(404);
+	});
+
+	it("rejects a line with both or neither category set", async () => {
+		await onboardCouple();
+		const both = await rpc("/rpc/budget/addItem", {
+			categoryUuid: MISSING_UUID,
+			customCategory: "Venue",
+			label: "Ambiguous",
+		});
+		expect(both.status).toBe(400);
+		const neither = await rpc("/rpc/budget/addItem", {
+			label: "Uncategorized",
+		});
+		expect(neither.status).toBe(400);
+	});
+
 	it("returns 404 updating or deleting an unknown line", async () => {
 		await onboardCouple();
 		const update = await rpc("/rpc/budget/updateItem", {
 			uuid: MISSING_UUID,
-			category: "Venue",
+			customCategory: "Venue",
 			label: "Ghost",
 		});
 		expect(update.status).toBe(404);

@@ -230,6 +230,19 @@ async function recomputeServicePricing(serviceId: number, dbUserId: number) {
 		.where(eq(vendorServices.id, serviceId));
 }
 
+/** Whether a service has at least one active, non-deleted package. */
+async function serviceHasActivePackage(serviceId: number) {
+	const pkg = await db.query.servicePackages.findFirst({
+		where: and(
+			eq(servicePackages.vendorServiceId, serviceId),
+			eq(servicePackages.isActive, true),
+			isNull(servicePackages.deletedAt),
+		),
+		columns: { id: true },
+	});
+	return pkg !== undefined;
+}
+
 async function resolveOwnedPortfolio(
 	businessId: number,
 	portfolioUuid: string,
@@ -522,6 +535,14 @@ export async function setServicePublish(
 		}
 	}
 
+	// A published listing must be bookable — couples book a package, so there
+	// has to be at least one to publish.
+	if (input.isPublished && !(await serviceHasActivePackage(service.id))) {
+		throw new ORPCError("FORBIDDEN", {
+			message: "Add a package before publishing this service.",
+		});
+	}
+
 	await db
 		.update(vendorServices)
 		.set({
@@ -590,6 +611,19 @@ export async function removeVendorPackage(
 		.set({ deletedAt: new Date(), updatedBy: dbUserId, updatedAt: new Date() })
 		.where(eq(servicePackages.id, pkg.id));
 	await recomputeServicePricing(pkg.vendorServiceId, dbUserId);
+
+	// A service with no packages can't be booked, so it can't stay published.
+	if (!(await serviceHasActivePackage(pkg.vendorServiceId))) {
+		await db
+			.update(vendorServices)
+			.set({ isPublished: false, updatedBy: dbUserId, updatedAt: new Date() })
+			.where(
+				and(
+					eq(vendorServices.id, pkg.vendorServiceId),
+					eq(vendorServices.isPublished, true),
+				),
+			);
+	}
 	return buildProfile(businessId, tier);
 }
 

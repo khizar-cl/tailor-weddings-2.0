@@ -6,7 +6,7 @@ import type {
 	UpdateBudgetItemInputSchema,
 } from "@repo/shared";
 import { and, asc, eq, isNull } from "drizzle-orm";
-import { budgetItems, db } from "../../db";
+import { budgetItems, categories, db } from "../../db";
 import {
 	coupleWeddingWhere,
 	getOwnedWeddingId,
@@ -14,18 +14,35 @@ import {
 
 interface BudgetItemRow {
 	uuid: string;
-	category: string;
+	customCategory: string | null;
 	label: string;
 	estimatedCents: number | null;
 	actualCents: number | null;
 	source: "generated" | "manual" | "booking";
+	category: { uuid: string; name: string } | null;
 	vendorBusiness: { uuid: string; businessName: string } | null;
 }
+
+const budgetItemWith = {
+	columns: {
+		uuid: true,
+		customCategory: true,
+		label: true,
+		estimatedCents: true,
+		actualCents: true,
+		source: true,
+	},
+	with: {
+		category: { columns: { uuid: true, name: true } },
+		vendorBusiness: { columns: { uuid: true, businessName: true } },
+	},
+} as const;
 
 function toBudgetItem(row: BudgetItemRow): BudgetItemSchema {
 	return {
 		uuid: row.uuid,
-		category: row.category,
+		category: row.category?.name ?? row.customCategory ?? "",
+		categoryUuid: row.category?.uuid ?? null,
 		label: row.label,
 		estimatedCents: row.estimatedCents,
 		actualCents: row.actualCents,
@@ -33,6 +50,31 @@ function toBudgetItem(row: BudgetItemRow): BudgetItemSchema {
 		vendorBusinessUuid: row.vendorBusiness?.uuid ?? null,
 		vendorBusinessName: row.vendorBusiness?.businessName ?? null,
 	};
+}
+
+/**
+ * Resolve the couple's category choice into the columns to persist — a seeded
+ * `categoryId` or free-text `customCategory`, never both (the input's XOR refine
+ * and the DB check constraint both guard this).
+ */
+async function resolveCategoryColumns(input: {
+	categoryUuid?: string;
+	customCategory?: string;
+}) {
+	if (input.categoryUuid) {
+		const category = await db.query.categories.findFirst({
+			where: and(
+				eq(categories.uuid, input.categoryUuid),
+				eq(categories.isActive, true),
+			),
+			columns: { id: true },
+		});
+		if (!category) {
+			throw new ORPCError("NOT_FOUND", { message: "Category not found" });
+		}
+		return { categoryId: category.id, customCategory: null };
+	}
+	return { categoryId: null, customCategory: input.customCategory ?? null };
 }
 
 /** Owner or partner may read the budget (partner has read-only access). */
@@ -54,17 +96,7 @@ async function loadItemOrThrow(weddingId: number, uuid: string) {
 			eq(budgetItems.weddingId, weddingId),
 			isNull(budgetItems.deletedAt),
 		),
-		columns: {
-			uuid: true,
-			category: true,
-			label: true,
-			estimatedCents: true,
-			actualCents: true,
-			source: true,
-		},
-		with: {
-			vendorBusiness: { columns: { uuid: true, businessName: true } },
-		},
+		...budgetItemWith,
 	});
 	if (!row) {
 		throw new ORPCError("NOT_FOUND", { message: "Budget item not found" });
@@ -79,21 +111,15 @@ export async function listBudget(dbUserId: number): Promise<BudgetListSchema> {
 			eq(budgetItems.weddingId, wedding.id),
 			isNull(budgetItems.deletedAt),
 		),
-		orderBy: [asc(budgetItems.category), asc(budgetItems.id)],
-		columns: {
-			uuid: true,
-			category: true,
-			label: true,
-			estimatedCents: true,
-			actualCents: true,
-			source: true,
-		},
-		with: {
-			vendorBusiness: { columns: { uuid: true, businessName: true } },
-		},
+		orderBy: [asc(budgetItems.id)],
+		...budgetItemWith,
 	});
 
-	const items = rows.map(toBudgetItem);
+	// Category is now a resolved display name (from a join or custom text), so
+	// group by sorting that name; the id ordering above keeps ties stable.
+	const items = rows
+		.map(toBudgetItem)
+		.sort((a, b) => a.category.localeCompare(b.category));
 	const estimatedCents = items.reduce(
 		(sum, item) => sum + (item.estimatedCents ?? 0),
 		0,
@@ -118,11 +144,12 @@ export async function addBudgetItem(
 	input: AddBudgetItemInputSchema,
 ) {
 	const weddingId = await getOwnedWeddingId(dbUserId);
+	const categoryColumns = await resolveCategoryColumns(input);
 	const [inserted] = await db
 		.insert(budgetItems)
 		.values({
 			weddingId,
-			category: input.category,
+			...categoryColumns,
 			label: input.label,
 			estimatedCents: input.estimatedCents ?? null,
 			actualCents: input.actualCents ?? null,
@@ -144,10 +171,11 @@ export async function updateBudgetItem(
 	input: UpdateBudgetItemInputSchema,
 ) {
 	const weddingId = await getOwnedWeddingId(dbUserId);
+	const categoryColumns = await resolveCategoryColumns(input);
 	const [row] = await db
 		.update(budgetItems)
 		.set({
-			category: input.category,
+			...categoryColumns,
 			label: input.label,
 			estimatedCents: input.estimatedCents ?? null,
 			actualCents: input.actualCents ?? null,

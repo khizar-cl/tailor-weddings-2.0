@@ -314,6 +314,13 @@ describe("vendorProfile service state", () => {
 
 	it("publishes and unpublishes a taxonomy service", async () => {
 		const { serviceUuid } = await setupVendor("pro", true);
+		await rpc("/rpc/vendorProfile/addPackage", {
+			serviceUuid,
+			name: "Full day",
+			description: "Dawn-to-last-dance coverage.",
+			priceCents: 500_000,
+			priceUnit: "flat",
+		}).expect(200);
 		let body = rpcBody(
 			await rpc("/rpc/vendorProfile/setServicePublish", {
 				serviceUuid,
@@ -329,6 +336,42 @@ describe("vendorProfile service state", () => {
 			}).expect(200),
 		);
 		expect(findService(body, serviceUuid)?.isPublished).toBe(false);
+	});
+
+	it("blocks publishing a service with no packages", async () => {
+		const { serviceUuid } = await setupVendor("pro", true);
+		const res = await rpc("/rpc/vendorProfile/setServicePublish", {
+			serviceUuid,
+			isPublished: true,
+		});
+		expect(res.status).toBe(403);
+	});
+
+	it("auto-unpublishes a service when its last package is removed", async () => {
+		const { serviceUuid } = await setupVendor("pro", true);
+		const withPkg = rpcBody(
+			await rpc("/rpc/vendorProfile/addPackage", {
+				serviceUuid,
+				name: "Full day",
+				description: "Dawn-to-last-dance coverage.",
+				priceCents: 500_000,
+				priceUnit: "flat",
+			}).expect(200),
+		);
+		const packageUuid = findService(withPkg, serviceUuid)?.packages[0]?.uuid;
+		await rpc("/rpc/vendorProfile/setServicePublish", {
+			serviceUuid,
+			isPublished: true,
+		}).expect(200);
+
+		const body = rpcBody(
+			await rpc("/rpc/vendorProfile/removePackage", { packageUuid }).expect(
+				200,
+			),
+		);
+		const service = findService(body, serviceUuid);
+		expect(service?.packages).toHaveLength(0);
+		expect(service?.isPublished).toBe(false);
 	});
 
 	it("moves the primary flag to the chosen service", async () => {

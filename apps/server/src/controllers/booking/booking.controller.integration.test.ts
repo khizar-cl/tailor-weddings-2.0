@@ -130,15 +130,40 @@ async function seedVendor(key: string) {
 	};
 }
 
+/** Add another package to an existing service, returning its uuid. */
+async function addPackage(
+	serviceUuid: string,
+	name: string,
+	priceCents: number,
+) {
+	const service = await db.query.vendorServices.findFirst({
+		where: eq(vendorServices.uuid, serviceUuid),
+		columns: { id: true },
+	});
+	if (!service) throw new Error("Service not found");
+	const [pkg] = await db
+		.insert(servicePackages)
+		.values({ vendorServiceId: service.id, name, priceCents })
+		.returning({ uuid: servicePackages.uuid });
+	if (!pkg) throw new Error("Failed to seed package");
+	return pkg.uuid;
+}
+
 async function liveBookingBudgetLines(weddingId: number) {
-	return db.query.budgetItems.findMany({
+	const rows = await db.query.budgetItems.findMany({
 		where: and(
 			eq(budgetItems.weddingId, weddingId),
 			eq(budgetItems.source, "booking"),
 			isNull(budgetItems.deletedAt),
 		),
-		columns: { label: true, estimatedCents: true, category: true },
+		columns: { label: true, estimatedCents: true, customCategory: true },
+		with: { category: { columns: { name: true } } },
 	});
+	return rows.map((row) => ({
+		label: row.label,
+		estimatedCents: row.estimatedCents,
+		category: row.category?.name ?? row.customCategory,
+	}));
 }
 
 beforeEach(async () => {
@@ -158,6 +183,7 @@ describe("booking.request", () => {
 		const vendor = await seedVendor("no-wedding");
 		const res = await rpc("/rpc/booking/request", {
 			vendorServiceUuid: vendor.serviceUuid,
+			servicePackageUuid: vendor.packageUuid,
 		});
 		expect(res.status).toBe(404);
 	});
@@ -180,20 +206,48 @@ describe("booking.request", () => {
 		expect(booking.confirmedAt).toBeNull();
 	});
 
-	it("is idempotent — re-requesting a service reuses the same booking", async () => {
+	it("is idempotent — re-requesting a package reuses the same booking", async () => {
 		await onboardCouple();
 		const vendor = await seedVendor("dupe");
 		const first = rpcBody(
 			await rpc("/rpc/booking/request", {
 				vendorServiceUuid: vendor.serviceUuid,
+				servicePackageUuid: vendor.packageUuid,
 			}).expect(200),
 		);
 		const second = rpcBody(
 			await rpc("/rpc/booking/request", {
 				vendorServiceUuid: vendor.serviceUuid,
+				servicePackageUuid: vendor.packageUuid,
 			}).expect(200),
 		);
 		expect(second.uuid).toBe(first.uuid);
+	});
+
+	it("books two packages of one service as separate bookings", async () => {
+		await onboardCouple();
+		const vendor = await seedVendor("two-pkgs");
+		const deluxeUuid = await addPackage(vendor.serviceUuid, "Deluxe", 900_000);
+
+		const basic = rpcBody(
+			await rpc("/rpc/booking/request", {
+				vendorServiceUuid: vendor.serviceUuid,
+				servicePackageUuid: vendor.packageUuid,
+			}).expect(200),
+		);
+		const deluxe = rpcBody(
+			await rpc("/rpc/booking/request", {
+				vendorServiceUuid: vendor.serviceUuid,
+				servicePackageUuid: deluxeUuid,
+			}).expect(200),
+		);
+		expect(deluxe.uuid).not.toBe(basic.uuid);
+		expect(deluxe.packageName).toBe("Deluxe");
+
+		const forWedding = rpcBody(
+			await rpc("/rpc/booking/listForWedding", {}).expect(200),
+		);
+		expect(forWedding.items).toHaveLength(2);
 	});
 
 	it("books two services of one vendor as separate bookings", async () => {
@@ -209,11 +263,13 @@ describe("booking.request", () => {
 		const photo = rpcBody(
 			await rpc("/rpc/booking/request", {
 				vendorServiceUuid: vendor.serviceUuid,
+				servicePackageUuid: vendor.packageUuid,
 			}).expect(200),
 		);
 		const film = rpcBody(
 			await rpc("/rpc/booking/request", {
 				vendorServiceUuid: video.serviceUuid,
+				servicePackageUuid: video.packageUuid,
 			}).expect(200),
 		);
 		expect(film.uuid).not.toBe(photo.uuid);
@@ -235,6 +291,7 @@ describe("booking.request", () => {
 			.where(eq(vendorServices.uuid, vendor.serviceUuid));
 		const res = await rpc("/rpc/booking/request", {
 			vendorServiceUuid: vendor.serviceUuid,
+			servicePackageUuid: vendor.packageUuid,
 		});
 		expect(res.status).toBe(404);
 	});
@@ -279,6 +336,7 @@ describe("booking.confirm", () => {
 		const requested = rpcBody(
 			await rpc("/rpc/booking/request", {
 				vendorServiceUuid: vendor.serviceUuid,
+				servicePackageUuid: vendor.packageUuid,
 			}).expect(200),
 		);
 		const res = await rpc(
@@ -323,6 +381,7 @@ describe("booking.cancel", () => {
 		const requested = rpcBody(
 			await rpc("/rpc/booking/request", {
 				vendorServiceUuid: vendor.serviceUuid,
+				servicePackageUuid: vendor.packageUuid,
 			}).expect(200),
 		);
 		await rpc("/rpc/booking/cancel", {
@@ -332,6 +391,7 @@ describe("booking.cancel", () => {
 		const reopened = rpcBody(
 			await rpc("/rpc/booking/request", {
 				vendorServiceUuid: vendor.serviceUuid,
+				servicePackageUuid: vendor.packageUuid,
 			}).expect(200),
 		);
 		expect(reopened.uuid).toBe(requested.uuid);
@@ -345,6 +405,7 @@ describe("booking rosters", () => {
 		const vendor = await seedVendor("roster");
 		await rpc("/rpc/booking/request", {
 			vendorServiceUuid: vendor.serviceUuid,
+			servicePackageUuid: vendor.packageUuid,
 		}).expect(200);
 
 		const forWedding = rpcBody(

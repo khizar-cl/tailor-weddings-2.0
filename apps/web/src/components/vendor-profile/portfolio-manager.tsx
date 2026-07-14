@@ -1,4 +1,15 @@
 import type { VendorProfileServiceSchema } from "@repo/shared";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from "@repo/ui/components/alert-dialog";
 import { Button } from "@repo/ui/components/button";
 import { ImagePlusIcon, Trash2Icon } from "lucide-react";
 import { useRef } from "react";
@@ -55,16 +66,40 @@ export function PortfolioManager({
 									loading="lazy"
 								/>
 							)}
-							<Button
-								tone="destructive"
-								variant="solid"
-								size="icon-xs"
-								aria-label="Remove image"
-								className="absolute top-1 right-1 opacity-90"
-								onClick={() => remove.mutate({ portfolioUuid: image.uuid })}
-							>
-								<Trash2Icon className="size-3.5" />
-							</Button>
+							<AlertDialog>
+								<AlertDialogTrigger
+									render={
+										<Button
+											tone="destructive"
+											variant="solid"
+											size="icon-xs"
+											aria-label="Remove image"
+											className="absolute top-1 right-1 opacity-90"
+										/>
+									}
+								>
+									<Trash2Icon className="size-3.5" />
+								</AlertDialogTrigger>
+								<AlertDialogContent>
+									<AlertDialogHeader>
+										<AlertDialogTitle>Remove this image?</AlertDialogTitle>
+										<AlertDialogDescription>
+											This image will be permanently removed from your
+											portfolio. You can't undo this.
+										</AlertDialogDescription>
+									</AlertDialogHeader>
+									<AlertDialogFooter>
+										<AlertDialogCancel>Cancel</AlertDialogCancel>
+										<AlertDialogAction
+											onClick={() =>
+												remove.mutate({ portfolioUuid: image.uuid })
+											}
+										>
+											Remove
+										</AlertDialogAction>
+									</AlertDialogFooter>
+								</AlertDialogContent>
+							</AlertDialog>
 						</div>
 					))}
 				</div>

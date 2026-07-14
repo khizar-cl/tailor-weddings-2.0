@@ -1,4 +1,15 @@
 import type { WeddingTeamMemberSchema } from "@repo/shared";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from "@repo/ui/components/alert-dialog";
 import { Badge } from "@repo/ui/components/badge";
 import { Button } from "@repo/ui/components/button";
 import { XIcon } from "lucide-react";
@@ -53,16 +64,37 @@ export function TeamMemberRow({
 				{meta && <p className="docket mt-1 text-thread-ink">{meta}</p>}
 			</div>
 			{member.isSaved && (
-				<Button
-					tone="secondary"
-					variant="ghost"
-					size="icon-sm"
-					aria-label={`Remove ${member.businessName} from your team`}
-					disabled={isRemoving}
-					onClick={() => onRemove(member.vendorBusinessUuid)}
-				>
-					<XIcon className="size-4" />
-				</Button>
+				<AlertDialog>
+					<AlertDialogTrigger
+						render={
+							<Button
+								tone="secondary"
+								variant="ghost"
+								size="icon-sm"
+								aria-label={`Remove ${member.businessName} from your team`}
+								disabled={isRemoving}
+							/>
+						}
+					>
+						<XIcon className="size-4" />
+					</AlertDialogTrigger>
+					<AlertDialogContent>
+						<AlertDialogHeader>
+							<AlertDialogTitle>Remove from your team?</AlertDialogTitle>
+							<AlertDialogDescription>
+								{`This removes ${member.businessName} from your shortlist. You can save them again anytime.`}
+							</AlertDialogDescription>
+						</AlertDialogHeader>
+						<AlertDialogFooter>
+							<AlertDialogCancel>Keep saved</AlertDialogCancel>
+							<AlertDialogAction
+								onClick={() => onRemove(member.vendorBusinessUuid)}
+							>
+								Remove
+							</AlertDialogAction>
+						</AlertDialogFooter>
+					</AlertDialogContent>
+				</AlertDialog>
 			)}
 		</li>
 	);

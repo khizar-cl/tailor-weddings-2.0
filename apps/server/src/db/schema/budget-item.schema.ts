@@ -1,5 +1,6 @@
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
+	check,
 	index,
 	integer,
 	pgTable,
@@ -8,18 +9,20 @@ import {
 	uuid,
 } from "drizzle-orm/pg-core";
 import { auditColumns } from "./_shared";
+import { categories } from "./category.schema";
 import { contentSourceEnum } from "./enums.schema";
 import { servicePackages } from "./service-package.schema";
 import { vendorBusinesses } from "./vendor-business.schema";
-import { vendorServices } from "./vendor-service.schema";
 import { weddings } from "./wedding.schema";
 
 /**
  * A line in a wedding's budget tracker. estimated vs actual cents lets couples
- * track spend. When `source` is "booking" the line is auto-populated from a
- * confirmed booking (vendorServiceId identifies it — one line per booked
- * service — with vendorBusinessId/servicePackageId denormalized for display);
- * "manual" lines are the couple's own expenses.
+ * track spend. Each line is filed under exactly one category: either a seeded
+ * taxonomy category (categoryId) or the couple's own free-text customCategory —
+ * the check constraint enforces exactly one. When `source` is "booking" the
+ * line is auto-populated from a confirmed booking (servicePackageId identifies
+ * it — one line per booked package — with vendorBusinessId denormalized for
+ * display); "manual" lines are the couple's own expenses.
  */
 export const budgetItems = pgTable(
 	"budget_items",
@@ -29,13 +32,11 @@ export const budgetItems = pgTable(
 		weddingId: integer("wedding_id")
 			.notNull()
 			.references(() => weddings.id),
-		category: text("category").notNull(),
+		categoryId: integer("category_id").references(() => categories.id),
+		customCategory: text("custom_category"),
 		label: text("label").notNull(),
 		estimatedCents: integer("estimated_cents"),
 		actualCents: integer("actual_cents"),
-		vendorServiceId: integer("vendor_service_id").references(
-			() => vendorServices.id,
-		),
 		vendorBusinessId: integer("vendor_business_id").references(
 			() => vendorBusinesses.id,
 		),
@@ -47,8 +48,12 @@ export const budgetItems = pgTable(
 	},
 	(table) => [
 		index("budget_items_wedding_id_idx").on(table.weddingId),
-		index("budget_items_vendor_service_id_idx").on(table.vendorServiceId),
+		index("budget_items_category_id_idx").on(table.categoryId),
 		index("budget_items_vendor_business_id_idx").on(table.vendorBusinessId),
+		check(
+			"budget_items_category_xor_custom_chk",
+			sql`(${table.categoryId} is not null) <> (${table.customCategory} is not null)`,
+		),
 	],
 );
 
@@ -57,9 +62,9 @@ export const budgetItemsRelations = relations(budgetItems, ({ one }) => ({
 		fields: [budgetItems.weddingId],
 		references: [weddings.id],
 	}),
-	vendorService: one(vendorServices, {
-		fields: [budgetItems.vendorServiceId],
-		references: [vendorServices.id],
+	category: one(categories, {
+		fields: [budgetItems.categoryId],
+		references: [categories.id],
 	}),
 	vendorBusiness: one(vendorBusinesses, {
 		fields: [budgetItems.vendorBusinessId],

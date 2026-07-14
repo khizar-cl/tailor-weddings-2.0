@@ -1,6 +1,17 @@
 "use client";
 
 import { MAX_FILE_SIZE_BYTES } from "@repo/shared";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from "@repo/ui/components/alert-dialog";
 import { Button } from "@repo/ui/components/button";
 import { Card, CardContent } from "@repo/ui/components/card";
 import { Skeleton } from "@repo/ui/components/skeleton";
@@ -161,19 +172,41 @@ export default function StoragePage() {
 														>
 															<DownloadIcon className="h-4 w-4" />
 														</Button>
-														<Button
-															variant="ghost"
-															size="sm"
-															onClick={() =>
-																deleteFile.mutate({
-																	uuid: file.uuid,
-																})
-															}
-															disabled={deleteFile.isPending}
-															title="Delete"
-														>
-															<TrashIcon className="h-4 w-4" />
-														</Button>
+														<AlertDialog>
+															<AlertDialogTrigger
+																render={
+																	<Button
+																		variant="ghost"
+																		size="sm"
+																		disabled={deleteFile.isPending}
+																		title="Delete"
+																	/>
+																}
+															>
+																<TrashIcon className="h-4 w-4" />
+															</AlertDialogTrigger>
+															<AlertDialogContent>
+																<AlertDialogHeader>
+																	<AlertDialogTitle>
+																		Delete this file?
+																	</AlertDialogTitle>
+																	<AlertDialogDescription>
+																		"{file.fileName}" will be permanently
+																		removed from storage. You can't undo this.
+																	</AlertDialogDescription>
+																</AlertDialogHeader>
+																<AlertDialogFooter>
+																	<AlertDialogCancel>Cancel</AlertDialogCancel>
+																	<AlertDialogAction
+																		onClick={() =>
+																			deleteFile.mutate({ uuid: file.uuid })
+																		}
+																	>
+																		Delete
+																	</AlertDialogAction>
+																</AlertDialogFooter>
+															</AlertDialogContent>
+														</AlertDialog>
 													</div>
 												</td>
 											</tr>
