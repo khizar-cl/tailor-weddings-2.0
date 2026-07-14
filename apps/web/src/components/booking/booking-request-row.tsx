@@ -1,6 +1,17 @@
 "use client";
 
 import type { BookingSchema } from "@repo/shared";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from "@repo/ui/components/alert-dialog";
 import { Badge } from "@repo/ui/components/badge";
 import { Button } from "@repo/ui/components/button";
 import { format } from "date-fns";
@@ -62,25 +73,69 @@ export function BookingRequestRow({
 			{booking.status !== "cancelled" && (
 				<div className="flex shrink-0 items-center gap-2">
 					{booking.status === "pending" && (
-						<Button
-							size="sm"
-							disabled={isBusy}
-							onClick={() => onConfirm(booking.uuid)}
-						>
-							<CheckIcon className="size-4" />
-							Confirm
-						</Button>
+						<AlertDialog>
+							<AlertDialogTrigger
+								render={<Button size="sm" disabled={isBusy} />}
+							>
+								<CheckIcon className="size-4" />
+								Confirm
+							</AlertDialogTrigger>
+							<AlertDialogContent>
+								<AlertDialogHeader>
+									<AlertDialogTitle>Confirm this booking?</AlertDialogTitle>
+									<AlertDialogDescription>
+										{`This books ${booking.title}${
+											booking.packageName ? ` for ${booking.packageName}` : ""
+										} and adds a line to their budget.`}
+									</AlertDialogDescription>
+								</AlertDialogHeader>
+								<AlertDialogFooter>
+									<AlertDialogCancel>Not yet</AlertDialogCancel>
+									<AlertDialogAction
+										tone="primary"
+										onClick={() => onConfirm(booking.uuid)}
+									>
+										Confirm booking
+									</AlertDialogAction>
+								</AlertDialogFooter>
+							</AlertDialogContent>
+						</AlertDialog>
 					)}
-					<Button
-						tone="secondary"
-						variant="ghost"
-						size="sm"
-						disabled={isBusy}
-						onClick={() => onCancel(booking.uuid)}
-					>
-						<XIcon className="size-4" />
-						{booking.status === "pending" ? "Decline" : "Cancel"}
-					</Button>
+					<AlertDialog>
+						<AlertDialogTrigger
+							render={
+								<Button
+									tone="secondary"
+									variant="ghost"
+									size="sm"
+									disabled={isBusy}
+								/>
+							}
+						>
+							<XIcon className="size-4" />
+							{booking.status === "pending" ? "Decline" : "Cancel"}
+						</AlertDialogTrigger>
+						<AlertDialogContent>
+							<AlertDialogHeader>
+								<AlertDialogTitle>
+									{booking.status === "pending"
+										? "Decline this request?"
+										: "Cancel this booking?"}
+								</AlertDialogTitle>
+								<AlertDialogDescription>
+									{booking.status === "pending"
+										? `This declines ${booking.title}'s booking request.`
+										: `This cancels your booking with ${booking.title} and removes it from their budget.`}
+								</AlertDialogDescription>
+							</AlertDialogHeader>
+							<AlertDialogFooter>
+								<AlertDialogCancel>Keep it</AlertDialogCancel>
+								<AlertDialogAction onClick={() => onCancel(booking.uuid)}>
+									{booking.status === "pending" ? "Decline" : "Cancel booking"}
+								</AlertDialogAction>
+							</AlertDialogFooter>
+						</AlertDialogContent>
+					</AlertDialog>
 				</div>
 			)}
 		</li>

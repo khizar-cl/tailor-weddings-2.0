@@ -1,6 +1,18 @@
 "use client";
 
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from "@repo/ui/components/alert-dialog";
 import { Button } from "@repo/ui/components/button";
+import { cn } from "@repo/ui/lib/utils";
 import { BookmarkIcon } from "lucide-react";
 import { useSaveVendor, useUnsaveVendor } from "../../api/vendor.api";
 
@@ -19,46 +31,55 @@ export function SaveVendorButton({
 	const save = useSaveVendor();
 	const unsave = useUnsaveVendor();
 	const isPending = save.isPending || unsave.isPending;
-
-	const toggle = () => {
-		if (isSaved) {
-			unsave.mutate({ vendorBusinessUuid: vendorUuid });
-		} else {
-			save.mutate({ vendorBusinessUuid: vendorUuid });
-		}
-	};
-
+	const isIcon = variant === "icon";
 	const label = isSaved ? "Saved" : "Save to team";
 
-	if (variant === "icon") {
-		return (
-			<Button
-				type="button"
-				size="icon-sm"
-				tone={isSaved ? "primary" : "secondary"}
-				variant={isSaved ? "solid" : "outline"}
-				disabled={isPending}
-				aria-pressed={isSaved}
-				aria-label={label}
-				title={label}
-				onClick={toggle}
-			>
-				<BookmarkIcon className={isSaved ? "fill-current" : undefined} />
-			</Button>
-		);
-	}
-
-	return (
+	// Saving is one-tap; removing from the shortlist confirms first (below).
+	const button = (
 		<Button
 			type="button"
+			size={isIcon ? "icon-sm" : undefined}
 			tone={isSaved ? "primary" : "secondary"}
 			variant={isSaved ? "solid" : "outline"}
 			disabled={isPending}
 			aria-pressed={isSaved}
-			onClick={toggle}
+			aria-label={isIcon ? label : undefined}
+			title={isIcon ? label : undefined}
+			{...(isSaved
+				? {}
+				: { onClick: () => save.mutate({ vendorBusinessUuid: vendorUuid }) })}
 		>
-			<BookmarkIcon className={isSaved ? "size-4 fill-current" : "size-4"} />
-			{label}
+			<BookmarkIcon
+				className={cn(!isIcon && "size-4", isSaved && "fill-current")}
+			/>
+			{!isIcon && label}
 		</Button>
+	);
+
+	if (!isSaved) {
+		return button;
+	}
+
+	return (
+		<AlertDialog>
+			<AlertDialogTrigger render={button} />
+			<AlertDialogContent>
+				<AlertDialogHeader>
+					<AlertDialogTitle>Remove from your shortlist?</AlertDialogTitle>
+					<AlertDialogDescription>
+						This removes the vendor from your saved team. You can save them
+						again anytime.
+					</AlertDialogDescription>
+				</AlertDialogHeader>
+				<AlertDialogFooter>
+					<AlertDialogCancel>Keep saved</AlertDialogCancel>
+					<AlertDialogAction
+						onClick={() => unsave.mutate({ vendorBusinessUuid: vendorUuid })}
+					>
+						Remove
+					</AlertDialogAction>
+				</AlertDialogFooter>
+			</AlertDialogContent>
+		</AlertDialog>
 	);
 }

@@ -11,10 +11,11 @@ import {
 import { PlusIcon } from "lucide-react";
 import { useState } from "react";
 import { useBudget, useDeleteBudgetItem } from "../../../api/budget.api";
+import { useCategories } from "../../../api/category.api";
 import { AppBreadcrumb } from "../../../components/app-breadcrumb";
 import { BudgetItemForm } from "../../../components/budget/budget-item-form";
 import { BudgetSummary } from "../../../components/budget/budget-summary";
-import { BudgetTable } from "../../../components/budget/budget-table";
+import { BudgetSplit } from "../../../components/budget/budget-table";
 import Loader from "../../../components/loader";
 
 /** null = closed, "new" = add mode, an item = edit mode. */
@@ -22,10 +23,20 @@ type DialogState = BudgetItemSchema | "new" | null;
 
 export default function BudgetPage() {
 	const budget = useBudget();
+	const categories = useCategories();
 	const remove = useDeleteBudgetItem();
 	const [dialog, setDialog] = useState<DialogState>(null);
 
 	const items = budget.data?.items ?? [];
+	const categoryList = categories.data?.categories ?? [];
+	// Custom category names already in use, so the picker can offer them again.
+	const customCategories = [
+		...new Set(
+			items
+				.filter((item) => item.categoryUuid === null && item.category !== "")
+				.map((item) => item.category),
+		),
+	];
 
 	return (
 		<div className="min-h-screen bg-background p-6">
@@ -68,7 +79,7 @@ export default function BudgetPage() {
 								</p>
 							</div>
 						) : (
-							<BudgetTable
+							<BudgetSplit
 								items={items}
 								onEdit={(item) => setDialog(item)}
 								onDelete={(uuid) => remove.mutate({ uuid })}
@@ -92,6 +103,8 @@ export default function BudgetPage() {
 					{dialog !== null && (
 						<BudgetItemForm
 							item={dialog === "new" ? undefined : dialog}
+							categories={categoryList}
+							customCategories={customCategories}
 							onDone={() => setDialog(null)}
 						/>
 					)}
