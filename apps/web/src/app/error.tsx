@@ -26,7 +26,12 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
 			actions={
 				<>
 					<Button onClick={reset}>Try again</Button>
-					<Button variant="outline" tone="secondary" render={<Link href="/" />}>
+					<Button
+						variant="outline"
+						tone="secondary"
+						nativeButton={false}
+						render={<Link href="/" />}
+					>
 						Go home
 					</Button>
 				</>
