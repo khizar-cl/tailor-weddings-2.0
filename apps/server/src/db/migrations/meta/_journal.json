@@ -92,6 +92,13 @@
 			"when": 1783937343342,
 			"tag": "0012_booking_per_service",
 			"breakpoints": true
+		},
+		{
+			"idx": 13,
+			"version": "7",
+			"when": 1784017754341,
+			"tag": "0013_package_bookings_and_budget_categories",
+			"breakpoints": true
 		}
 	]
 }

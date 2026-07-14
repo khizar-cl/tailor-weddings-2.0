@@ -147,13 +147,15 @@ export async function generateCouplePlan(
 			),
 		);
 
-	// Resolve the template's category slugs to ids in one query. Slugs that
-	// aren't seeded simply resolve to null (uncategorized task).
+	// Resolve the checklist and budget templates' category slugs to ids in one
+	// query. Slugs that aren't seeded simply resolve to null (an uncategorized
+	// task, or a custom-category budget line).
 	const neededSlugs = [
 		...new Set(
-			CHECKLIST_TEMPLATE.map((task) => task.categorySlug).filter(
-				(slug): slug is string => Boolean(slug),
-			),
+			[
+				...CHECKLIST_TEMPLATE.map((task) => task.categorySlug),
+				...BUDGET_ALLOCATION.map((line) => line.slug),
+			].filter((slug): slug is string => Boolean(slug)),
 		),
 	];
 	const categoryRows = neededSlugs.length
@@ -191,15 +193,24 @@ export async function generateCouplePlan(
 	);
 
 	await tx.insert(budgetItems).values(
-		BUDGET_ALLOCATION.map((line) => ({
-			weddingId,
-			category: line.category,
-			label: line.label,
-			estimatedCents: Math.round(estimatedBudgetCents * line.pct),
-			source: "generated" as const,
-			createdBy: dbUserId,
-			updatedBy: dbUserId,
-		})),
+		BUDGET_ALLOCATION.map((line) => {
+			// Link to a seeded category when the slug resolves; otherwise file it
+			// under the template's display name as a custom category (exactly one,
+			// per the category XOR constraint).
+			const categoryId = line.slug
+				? (categoryIdBySlug.get(line.slug) ?? null)
+				: null;
+			return {
+				weddingId,
+				categoryId,
+				customCategory: categoryId === null ? line.category : null,
+				label: line.label,
+				estimatedCents: Math.round(estimatedBudgetCents * line.pct),
+				source: "generated" as const,
+				createdBy: dbUserId,
+				updatedBy: dbUserId,
+			};
+		}),
 	);
 
 	await generateRecommendations(tx, {

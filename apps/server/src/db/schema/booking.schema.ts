@@ -12,7 +12,6 @@ import {
 import { auditColumns } from "./_shared";
 import { servicePackages } from "./service-package.schema";
 import { vendorBusinesses } from "./vendor-business.schema";
-import { vendorServices } from "./vendor-service.schema";
 import { weddings } from "./wedding.schema";
 
 // Paired with BookingStatusEnum in packages/shared/src/models/wedding.types.ts.
@@ -23,13 +22,14 @@ export const bookingStatusEnum = pgEnum("booking_status", [
 ]);
 
 /**
- * A confirmed engagement between a wedding and a single vendor service — the
+ * A confirmed engagement between a wedding and a single vendor package — the
  * "real" team. Requested by the couple (pending) and accepted by the vendor
- * (confirmed). Booking is per service, so a couple can book one business for
- * several of its services independently; vendorBusinessId is denormalized off
- * the service for business-level roster/gate queries. Confirmed bookings drive
- * budget auto-population and are the verified-collaboration proof that gates
- * peer reviews.
+ * (confirmed). Booking is per package, so a couple can book several packages
+ * from one service (or business) independently; the service and business are
+ * reachable through the package. vendorBusinessId is denormalized off the
+ * package's service for business-level roster/gate queries. Confirmed bookings
+ * drive budget auto-population and are the verified-collaboration proof that
+ * gates peer reviews.
  */
 export const bookings = pgTable(
 	"bookings",
@@ -39,15 +39,12 @@ export const bookings = pgTable(
 		weddingId: integer("wedding_id")
 			.notNull()
 			.references(() => weddings.id),
-		vendorServiceId: integer("vendor_service_id")
-			.notNull()
-			.references(() => vendorServices.id),
 		vendorBusinessId: integer("vendor_business_id")
 			.notNull()
 			.references(() => vendorBusinesses.id),
-		servicePackageId: integer("service_package_id").references(
-			() => servicePackages.id,
-		),
+		servicePackageId: integer("service_package_id")
+			.notNull()
+			.references(() => servicePackages.id),
 		status: bookingStatusEnum("status").notNull().default("pending"),
 		bookedAt: timestamp("booked_at", { withTimezone: true })
 			.defaultNow()
@@ -56,12 +53,12 @@ export const bookings = pgTable(
 		...auditColumns(),
 	},
 	(table) => [
-		unique("bookings_wedding_service_uniq").on(
+		unique("bookings_wedding_package_uniq").on(
 			table.weddingId,
-			table.vendorServiceId,
+			table.servicePackageId,
 		),
 		index("bookings_wedding_id_idx").on(table.weddingId),
-		index("bookings_vendor_service_id_idx").on(table.vendorServiceId),
+		index("bookings_service_package_id_idx").on(table.servicePackageId),
 		index("bookings_vendor_business_id_idx").on(table.vendorBusinessId),
 	],
 );
@@ -70,10 +67,6 @@ export const bookingsRelations = relations(bookings, ({ one }) => ({
 	wedding: one(weddings, {
 		fields: [bookings.weddingId],
 		references: [weddings.id],
-	}),
-	vendorService: one(vendorServices, {
-		fields: [bookings.vendorServiceId],
-		references: [vendorServices.id],
 	}),
 	vendorBusiness: one(vendorBusinesses, {
 		fields: [bookings.vendorBusinessId],

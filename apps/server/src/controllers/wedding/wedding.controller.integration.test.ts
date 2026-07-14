@@ -14,6 +14,7 @@ import {
 	categories,
 	checklistItems,
 	savedVendors,
+	servicePackages,
 	users,
 	vendorAccounts,
 	vendorBusinesses,
@@ -155,7 +156,7 @@ describe("wedding.getSummary", () => {
 		const weddingId = await ownedWeddingId();
 		const savedId = await seedBusiness("saved");
 		const bookedId = await seedBusiness("booked");
-		const bookedServiceId = await attachService(bookedId, "photography");
+		const bookedPackageId = await attachService(bookedId, "photography");
 
 		await db.insert(savedVendors).values([
 			{ weddingId, vendorBusinessId: savedId },
@@ -164,16 +165,16 @@ describe("wedding.getSummary", () => {
 		await db.insert(bookings).values({
 			weddingId,
 			vendorBusinessId: bookedId,
-			vendorServiceId: bookedServiceId,
+			servicePackageId: bookedPackageId,
 			status: "confirmed",
 		});
 		// A cancelled booking must not count toward the team.
 		const cancelledId = await seedBusiness("cancelled");
-		const cancelledServiceId = await attachService(cancelledId, "floral");
+		const cancelledPackageId = await attachService(cancelledId, "floral");
 		await db.insert(bookings).values({
 			weddingId,
 			vendorBusinessId: cancelledId,
-			vendorServiceId: cancelledServiceId,
+			servicePackageId: cancelledPackageId,
 			status: "cancelled",
 		});
 
@@ -201,7 +202,7 @@ describe("wedding.getTeam", () => {
 		const savedId = await seedBusiness("saved");
 		await attachService(savedId, "photography");
 		const bookedId = await seedBusiness("booked");
-		const bookedServiceId = await attachService(bookedId, "floral");
+		const bookedPackageId = await attachService(bookedId, "floral");
 
 		await db
 			.insert(savedVendors)
@@ -209,7 +210,7 @@ describe("wedding.getTeam", () => {
 		await db.insert(bookings).values({
 			weddingId,
 			vendorBusinessId: bookedId,
-			vendorServiceId: bookedServiceId,
+			servicePackageId: bookedPackageId,
 			status: "confirmed",
 		});
 
@@ -244,14 +245,14 @@ describe("wedding.getTeam", () => {
 		await onboardCouple();
 		const weddingId = await ownedWeddingId();
 		const dualId = await seedBusiness("dual");
-		const dualServiceId = await attachService(dualId, "photography");
+		const dualPackageId = await attachService(dualId, "photography");
 		await db
 			.insert(savedVendors)
 			.values({ weddingId, vendorBusinessId: dualId });
 		await db.insert(bookings).values({
 			weddingId,
 			vendorBusinessId: dualId,
-			vendorServiceId: dualServiceId,
+			servicePackageId: dualPackageId,
 			status: "pending",
 		});
 
@@ -271,7 +272,10 @@ async function seedCategory(slug: string, name: string) {
 	await db.insert(categories).values({ slug, name });
 }
 
-/** Attach a published primary service in `slug`'s category; returns its id. */
+/**
+ * Attach a published primary service (in `slug`'s category) with one package;
+ * returns the package id, which is what a booking references.
+ */
 async function attachService(businessId: number, slug: string) {
 	const category = await db.query.categories.findFirst({
 		where: eq(categories.slug, slug),
@@ -288,7 +292,16 @@ async function attachService(businessId: number, slug: string) {
 		})
 		.returning({ id: vendorServices.id });
 	if (!service) throw new Error("Failed to attach service");
-	return service.id;
+	const [pkg] = await db
+		.insert(servicePackages)
+		.values({
+			vendorServiceId: service.id,
+			name: `${slug} package`,
+			priceCents: 300_000,
+		})
+		.returning({ id: servicePackages.id });
+	if (!pkg) throw new Error("Failed to attach package");
+	return pkg.id;
 }
 
 /** Seed a published, verified Texas vendor with one photography service. */

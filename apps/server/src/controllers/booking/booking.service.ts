@@ -29,15 +29,10 @@ const bookingWith = {
 		bookedAt: true,
 		confirmedAt: true,
 		weddingId: true,
-		vendorServiceId: true,
 		vendorBusinessId: true,
 		servicePackageId: true,
 	},
 	with: {
-		vendorService: {
-			columns: { uuid: true, customLabel: true },
-			with: { category: { columns: { name: true } } },
-		},
 		vendorBusiness: {
 			columns: {
 				uuid: true,
@@ -56,6 +51,12 @@ const bookingWith = {
 		},
 		servicePackage: {
 			columns: { uuid: true, name: true, priceCents: true },
+			with: {
+				vendorService: {
+					columns: { uuid: true, customLabel: true, categoryId: true },
+					with: { category: { columns: { name: true } } },
+				},
+			},
 		},
 	},
 } as const;
@@ -68,7 +69,7 @@ function location(city: string | null, region: string | null) {
 }
 
 /** The service's public label — its category name, or its custom label. */
-function serviceLabel(service: BookingRow["vendorService"]) {
+function serviceLabel(service: BookingRow["servicePackage"]["vendorService"]) {
 	return service.category?.name ?? service.customLabel ?? null;
 }
 
@@ -97,12 +98,12 @@ async function buildBooking(
 			? null
 			: await presignImage(row.vendorBusiness.logo),
 		vendorBusinessUuid: row.vendorBusiness.uuid,
-		vendorServiceUuid: row.vendorService.uuid,
-		serviceLabel: serviceLabel(row.vendorService),
+		vendorServiceUuid: row.servicePackage.vendorService.uuid,
+		serviceLabel: serviceLabel(row.servicePackage.vendorService),
 		weddingDate: row.wedding.weddingDate,
-		packageUuid: row.servicePackage?.uuid ?? null,
-		packageName: row.servicePackage?.name ?? null,
-		packagePriceCents: row.servicePackage?.priceCents ?? null,
+		packageUuid: row.servicePackage.uuid,
+		packageName: row.servicePackage.name,
+		packagePriceCents: row.servicePackage.priceCents,
 	};
 }
 
@@ -165,18 +166,19 @@ async function resolvePackage(vendorServiceId: number, packageUuid: string) {
 
 /**
  * Upsert the `source:'booking'` budget line for a confirmed booking. Keyed on
- * the service — one live booking line per booked service — so re-confirming
- * updates it in place rather than duplicating.
+ * the package — one live booking line per booked package — so re-confirming
+ * updates it in place rather than duplicating. The line inherits the service's
+ * category (its seeded categoryId, else its custom label as customCategory).
  */
 async function upsertBookingBudgetLine(
 	dbUserId: number,
 	params: {
 		weddingId: number;
-		vendorServiceId: number;
+		servicePackageId: number;
 		vendorBusinessId: number;
-		servicePackageId: number | null;
 		estimatedCents: number | null;
-		category: string;
+		categoryId: number | null;
+		customCategory: string | null;
 		label: string;
 	},
 ) {
@@ -184,7 +186,7 @@ async function upsertBookingBudgetLine(
 	const existing = await db.query.budgetItems.findFirst({
 		where: and(
 			eq(budgetItems.weddingId, params.weddingId),
-			eq(budgetItems.vendorServiceId, params.vendorServiceId),
+			eq(budgetItems.servicePackageId, params.servicePackageId),
 			eq(budgetItems.source, "booking"),
 			isNull(budgetItems.deletedAt),
 		),
@@ -195,10 +197,10 @@ async function upsertBookingBudgetLine(
 		await db
 			.update(budgetItems)
 			.set({
-				category: params.category,
+				categoryId: params.categoryId,
+				customCategory: params.customCategory,
 				label: params.label,
 				estimatedCents: params.estimatedCents,
-				servicePackageId: params.servicePackageId,
 				updatedBy: dbUserId,
 				updatedAt: now,
 			})
@@ -208,10 +210,10 @@ async function upsertBookingBudgetLine(
 
 	await db.insert(budgetItems).values({
 		weddingId: params.weddingId,
-		category: params.category,
+		categoryId: params.categoryId,
+		customCategory: params.customCategory,
 		label: params.label,
 		estimatedCents: params.estimatedCents,
-		vendorServiceId: params.vendorServiceId,
 		vendorBusinessId: params.vendorBusinessId,
 		servicePackageId: params.servicePackageId,
 		source: "booking",
@@ -224,7 +226,7 @@ async function upsertBookingBudgetLine(
 async function removeBookingBudgetLine(
 	dbUserId: number,
 	weddingId: number,
-	vendorServiceId: number,
+	servicePackageId: number,
 ) {
 	const now = new Date();
 	await db
@@ -233,7 +235,7 @@ async function removeBookingBudgetLine(
 		.where(
 			and(
 				eq(budgetItems.weddingId, weddingId),
-				eq(budgetItems.vendorServiceId, vendorServiceId),
+				eq(budgetItems.servicePackageId, servicePackageId),
 				eq(budgetItems.source, "booking"),
 				isNull(budgetItems.deletedAt),
 			),
@@ -241,10 +243,25 @@ async function removeBookingBudgetLine(
 }
 
 /**
- * Couple requests to book a vendor service. Idempotent on the unique (wedding,
- * service): a fresh request inserts a pending booking; re-requesting a cancelled
- * one flips it back to pending; a still-open (pending/confirmed) booking is
- * returned as-is (with the package synced while still pending).
+ * The category a booking's budget line is filed under, derived from the booked
+ * package's service: its seeded category, else its custom label. Exactly one is
+ * set, satisfying the budget line's category XOR constraint.
+ */
+function bookingBudgetCategory(
+	service: BookingRow["servicePackage"]["vendorService"],
+) {
+	if (service.categoryId !== null) {
+		return { categoryId: service.categoryId, customCategory: null };
+	}
+	return { categoryId: null, customCategory: service.customLabel ?? "Vendors" };
+}
+
+/**
+ * Couple requests to book a specific package. Idempotent on the unique
+ * (wedding, package): a fresh request inserts a pending booking; re-requesting a
+ * cancelled one flips it back to pending; a still-open (pending/confirmed)
+ * booking is returned as-is. Booking a different package of the same service is
+ * a separate booking.
  */
 export async function requestBooking(
 	dbUserId: number,
@@ -252,14 +269,12 @@ export async function requestBooking(
 ): Promise<BookingSchema> {
 	const weddingId = await getOwnedWeddingId(dbUserId);
 	const service = await getServiceByUuid(input.vendorServiceUuid);
-	const pkg = input.servicePackageUuid
-		? await resolvePackage(service.id, input.servicePackageUuid)
-		: null;
+	const pkg = await resolvePackage(service.id, input.servicePackageUuid);
 
 	const existing = await db.query.bookings.findFirst({
 		where: and(
 			eq(bookings.weddingId, weddingId),
-			eq(bookings.vendorServiceId, service.id),
+			eq(bookings.servicePackageId, pkg.id),
 			isNull(bookings.deletedAt),
 		),
 		columns: { id: true, status: true },
@@ -270,9 +285,8 @@ export async function requestBooking(
 			.insert(bookings)
 			.values({
 				weddingId,
-				vendorServiceId: service.id,
 				vendorBusinessId: service.vendorBusinessId,
-				servicePackageId: pkg?.id ?? null,
+				servicePackageId: pkg.id,
 				status: "pending",
 				createdBy: dbUserId,
 				updatedBy: dbUserId,
@@ -286,15 +300,13 @@ export async function requestBooking(
 		return buildById(inserted.id, "couple");
 	}
 
-	// A confirmed booking is left untouched (changing its package would desync
-	// the budget line); a cancelled one reopens as pending.
-	if (existing.status !== "confirmed") {
+	// A cancelled booking reopens as pending; a still-open one is returned as-is.
+	if (existing.status === "cancelled") {
 		await db
 			.update(bookings)
 			.set({
 				status: "pending",
 				confirmedAt: null,
-				servicePackageId: pkg?.id ?? null,
 				updatedBy: dbUserId,
 				updatedAt: new Date(),
 			})
@@ -355,11 +367,10 @@ export async function confirmBooking(
 
 	await upsertBookingBudgetLine(dbUserId, {
 		weddingId: row.weddingId,
-		vendorServiceId: row.vendorServiceId,
-		vendorBusinessId: row.vendorBusinessId,
 		servicePackageId: row.servicePackageId,
-		estimatedCents: row.servicePackage?.priceCents ?? null,
-		category: serviceLabel(row.vendorService) ?? "Vendors",
+		vendorBusinessId: row.vendorBusinessId,
+		estimatedCents: row.servicePackage.priceCents,
+		...bookingBudgetCategory(row.servicePackage.vendorService),
 		label: row.vendorBusiness.businessName,
 	});
 
@@ -381,7 +392,7 @@ export async function cancelBooking(
 			id: true,
 			status: true,
 			weddingId: true,
-			vendorServiceId: true,
+			servicePackageId: true,
 			vendorBusinessId: true,
 		},
 		with: { wedding: { columns: { ownerUserId: true } } },
@@ -411,7 +422,7 @@ export async function cancelBooking(
 		await removeBookingBudgetLine(
 			dbUserId,
 			booking.weddingId,
-			booking.vendorServiceId,
+			booking.servicePackageId,
 		);
 	}
 
