@@ -1,7 +1,10 @@
 "use client";
 
+import type { BookingSchema } from "@repo/shared";
 import { Skeleton } from "@repo/ui/components/skeleton";
 import { useParams } from "next/navigation";
+import { useMemo } from "react";
+import { useWeddingBookings } from "../../../../api/booking.api";
 import { useVendorDetail } from "../../../../api/vendor.api";
 import { AppBreadcrumb } from "../../../../components/app-breadcrumb";
 import { VendorDetailView } from "../../../../components/discover/vendor-detail-view";
@@ -26,8 +29,17 @@ function DetailSkeleton() {
 export default function VendorDetailPage() {
 	const params = useParams<{ uuid: string }>();
 	const detail = useVendorDetail(params.uuid);
+	const bookings = useWeddingBookings();
 
 	useSetBreadcrumbLabel(detail.data?.businessName);
+
+	const bookingByService = useMemo(() => {
+		const map = new Map<string, BookingSchema>();
+		for (const booking of bookings.data?.items ?? []) {
+			map.set(booking.vendorServiceUuid, booking);
+		}
+		return map;
+	}, [bookings.data]);
 
 	return (
 		<div className="min-h-screen bg-background p-6">
@@ -42,7 +54,10 @@ export default function VendorDetailPage() {
 					{detail.error.message}
 				</p>
 			) : detail.data ? (
-				<VendorDetailView vendor={detail.data} />
+				<VendorDetailView
+					vendor={detail.data}
+					bookingByService={bookingByService}
+				/>
 			) : null}
 		</div>
 	);
