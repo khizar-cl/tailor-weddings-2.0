@@ -149,23 +149,31 @@ describe("wedding.getSummary", () => {
 	});
 
 	it("counts distinct saved and booked businesses once each", async () => {
+		await seedCategory("photography", "Photography");
+		await seedCategory("floral", "Floral");
 		await onboardCouple();
 		const weddingId = await ownedWeddingId();
 		const savedId = await seedBusiness("saved");
 		const bookedId = await seedBusiness("booked");
+		const bookedServiceId = await attachService(bookedId, "photography");
 
 		await db.insert(savedVendors).values([
 			{ weddingId, vendorBusinessId: savedId },
 			{ weddingId, vendorBusinessId: bookedId },
 		]);
-		await db
-			.insert(bookings)
-			.values({ weddingId, vendorBusinessId: bookedId, status: "confirmed" });
+		await db.insert(bookings).values({
+			weddingId,
+			vendorBusinessId: bookedId,
+			vendorServiceId: bookedServiceId,
+			status: "confirmed",
+		});
 		// A cancelled booking must not count toward the team.
 		const cancelledId = await seedBusiness("cancelled");
+		const cancelledServiceId = await attachService(cancelledId, "floral");
 		await db.insert(bookings).values({
 			weddingId,
 			vendorBusinessId: cancelledId,
+			vendorServiceId: cancelledServiceId,
 			status: "cancelled",
 		});
 
@@ -193,14 +201,17 @@ describe("wedding.getTeam", () => {
 		const savedId = await seedBusiness("saved");
 		await attachService(savedId, "photography");
 		const bookedId = await seedBusiness("booked");
-		await attachService(bookedId, "floral");
+		const bookedServiceId = await attachService(bookedId, "floral");
 
 		await db
 			.insert(savedVendors)
 			.values({ weddingId, vendorBusinessId: savedId });
-		await db
-			.insert(bookings)
-			.values({ weddingId, vendorBusinessId: bookedId, status: "confirmed" });
+		await db.insert(bookings).values({
+			weddingId,
+			vendorBusinessId: bookedId,
+			vendorServiceId: bookedServiceId,
+			status: "confirmed",
+		});
 
 		const body = rpcBody(
 			await withAuth(request(app).post("/rpc/wedding/getTeam")).expect(200),
@@ -233,13 +244,16 @@ describe("wedding.getTeam", () => {
 		await onboardCouple();
 		const weddingId = await ownedWeddingId();
 		const dualId = await seedBusiness("dual");
-		await attachService(dualId, "photography");
+		const dualServiceId = await attachService(dualId, "photography");
 		await db
 			.insert(savedVendors)
 			.values({ weddingId, vendorBusinessId: dualId });
-		await db
-			.insert(bookings)
-			.values({ weddingId, vendorBusinessId: dualId, status: "pending" });
+		await db.insert(bookings).values({
+			weddingId,
+			vendorBusinessId: dualId,
+			vendorServiceId: dualServiceId,
+			status: "pending",
+		});
 
 		const body = rpcBody(
 			await withAuth(request(app).post("/rpc/wedding/getTeam")).expect(200),
@@ -257,19 +271,24 @@ async function seedCategory(slug: string, name: string) {
 	await db.insert(categories).values({ slug, name });
 }
 
-/** Attach a published primary service in `slug`'s category to a business. */
+/** Attach a published primary service in `slug`'s category; returns its id. */
 async function attachService(businessId: number, slug: string) {
 	const category = await db.query.categories.findFirst({
 		where: eq(categories.slug, slug),
 		columns: { id: true },
 	});
 	if (!category) throw new Error(`Seed the ${slug} category first`);
-	await db.insert(vendorServices).values({
-		vendorBusinessId: businessId,
-		categoryId: category.id,
-		isPrimary: true,
-		isPublished: true,
-	});
+	const [service] = await db
+		.insert(vendorServices)
+		.values({
+			vendorBusinessId: businessId,
+			categoryId: category.id,
+			isPrimary: true,
+			isPublished: true,
+		})
+		.returning({ id: vendorServices.id });
+	if (!service) throw new Error("Failed to attach service");
+	return service.id;
 }
 
 /** Seed a published, verified Texas vendor with one photography service. */

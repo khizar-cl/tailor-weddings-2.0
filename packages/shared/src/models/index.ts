@@ -1,5 +1,6 @@
 export * from "./async-task.types";
 export * from "./auth.types";
+export * from "./booking.types";
 export * from "./budget.types";
 export * from "./category.types";
 export * from "./checklist.types";
