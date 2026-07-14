@@ -1,5 +1,6 @@
-import type { VendorDetailSchema } from "@repo/shared";
+import type { BookingSchema, VendorDetailSchema } from "@repo/shared";
 import { Badge } from "@repo/ui/components/badge";
+import { ServiceBookingControl } from "../booking/service-booking-control";
 import { MessageVendorButton } from "../vendor/message-vendor-button";
 import { formatPrice } from "../vendor/price";
 import { SaveVendorButton } from "../vendor/save-vendor-button";
@@ -23,7 +24,14 @@ function Fact({
 	);
 }
 
-export function VendorDetailView({ vendor }: { vendor: VendorDetailSchema }) {
+export function VendorDetailView({
+	vendor,
+	bookingByService,
+}: {
+	vendor: VendorDetailSchema;
+	/** The couple's bookings for this vendor's services, keyed by service uuid. */
+	bookingByService: Map<string, BookingSchema>;
+}) {
 	const location = [vendor.city, vendor.region].filter(Boolean).join(", ");
 	const leadCategory = vendor.services[0]?.categoryName ?? "Vendor";
 
@@ -114,6 +122,14 @@ export function VendorDetailView({ vendor }: { vendor: VendorDetailSchema }) {
 												{service.description}
 											</p>
 										)}
+
+										<div className="mt-4">
+											<ServiceBookingControl
+												vendorServiceUuid={service.uuid}
+												packages={service.packages}
+												booking={bookingByService.get(service.uuid) ?? null}
+											/>
+										</div>
 
 										<div className="mt-4">
 											<PortfolioCollage images={service.portfolio} />
