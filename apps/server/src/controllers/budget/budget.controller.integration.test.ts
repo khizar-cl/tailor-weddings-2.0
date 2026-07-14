@@ -136,6 +136,15 @@ describe("budget item mutations", () => {
 		expect(body.categoryUuid).toBe(category.uuid);
 	});
 
+	it("returns 404 for a categoryUuid that doesn't resolve", async () => {
+		await onboardCouple();
+		const res = await rpc("/rpc/budget/addItem", {
+			categoryUuid: MISSING_UUID,
+			label: "Orphan line",
+		});
+		expect(res.status).toBe(404);
+	});
+
 	it("rejects a line with both or neither category set", async () => {
 		await onboardCouple();
 		const both = await rpc("/rpc/budget/addItem", {
