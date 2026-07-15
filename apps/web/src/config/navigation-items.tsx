@@ -1,6 +1,7 @@
 import type { ActiveMode } from "@repo/shared";
 import {
 	CompassIcon,
+	CreditCardIcon,
 	HardDriveIcon,
 	InboxIcon,
 	LayoutDashboardIcon,
@@ -34,6 +35,11 @@ export const vendorNavItems: NavigationItem[] = [
 	{ title: "Studio", url: "/portal/vendor/profile", icon: SquarePenIcon },
 	{ title: "Requests", url: "/portal/vendor/bookings", icon: InboxIcon },
 	{ title: "Reviews", url: "/portal/vendor/reviews", icon: StarIcon },
+	{
+		title: "Membership",
+		url: "/portal/vendor/membership",
+		icon: CreditCardIcon,
+	},
 	{ title: "Messages", url: "/portal/messages", icon: MessageCircleIcon },
 	{ title: "Profile", url: "/portal/profile", icon: UserIcon },
 ];
