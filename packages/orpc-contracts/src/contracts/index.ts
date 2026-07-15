@@ -6,6 +6,7 @@ import { checklistContract } from "./checklist.contract";
 import { emailContract } from "./email.contract";
 import { messagingContract } from "./messaging.contract";
 import { onboardingContract } from "./onboarding.contract";
+import { reviewContract } from "./review.contract";
 import { savedVendorContract } from "./saved-vendor.contract";
 import { storageContract } from "./storage.contract";
 import { userContract } from "./user.contract";
@@ -22,6 +23,7 @@ export const appContract = {
 	email: emailContract,
 	messaging: messagingContract,
 	onboarding: onboardingContract,
+	review: reviewContract,
 	savedVendor: savedVendorContract,
 	storage: storageContract,
 	user: userContract,

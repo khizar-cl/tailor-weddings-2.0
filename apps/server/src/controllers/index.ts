@@ -6,6 +6,7 @@ import { checklistController } from "./checklist/checklist.controller";
 import { emailController } from "./email/email.controller";
 import { messagingController } from "./messaging/messaging.controller";
 import { onboardingController } from "./onboarding/onboarding.controller";
+import { reviewController } from "./review/review.controller";
 import { storageController } from "./storage/storage.controller";
 import { userController } from "./user/user.controller";
 import { savedVendorController } from "./vendor/saved-vendor.controller";
@@ -22,6 +23,7 @@ export const appRouter = {
 	email: emailController,
 	messaging: messagingController,
 	onboarding: onboardingController,
+	review: reviewController,
 	savedVendor: savedVendorController,
 	storage: storageController,
 	user: userController,
