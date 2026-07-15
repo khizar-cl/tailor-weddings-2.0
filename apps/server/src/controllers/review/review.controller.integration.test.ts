@@ -13,6 +13,7 @@ import {
 	bookings,
 	categories,
 	reviewRequests,
+	reviews,
 	servicePackages,
 	users,
 	vendorAccounts,
@@ -160,6 +161,38 @@ async function requestUuid(
 	});
 	if (!row) throw new Error("Expected review request not found");
 	return row.uuid;
+}
+
+async function seedAdmin() {
+	await createTestUser({
+		clerkId: "admin_user",
+		email: "admin@example.com",
+		name: "Admin",
+		role: "admin",
+	});
+	return "admin_user";
+}
+
+/** Onboard-agnostic: submit a couple's client review for a fresh vendor. */
+async function submitClientReview(key: string) {
+	const weddingId = await ownedWedding();
+	await setWeddingDate(weddingId, subDays(new Date(), 2));
+	const vendor = await seedVendor(key);
+	await confirmBooking(weddingId, vendor);
+	await generateReviewRequests(new Date());
+	const reqUuid = await requestUuid(
+		weddingId,
+		vendor.businessId,
+		"client",
+		await testUserId(),
+	);
+	const review = rpcBody(
+		await rpc("/rpc/review/submitReview", {
+			reviewRequestUuid: reqUuid,
+			overallRating: 5,
+		}).expect(200),
+	);
+	return { vendor, weddingId, reviewUuid: review.uuid as string };
 }
 
 beforeEach(async () => {
@@ -413,5 +446,111 @@ describe("review.moderate", () => {
 			}).expect(200),
 		);
 		expect(list.items).toHaveLength(1);
+	});
+
+	it("404s when moderating an unknown review", async () => {
+		await onboardCouple();
+		const admin = await seedAdmin();
+		const res = await rpc(
+			"/rpc/review/moderate",
+			{ reviewUuid: MISSING_UUID, status: "rejected" },
+			admin,
+		);
+		expect(res.status).toBe(404);
+	});
+
+	it("rejecting a published review drops it from the listing", async () => {
+		await onboardCouple();
+		const { vendor, reviewUuid } = await submitClientReview("reject");
+		const admin = await seedAdmin();
+		await rpc(
+			"/rpc/review/moderate",
+			{ reviewUuid, status: "published" },
+			admin,
+		).expect(200);
+
+		const rejected = rpcBody(
+			await rpc(
+				"/rpc/review/moderate",
+				{ reviewUuid, status: "rejected" },
+				admin,
+			).expect(200),
+		);
+		expect(rejected.publishedAt).toBeNull();
+
+		const list = rpcBody(
+			await rpc("/rpc/review/listForBusiness", {
+				vendorBusinessUuid: vendor.businessUuid,
+			}).expect(200),
+		);
+		expect(list.items).toHaveLength(0);
+	});
+});
+
+describe("review.listForBusiness", () => {
+	it("404s for an unknown business", async () => {
+		await onboardCouple();
+		const res = await rpc("/rpc/review/listForBusiness", {
+			vendorBusinessUuid: MISSING_UUID,
+		});
+		expect(res.status).toBe(404);
+	});
+
+	it("filters published reviews by type", async () => {
+		await onboardCouple();
+		const { vendor, weddingId } = await submitClientReview("filter");
+		await setWeddingDate(weddingId, subDays(new Date(), 8));
+		await publishDueReviews(new Date());
+
+		const clientOnly = rpcBody(
+			await rpc("/rpc/review/listForBusiness", {
+				vendorBusinessUuid: vendor.businessUuid,
+				type: "client",
+			}).expect(200),
+		);
+		expect(clientOnly.items).toHaveLength(1);
+
+		const peerOnly = rpcBody(
+			await rpc("/rpc/review/listForBusiness", {
+				vendorBusinessUuid: vendor.businessUuid,
+				type: "peer",
+			}).expect(200),
+		);
+		expect(peerOnly.items).toHaveLength(0);
+	});
+});
+
+describe("review.submitReview conflicts", () => {
+	it("409s when a review already exists for the wedding", async () => {
+		await onboardCouple();
+		const weddingId = await ownedWedding();
+		await setWeddingDate(weddingId, subDays(new Date(), 2));
+		const vendor = await seedVendor("dupe-review");
+		await confirmBooking(weddingId, vendor);
+		await generateReviewRequests(new Date());
+		const ownerId = await testUserId();
+		const reqUuid = await requestUuid(
+			weddingId,
+			vendor.businessId,
+			"client",
+			ownerId,
+		);
+
+		// A review already exists for (author, subject, wedding) while the request
+		// is still open — the insert hits the uniqueness guard.
+		await db.insert(reviews).values({
+			type: "client",
+			authorUserId: ownerId,
+			subjectVendorBusinessId: vendor.businessId,
+			weddingId,
+			overallRating: 4,
+			status: "pending",
+		});
+
+		const res = await rpc("/rpc/review/submitReview", {
+			reviewRequestUuid: reqUuid,
+			overallRating: 5,
+		});
+		expect(res.status).toBe(409);
 	});
 });
