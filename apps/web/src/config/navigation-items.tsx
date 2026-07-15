@@ -10,6 +10,7 @@ import {
 	PaletteIcon,
 	PanelLeftIcon,
 	SquarePenIcon,
+	StarIcon,
 	StoreIcon,
 	TextIcon,
 	UserIcon,
@@ -32,6 +33,7 @@ export const vendorNavItems: NavigationItem[] = [
 	{ title: "Dashboard", url: "/portal/vendor", icon: StoreIcon },
 	{ title: "Studio", url: "/portal/vendor/profile", icon: SquarePenIcon },
 	{ title: "Requests", url: "/portal/vendor/bookings", icon: InboxIcon },
+	{ title: "Reviews", url: "/portal/vendor/reviews", icon: StarIcon },
 	{ title: "Messages", url: "/portal/messages", icon: MessageCircleIcon },
 	{ title: "Profile", url: "/portal/profile", icon: UserIcon },
 ];
