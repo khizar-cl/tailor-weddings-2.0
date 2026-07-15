@@ -12,8 +12,24 @@ import { env } from "../../utils/env";
 import { logger } from "../../utils/logger";
 import { getStripe, isStripeConfigured } from "../../utils/stripe";
 
-const appUrl = env.CORS_ORIGIN[0] ?? "http://localhost:3001";
+const DEFAULT_APP_URL = "http://localhost:3001";
 const MEMBERSHIP_PATH = "/portal/vendor/membership";
+
+/**
+ * A membership-page URL for Stripe return links. Resolved lazily and
+ * defensively: under CI the env is not transformed (skipValidation), so
+ * CORS_ORIGIN may be absent or a raw string rather than the parsed array.
+ */
+function membershipUrl(query = ""): string {
+	const origin: unknown = env.CORS_ORIGIN;
+	let base = DEFAULT_APP_URL;
+	if (Array.isArray(origin) && typeof origin[0] === "string") {
+		base = origin[0];
+	} else if (typeof origin === "string" && origin.length > 0) {
+		base = origin.split(",")[0]?.trim() ?? DEFAULT_APP_URL;
+	}
+	return `${base}${MEMBERSHIP_PATH}${query}`;
+}
 
 function requireStripe(): Stripe {
 	if (!isStripeConfigured()) {
@@ -93,8 +109,8 @@ export async function createCheckoutSession(
 		customer: customerId,
 		mode: "subscription",
 		line_items: [{ price: priceId, quantity: 1 }],
-		success_url: `${appUrl}${MEMBERSHIP_PATH}?checkout=success`,
-		cancel_url: `${appUrl}${MEMBERSHIP_PATH}?checkout=cancelled`,
+		success_url: membershipUrl("?checkout=success"),
+		cancel_url: membershipUrl("?checkout=cancelled"),
 	});
 	if (!session.url) {
 		throw new ORPCError("INTERNAL_SERVER_ERROR", {
@@ -116,7 +132,7 @@ export async function createPortalSession(
 	}
 	const session = await stripe.billingPortal.sessions.create({
 		customer: account.stripeCustomerId,
-		return_url: `${appUrl}${MEMBERSHIP_PATH}`,
+		return_url: membershipUrl(),
 	});
 	return { url: session.url };
 }
