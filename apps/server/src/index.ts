@@ -23,6 +23,7 @@ import {
 	runWithRequestContext,
 } from "./utils/request-context";
 import { rollbar } from "./utils/rollbar";
+import { mountStripeWebhook } from "./webhooks/stripe.webhook";
 
 const uuidSchema = z.string().uuid();
 
@@ -91,6 +92,9 @@ app.get("/health/detailed", async (_req, res) => {
 if (env.NODE_ENV === "development") {
 	mountQueueDashboard(app, "/admin/jobs", requireAdmin);
 }
+
+// Stripe webhook — raw body + own route, before the oRPC catch-all.
+mountStripeWebhook(app);
 
 const orpcInterceptors: StandardHandlerOptions<Context>["interceptors"] = [
 	onError((error) => {

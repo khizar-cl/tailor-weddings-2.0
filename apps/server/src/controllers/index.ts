@@ -1,4 +1,5 @@
 import { authController } from "./auth/auth.controller";
+import { billingController } from "./billing/billing.controller";
 import { bookingController } from "./booking/booking.controller";
 import { budgetController } from "./budget/budget.controller";
 import { categoryController } from "./category/category.controller";
@@ -16,6 +17,7 @@ import { weddingController } from "./wedding/wedding.controller";
 
 export const appRouter = {
 	auth: authController,
+	billing: billingController,
 	booking: bookingController,
 	budget: budgetController,
 	category: categoryController,
