@@ -7,6 +7,7 @@ import { useUnsaveVendor } from "../../../api/vendor.api";
 import { useWeddingTeam } from "../../../api/wedding.api";
 import { AppBreadcrumb } from "../../../components/app-breadcrumb";
 import Loader from "../../../components/loader";
+import { PendingReviews } from "../../../components/reviews/pending-reviews";
 import { MissingCategories } from "../../../components/team/missing-categories";
 import { TeamMemberRow } from "../../../components/team/team-member-row";
 
@@ -41,6 +42,14 @@ export default function TeamPage() {
 						be filled.
 					</p>
 				</header>
+
+				<PendingReviews
+					type="client"
+					title="Leave a review"
+					description="Your wedding's over — tell other couples how these vendors did."
+					hideWhenEmpty
+					className="mt-6"
+				/>
 
 				{team.isLoading ? (
 					<div className="mt-6">

@@ -1,6 +1,7 @@
 import type { BookingSchema, VendorDetailSchema } from "@repo/shared";
 import { Badge } from "@repo/ui/components/badge";
 import { ServiceBookingControl } from "../booking/service-booking-control";
+import { VendorReviews } from "../reviews/vendor-reviews";
 import { MessageVendorButton } from "../vendor/message-vendor-button";
 import { formatPrice } from "../vendor/price";
 import { SaveVendorButton } from "../vendor/save-vendor-button";
@@ -164,6 +165,8 @@ export function VendorDetailView({
 							</div>
 						)}
 					</section>
+
+					<VendorReviews vendorBusinessUuid={vendor.uuid} />
 				</div>
 
 				<aside className="@3xl:sticky @3xl:top-20 @3xl:self-start">
