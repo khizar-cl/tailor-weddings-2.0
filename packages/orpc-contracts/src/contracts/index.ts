@@ -1,4 +1,5 @@
 import { authContract } from "./auth.contract";
+import { billingContract } from "./billing.contract";
 import { bookingContract } from "./booking.contract";
 import { budgetContract } from "./budget.contract";
 import { categoryContract } from "./category.contract";
@@ -16,6 +17,7 @@ import { weddingContract } from "./wedding.contract";
 
 export const appContract = {
 	auth: authContract,
+	billing: billingContract,
 	booking: bookingContract,
 	budget: budgetContract,
 	category: categoryContract,
