@@ -1,6 +1,8 @@
 // Import all job files — each calls registerJob() as a side effect.
 // When adding a new job, add its import here (or use the add-background-or-scheduled-task skill).
 import "./dead-letter.job";
+import "./review-publish.job";
+import "./review-requests.job";
 import "./sample-background.job";
 import "./sample-scheduled.job";
 

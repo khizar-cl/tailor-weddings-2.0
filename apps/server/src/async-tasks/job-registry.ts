@@ -14,6 +14,8 @@ export type {
 export const QUEUES = {
 	SAMPLE_BACKGROUND: "sample.background",
 	SAMPLE_SCHEDULED: "sample.scheduled",
+	REVIEW_REQUESTS: "review.requests",
+	REVIEW_PUBLISH: "review.publish",
 	SYSTEM_DEAD_LETTER: "system.dead-letter",
 } as const;
 

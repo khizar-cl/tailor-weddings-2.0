@@ -6,6 +6,7 @@ import {
 	pgTable,
 	serial,
 	timestamp,
+	unique,
 	uuid,
 } from "drizzle-orm/pg-core";
 import { auditColumns } from "./_shared";
@@ -49,6 +50,13 @@ export const reviewRequests = pgTable(
 		...auditColumns(),
 	},
 	(table) => [
+		// One prompt per (reviewer, subject business, wedding) — lets the T+1
+		// generation job upsert idempotently on re-runs.
+		unique("review_requests_wedding_subject_target_uniq").on(
+			table.weddingId,
+			table.subjectVendorBusinessId,
+			table.targetUserId,
+		),
 		index("review_requests_target_user_id_idx").on(table.targetUserId),
 		index("review_requests_subject_vendor_business_id_idx").on(
 			table.subjectVendorBusinessId,

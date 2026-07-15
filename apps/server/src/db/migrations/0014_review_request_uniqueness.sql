@@ -1,0 +1,1 @@
+ALTER TABLE "review_requests" ADD CONSTRAINT "review_requests_wedding_subject_target_uniq" UNIQUE("wedding_id","subject_vendor_business_id","target_user_id");
