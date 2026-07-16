@@ -1,4 +1,5 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { toast } from "sonner";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -8,6 +9,10 @@ import {
 } from "../../../../tests/helpers/clerk.test-helper";
 import type { AuthContextValue, AuthUser } from "../../../hooks/use-auth";
 import ProfilePage from "./page";
+
+vi.mock("sonner", () => ({
+	toast: { success: vi.fn(), error: vi.fn() },
+}));
 
 const mockAuthUser: AuthUser = {
 	uuid: "usr_1",
@@ -42,6 +47,7 @@ afterEach(() => {
 		error: null,
 		refetch: async () => undefined,
 	};
+	vi.clearAllMocks();
 });
 
 describe("ProfilePage", () => {
@@ -88,5 +94,26 @@ describe("ProfilePage", () => {
 		expect(
 			screen.getByRole("button", { name: "Save changes" }),
 		).toBeInTheDocument();
+	});
+
+	it("saves the trimmed name via Clerk and toasts on success", async () => {
+		const update = vi.fn().mockResolvedValue(undefined);
+		mockUser.update = update as typeof mockUser.update;
+
+		render(<ProfilePage />);
+		fireEvent.change(screen.getByLabelText("First name"), {
+			target: { value: "  Sarah  " },
+		});
+		const save = screen.getByRole("button", { name: "Save changes" });
+		await waitFor(() => expect(save).toBeEnabled());
+		fireEvent.click(save);
+
+		await waitFor(() =>
+			expect(update).toHaveBeenCalledWith({
+				firstName: "Sarah",
+				lastName: "User",
+			}),
+		);
+		expect(toast.success).toHaveBeenCalled();
 	});
 });
