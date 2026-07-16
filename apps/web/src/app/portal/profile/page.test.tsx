@@ -1,18 +1,62 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { toast } from "sonner";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
 	mockLoadingUser,
 	mockUnauthenticatedUser,
 	mockUser,
 } from "../../../../tests/helpers/clerk.test-helper";
+import type { AuthContextValue, AuthUser } from "../../../hooks/use-auth";
 import ProfilePage from "./page";
 
+vi.mock("sonner", () => ({
+	toast: { success: vi.fn(), error: vi.fn() },
+}));
+
+const mockAuthUser: AuthUser = {
+	uuid: "usr_1",
+	name: "Test User",
+	email: "test@example.com",
+	role: "member",
+	imageUrl: null,
+	capabilities: { isCouple: true, isVendor: false },
+	activeMode: "couple",
+	onboarding: { couple: true, vendor: false },
+};
+
+const authState: { value: AuthContextValue } = {
+	value: {
+		user: mockAuthUser,
+		isLoading: false,
+		isError: false,
+		error: null,
+		refetch: async () => undefined,
+	},
+};
+
+vi.mock("../../../hooks/use-auth", () => ({
+	useAuth: () => authState.value,
+}));
+
+afterEach(() => {
+	authState.value = {
+		user: mockAuthUser,
+		isLoading: false,
+		isError: false,
+		error: null,
+		refetch: async () => undefined,
+	};
+	vi.clearAllMocks();
+});
+
 describe("ProfilePage", () => {
-	it("shows loading spinner while user is loading", () => {
+	it("shows loading skeleton while the user is loading", () => {
 		mockLoadingUser();
 		const { container } = render(<ProfilePage />);
-		expect(container.querySelector(".spinner")).toBeInTheDocument();
+		expect(
+			container.querySelector('[data-slot="skeleton"]'),
+		).toBeInTheDocument();
 	});
 
 	it("shows sign-in prompt when no user", () => {
@@ -37,26 +81,39 @@ describe("ProfilePage", () => {
 		mockUser.imageUrl = original;
 	});
 
-	it("displays email address", () => {
+	it("displays the read-only email and member-since facts", () => {
 		render(<ProfilePage />);
-		expect(screen.getAllByText("test@example.com")).toHaveLength(2);
-	});
-
-	it("displays formatted member since date", () => {
-		render(<ProfilePage />);
+		expect(screen.getByText("test@example.com")).toBeInTheDocument();
 		expect(screen.getByText("January 15, 2025")).toBeInTheDocument();
 	});
 
-	it("hides member since card when createdAt is missing", () => {
-		const original = mockUser.createdAt;
-		mockUser.createdAt = undefined as unknown as Date;
+	it("prefills the editable name fields from the user", () => {
 		render(<ProfilePage />);
-		expect(screen.queryByText("Member Since")).not.toBeInTheDocument();
-		mockUser.createdAt = original;
+		expect(screen.getByLabelText("First name")).toHaveValue("Test");
+		expect(screen.getByLabelText(/Last name/)).toHaveValue("User");
+		expect(
+			screen.getByRole("button", { name: "Save changes" }),
+		).toBeInTheDocument();
 	});
 
-	it("displays user ID", () => {
+	it("saves the trimmed name via Clerk and toasts on success", async () => {
+		const update = vi.fn().mockResolvedValue(undefined);
+		mockUser.update = update as typeof mockUser.update;
+
 		render(<ProfilePage />);
-		expect(screen.getByText("user_test_123")).toBeInTheDocument();
+		fireEvent.change(screen.getByLabelText("First name"), {
+			target: { value: "  Sarah  " },
+		});
+		const save = screen.getByRole("button", { name: "Save changes" });
+		await waitFor(() => expect(save).toBeEnabled());
+		fireEvent.click(save);
+
+		await waitFor(() =>
+			expect(update).toHaveBeenCalledWith({
+				firstName: "Sarah",
+				lastName: "User",
+			}),
+		);
+		expect(toast.success).toHaveBeenCalled();
 	});
 });
