@@ -4,8 +4,14 @@ import { toast } from "sonner";
 import { orpc } from "../utils/orpc";
 
 /** Published reviews for a business — the vendor detail page and reviews-received. */
-export function useBusinessReviews(input: ListReviewsInputSchema) {
-	return useQuery(orpc.review.listForBusiness.queryOptions({ input }));
+export function useBusinessReviews(
+	input: ListReviewsInputSchema,
+	options?: { enabled?: boolean },
+) {
+	return useQuery({
+		...orpc.review.listForBusiness.queryOptions({ input }),
+		enabled: options?.enabled ?? true,
+	});
 }
 
 /** The caller's open review prompts (client for couples, peer for vendors). */
