@@ -79,7 +79,7 @@
 		"tsdown": "^0.21.7",
 		"turbo": "^2.9.5",
 		"typescript": "^6.0.2",
-		"vitest": "^4.1.4",
+		"vitest": "^4.1.11",
 		"zx": "^8.8.5"
 	},
 	"engines": {
