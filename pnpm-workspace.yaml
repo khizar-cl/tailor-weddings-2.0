@@ -54,20 +54,20 @@ allowBuilds:
   # core-js postinstall only prints a funding notice.
   core-js: false
 catalog:
-  date-fns: ^4.1.0
+  date-fns: ^4.4.0
   "@orpc/client": ^1.13.14
   "@orpc/contract": ^1.13.14
   "@orpc/openapi": ^1.13.14
   "@orpc/server": ^1.13.14
   "@orpc/zod": ^1.13.14
   "@types/express": ^5.0.1
-  "@types/react": ^19.2.14
-  "@types/react-dom": ^19.2.3
+  "@types/react": ^19.3.0
+  "@types/react-dom": ^19.3.0
   dotenv: ^17.4.2
   lucide-react: ^1.8.0
   next-themes: ^0.4.6
   react: ^19.2.5
   react-dom: ^19.2.5
-  sonner: ^2.0.5
-  tailwindcss: ^4.2.2
-  zod: ^4.3.6
+  sonner: ^2.0.8
+  tailwindcss: ^4.3.3
+  zod: ^4.6.5
